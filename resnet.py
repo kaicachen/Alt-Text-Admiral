@@ -5,7 +5,7 @@ import torch
 
 from PIL import Image   # For testing purposes - access a locally stored image on your machine
 
-image = Image.open("images/cat.png")
+image = Image.open("images/cat.png").convert('RGB')  # Image.open() doesn't like transparent images, so converted to raw RGB
 
 #dataset = load_dataset("huggingface/cats-image")
 #image = dataset["test"]["image"][0]
