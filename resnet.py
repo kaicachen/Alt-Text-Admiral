@@ -1,9 +1,14 @@
 from transformers import AutoImageProcessor, ResNetForImageClassification
 import torch
-from datasets import load_dataset
 
-dataset = load_dataset("huggingface/cats-image")
-image = dataset["test"]["image"][0]
+# from datasets import load_dataset
+
+from PIL import Image   # For testing purposes - access a locally stored image on your machine
+
+image = Image.open("images/cat.png")
+
+#dataset = load_dataset("huggingface/cats-image")
+#image = dataset["test"]["image"][0]
 
 processor = AutoImageProcessor.from_pretrained("microsoft/resnet-50")
 model = ResNetForImageClassification.from_pretrained("microsoft/resnet-50")
