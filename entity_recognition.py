@@ -1,5 +1,5 @@
 from transformers import pipeline
-
+import torch
 # This is here to test GPU capability, couldn't get it running because I'm out of storage so I'll reconfig stuff later - AAP
 # import torch
 # print(torch.cuda.is_available())  # Should return True if a GPU is available
@@ -8,7 +8,8 @@ from transformers import pipeline
 
 def extract_entities(text):
     # Load a better NER model with token aggregation
-    ner_pipeline = pipeline("ner", model="dslim/bert-base-NER", aggregation_strategy="simple")
+    device = 0 if torch.cuda.is_available() else -1
+    ner_pipeline = pipeline("ner", model="dslim/bert-base-NER", aggregation_strategy="simple",device=device)
 
     results = ner_pipeline(text)
 

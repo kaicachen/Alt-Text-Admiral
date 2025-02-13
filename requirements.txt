@@ -1,0 +1,5 @@
+matplotlib
+transformers
+Pillow
+torch
+timm

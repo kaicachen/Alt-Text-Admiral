@@ -7,11 +7,13 @@ from compile_to_csv import compile_to_csv  # Import the correct function
 
 def find_image_objects(image_path):
     # Load the model and processor (DETR - Facebook's object detection model)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(torch.cuda.is_available())
     processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
-    model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50")
+    model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50").to(device)
 
     image = Image.open(image_path).convert("RGB")
-    inputs = processor(images=image, return_tensors="pt")
+    inputs = processor(images=image, return_tensors="pt").to(device)
 
     # Perform inference
     with torch.no_grad():

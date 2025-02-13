@@ -1,8 +1,10 @@
 from transformers import pipeline
+import torch
 
 def generate_sentence(words):
     # Load the model
-    generator = pipeline("text2text-generation", model="google/flan-t5-large")
+    device = 0 if torch.cuda.is_available() else -1
+    generator = pipeline("text2text-generation", model="google/flan-t5-large",device=device)
 
     # Generate a sentence
     # output = generator(f"Form a proper sentence using these words: {words}", max_length=500)
