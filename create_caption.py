@@ -24,7 +24,7 @@ def create_caption(image_path, text):
     return generate_sentence(all_info)
 
 if __name__ == "__main__":
-    image_path = "images/KU-Honors-Concrete-canoe.png"
-    text = "Jayhawks celebrate at The University of Kansas"
+    image_path = "images/basketball.jpg"
+    text = "Elon Musk is the CEO of Tesla and SpaceX. Steve Jobs was the co-founder of Apple and ate an apple every day."
     caption = create_caption(image_path, text)
     print(f"Caption: {caption}")
