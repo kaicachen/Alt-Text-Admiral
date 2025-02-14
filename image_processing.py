@@ -57,9 +57,9 @@ class ImageProcessor:
         
         for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
                 
-                # Store detected object info
-                obj_name = model.config.id2label[label.item()]
-                detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
+                if score >= .7:
+                    obj_name = model.config.id2label[label.item()]
+                    detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
 
                 if show_graph and score > 0.5:  # Filter low-confidence predictions
                     x, y, w, h = box
