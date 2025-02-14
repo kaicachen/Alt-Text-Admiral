@@ -8,7 +8,7 @@ import torch
 
 def extract_entities(text):
     # Load a better NER model with token aggregation
-    device = 0 if torch.cuda.is_available() else -1
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     ner_pipeline = pipeline("ner", model="dslim/bert-base-NER", aggregation_strategy="simple",device=device)
 
     results = ner_pipeline(text)

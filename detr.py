@@ -8,7 +8,7 @@ from compile_to_csv import compile_to_csv  # Import the correct function
 def find_image_objects(image_path):
     # Load the model and processor (DETR - Facebook's object detection model)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(torch.cuda.is_available())
+    print(torch.cuda.device_count())
     processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
     model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50").to(device)
 
@@ -31,7 +31,14 @@ def find_image_objects(image_path):
     ax.imshow(image)
 
     # Draw bounding boxes
+    
     for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
+
+            # Store detected object info
+            obj_name = model.config.id2label[label.item()]
+            detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
+
+            '''
         if score > 0.5:  # Filter low-confidence predictions
             x, y, w, h = box
             rect = patches.Rectangle((x, y), w, h, linewidth=2, edgecolor="r", facecolor="none")
@@ -39,10 +46,7 @@ def find_image_objects(image_path):
             ax.text(x, y, f"{model.config.id2label[label.item()]}: {score:.2f}", color="white",
                     bbox=dict(facecolor="red", alpha=0.5))
             # print(f"{model.config.id2label[label.item()]}: {score:.2f}")
-
-            # Store detected object info
-            obj_name = model.config.id2label[label.item()]
-            detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
+        '''
 
     # print(f"Detected objects: {detected_objects}\n")
 

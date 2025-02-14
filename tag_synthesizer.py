@@ -3,7 +3,7 @@ import torch
 
 def generate_sentence(words):
     # Load the model
-    device = 0 if torch.cuda.is_available() else -1
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     generator = pipeline("text2text-generation", model="google/flan-t5-large",device=device)
 
     # Generate a sentence
