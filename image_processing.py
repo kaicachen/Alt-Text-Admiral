@@ -30,7 +30,7 @@ class ImageProcessor:
 
     def find_image_objects(self, show_graph=False):
         # Load the model and processor (DETR - Facebook's object detection model)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = "cuda" if torch.cuda.is_available() else "cpu"  # Sets active device as GPU if available, otherwise it runs on the CPU
         print(torch.cuda.device_count())
         processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
         model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50").to(device)

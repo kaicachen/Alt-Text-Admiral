@@ -8,7 +8,7 @@ import torch
 
 def extract_entities(text):
     # Load a better NER model with token aggregation
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # Sets active device as GPU if available, otherwise it runs on the CPU
     ner_pipeline = pipeline("ner", model="dslim/bert-base-NER", aggregation_strategy="simple",device=device)
 
     results = ner_pipeline(text)
