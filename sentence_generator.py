@@ -12,10 +12,12 @@ def generate_sentence(captions, tags):
     # output = generator(f"Form a proper sentence using these words and names: {tags}", max_length=1000)
 
     prompt = (
-        f"Rephrase the following caption into a well-structured and fluent sentence:\n"
+        f"Use the example caption and tags to create a well-structured and fluent ADA compliant alt-text for an image:\n"
         f"Caption: {captions}\nTags: {tags}\n\n"
         f"Make sure the sentence is clear, natural, and grammatically correct."
     )
+
+    
 
     output = generator(prompt, max_length=1000)
 
