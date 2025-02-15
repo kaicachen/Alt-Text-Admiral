@@ -15,6 +15,11 @@ def generate_sentence(captions, tags):
         f"Use the example caption and tags to create a well-structured and fluent ADA compliant alt-text for an image:\n"
         f"Caption: {captions}\nTags: {tags}\n\n"
         f"Make sure the sentence is clear, natural, and grammatically correct."
+        f"Alt-text should be short and to the point."
+        f"Alt-text should communicate the same information as the visual content."
+        f"Alt-text should refer to relevant content provided by the image, rather than simply describing how the image looks."
+        f"Alt-text should not contain any extra or unnecessary information, and should not repeat information that is already provided in the text."
+        f"Alt-text must be in the same language as the main content."
     )
 
     
