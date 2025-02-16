@@ -23,8 +23,8 @@ def mergeTags(entities):  # Function to merge tags
     return entities  # Returns the entire entities dictionary
 
 
-def create_caption(image_path, text):
-    image_processor = ImageProcessor(image_path)  # Instantiate an Image Processor Class
+def create_caption(image_path, text, URL=False):
+    image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
 
     caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
     detected_objects = image_processor.find_image_objects()  # Extract tags from image (image_processing.py)

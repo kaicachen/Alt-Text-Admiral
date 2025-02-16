@@ -18,12 +18,12 @@ def run_tests():
         writer = csv.writer(file)
         
         # Write a header row (optional)
-        writer.writerow(["image_path", "generated_output"])
+        writer.writerow(["image_loc", "generated_output"])
         
-        for test in input_data:
+        for URL, image, text in input_data:
             writer.writerow([
-                test[0],
-                create_caption(test[0], test[1])
+                image,
+                create_caption(image, text, URL=bool(int(URL)))
             ])
 
 

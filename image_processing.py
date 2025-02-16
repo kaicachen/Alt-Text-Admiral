@@ -4,15 +4,23 @@ This code was written with help from ChatGPT
 
 from transformers import DetrImageProcessor, DetrForObjectDetection, BlipProcessor, BlipForConditionalGeneration
 import torch
+import requests
+from io import BytesIO
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from compile_to_csv import compile_to_csv  # Import the correct function
 
 class ImageProcessor:
-    def __init__(self, image_path):
-        self.path = image_path
-        self.image = Image.open(image_path).convert("RGB")
+    def __init__(self, image_loc, URL=False):
+        self.loc = image_loc # saves path or url for CSV writing later
+
+        if URL: # runs if location passed in is a URL
+            response = requests.get(image_loc)
+            self.image = Image.open(BytesIO(response.content))
+
+        else: # runs if a direct file path is given
+            self.image = Image.open(image_loc).convert("RGB")
 
     def generate_caption_with_blip(self):
         # Initialize the BLIP processor and model
@@ -78,7 +86,7 @@ class ImageProcessor:
         # Save detected objects to CSV
         image_metadata = [
             {
-                "image_name": self.path,
+                "image_name": self.loc,
                 "tags": tags_list,  # Extract just the tag names
                 "is_decorative": False,
                 "is_link": False,
