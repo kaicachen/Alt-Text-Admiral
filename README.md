@@ -1,2 +1,2 @@
-# SeniorCapstone-Sprint1
-Sprint 1 for our Senior Capstone project
+# Machine Generated Alt-Text
+Machine generated alt-text for websites
