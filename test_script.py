@@ -1,4 +1,5 @@
 from create_caption import *
+from csv_to_pdf import *
 import csv
 
 def run_tests():
@@ -29,3 +30,4 @@ def run_tests():
 
 if __name__ == "__main__":
     run_tests()
+    create_pdf("test_outputs")
