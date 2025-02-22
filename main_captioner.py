@@ -2,13 +2,13 @@ from create_caption import *
 from web_scraper import *
 import csv
 
-def caption_site(url):
+def caption_site(url, output_name='site'):
     site_data = scrape(url)
 
     if site_data is None:
         return
 
-    with open(f"{url}.csv", mode="w", newline="", encoding="utf-8") as file:
+    with open(f"{output_name}.csv", mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         
         # Write a header row (optional)
@@ -19,3 +19,6 @@ def caption_site(url):
                 image,
                 create_caption(image, text, URL=True)
             ])
+
+if __name__ == "__main__":
+    caption_site("https://lied.ku.edu", output_name="lied_center")

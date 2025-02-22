@@ -1,7 +1,8 @@
-from transformers import pipeline
+from transformers import pipeline, logging
 import torch
 
 def generate_sentence(captions, tags):
+    logging.set_verbosity_error()
     # Load the model
     device = "cuda" if torch.cuda.is_available() else "cpu"  # Sets active device as GPU if available, otherwise it runs on the CPU
     generator = pipeline("text2text-generation", model="google/flan-t5-large",device=device)  # Creates a pipeline to load the model

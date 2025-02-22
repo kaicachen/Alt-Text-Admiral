@@ -2,7 +2,7 @@
 This code was written with help from ChatGPT
 '''
 
-from transformers import DetrImageProcessor, DetrForObjectDetection, BlipProcessor, BlipForConditionalGeneration
+from transformers import DetrImageProcessor, DetrForObjectDetection, BlipProcessor, BlipForConditionalGeneration, logging
 import torch
 import requests
 from io import BytesIO
@@ -21,6 +21,9 @@ class ImageProcessor:
 
         else: # runs if a direct file path is given
             self.image = Image.open(image_loc).convert("RGB")
+
+        self.image = self.image.convert("RGB")
+        logging.set_verbosity_error()
 
     def generate_caption_with_blip(self):
         # Initialize the BLIP processor and model
@@ -104,7 +107,7 @@ class ImageProcessor:
 
 if __name__ == "__main__":
     # Load and preprocess the image
-    image_path = "images/sport guy.jpg"
+    image_path = "images/lebron.jpg"
     # image = Image.open(image_path).convert("RGB")
     image_processor = ImageProcessor(image_path)
     caption = image_processor.generate_caption_with_blip()

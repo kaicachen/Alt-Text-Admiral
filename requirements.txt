@@ -4,4 +4,6 @@ Pillow
 timm
 torch
 torchvision
-torchaudio --index-url https://download.pytorch.org/whl/cu121
+torchaudio
+selenium
+webdriver-manager
