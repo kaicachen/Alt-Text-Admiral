@@ -1,5 +1,5 @@
-from create_caption import *
-from csv_to_pdf import *
+from create_caption import create_caption
+from csv_to_pdf import create_pdf
 import csv
 
 def run_tests():
@@ -21,10 +21,10 @@ def run_tests():
         # Write a header row (optional)
         writer.writerow(["image_loc", "generated_output"])
         
-        for URL, image, text in input_data:
+        for url, image, text in input_data:
             writer.writerow([
                 image,
-                create_caption(image, text, URL=bool(int(URL)))
+                create_caption(image, text, URL=bool(int(url)))
             ])
 
 

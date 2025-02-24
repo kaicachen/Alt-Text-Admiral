@@ -1,6 +1,6 @@
-from create_caption import *
-from web_scraper import *
-from csv_to_pdf import *
+from create_caption import create_caption
+from web_scraper import scrape
+from csv_to_pdf import create_pdf
 import csv
 
 def caption_site(url, output_name='site'):
@@ -23,6 +23,6 @@ def caption_site(url, output_name='site'):
 
 if __name__ == "__main__":
     output_name = "lied_center"
-    site_url = "https://lied.ku.edu"
+    site_url = "https://lied.ku.edu/?event=mnozil-brass-2025&event_date=2025-03-03%2019:30"
     caption_site(site_url, output_name=output_name)
     create_pdf(output_name)
