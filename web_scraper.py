@@ -4,7 +4,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 import time
 
-def scrape(url):
+def scrape(url): # URL -> List of scraped data
     # Set up Selenium WebDriver
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run without opening browser
@@ -62,6 +62,6 @@ def scrape(url):
     return image_text_data
 
 if __name__ == "__main__":
-    site_data = scrape("https://lied.ku.edu")
+    site_data = scrape("https://lied.ku.edu/?event=mnozil-brass-2025&event_date=2025-03-03%2019:30")
     for item in site_data:
         print(f"Image: {item[0]}\nText: {item[1]}\n{'-'*50}")

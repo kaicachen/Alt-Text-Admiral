@@ -23,5 +23,6 @@ def caption_site(url, output_name='site'):
 
 if __name__ == "__main__":
     output_name = "lied_center"
-    caption_site("https://lied.ku.edu", output_name=output_name)
+    site_url = "https://lied.ku.edu"
+    caption_site(site_url, output_name=output_name)
     create_pdf(output_name)
