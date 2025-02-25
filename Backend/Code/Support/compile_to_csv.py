@@ -5,6 +5,15 @@
     - csv_filename (str): The name of the output CSV file.
     - image_data (list of dicts): A list of dictionaries containing image metadata.
 """
+import sys
+import os
+
+# Get the absolute path to the root directory of your project
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  # This will give the path to /Root
+CODE_DIR = os.path.join(ROOT_DIR, 'Backend', 'Code')  # This points to /Root/Backend/Code
+
+# Add the Backend/Code directory to sys.path
+sys.path.append(CODE_DIR)
 
 import csv
 from collections import defaultdict
@@ -17,8 +26,11 @@ def compile_to_csv(csv_filename, image_data):
     #     for tag in img["tags"]:
     #         tag_counts[tag] += 1
 
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    OUTPUTS_DIR = os.path.join(BASE_DIR, 'Outputs')
+
     # Writing to CSV
-    with open(csv_filename, mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join(OUTPUTS_DIR, "CSVs", csv_filename), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         
         # Writing header

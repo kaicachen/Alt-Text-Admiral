@@ -1,6 +1,16 @@
-from create_caption import create_caption
-from web_scraper import scrape
-from csv_to_pdf import create_pdf
+import sys
+import os
+
+# Get the absolute path to the root directory of your project
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  # This will give the path to /Root
+CODE_DIR = os.path.join(ROOT_DIR, 'Backend', 'Code')  # This points to /Root/Backend/Code
+
+# Add the Backend/Code directory to sys.path
+sys.path.append(CODE_DIR)
+
+from Main.create_caption import *
+from Support.web_scraper import *
+from Support.csv_to_pdf import *
 import multiprocessing
 import csv
 import time
@@ -20,6 +30,9 @@ def _multiprocess_caption(site_data, process_number, return_values):
 
 # Captions entire site with no multiprocessing by defaults
 def caption_site(url, output_name='site', pool=1):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    OUTPUTS_DIR = os.path.join(BASE_DIR, 'Outputs')
+
     site_data = scrape(url)
 
     if site_data is None:
@@ -27,7 +40,7 @@ def caption_site(url, output_name='site', pool=1):
 
     # No multiprocessing
     if pool == 1:
-        with open(f"{output_name}_pool_{pool}.csv", mode="w", newline="", encoding="utf-8") as file:
+        with open(os.path.join(OUTPUTS_DIR, "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
             
             # Write a header row (optional)
@@ -63,7 +76,7 @@ def caption_site(url, output_name='site', pool=1):
 
         processList.clear()                                             # clears the process references
 
-        with open(f"{output_name}_pool_{pool}.csv", mode="w", newline="", encoding="utf-8") as file:
+        with open(os.path.join(OUTPUTS_DIR, "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
             
             # Write a header row (optional)

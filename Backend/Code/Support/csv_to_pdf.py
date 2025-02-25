@@ -1,3 +1,13 @@
+import sys
+import os
+
+# Get the absolute path to the root directory of your project
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  # This will give the path to /Root
+CODE_DIR = os.path.join(ROOT_DIR, 'Backend', 'Code')  # This points to /Root/Backend/Code
+
+# Add the Backend/Code directory to sys.path
+sys.path.append(CODE_DIR)
+
 from PIL import Image
 import requests
 from io import BytesIO
@@ -7,9 +17,12 @@ from reportlab.lib.utils import ImageReader
 import csv
 
 def create_pdf(file_name):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    OUTPUTS_DIR = os.path.join(BASE_DIR, 'Outputs')
+
     image_text_list = []
 
-    with open(f"{file_name}.csv", mode="r", newline="", encoding="utf-8") as file:
+    with open(os.path.join(OUTPUTS_DIR, "CSVs", f"{file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         next(reader)
@@ -18,7 +31,7 @@ def create_pdf(file_name):
         for row in reader:
             image_text_list.append(row)
 
-    c = canvas.Canvas(f"{file_name}.pdf", pagesize=letter)
+    c = canvas.Canvas(os.path.join(OUTPUTS_DIR, "PDFs", f"{file_name}.pdf"), pagesize=letter)
     width, height = letter
     y_position = height - 200  # Initial vertical position
 
