@@ -18,7 +18,7 @@ from io import BytesIO
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from Support.compile_to_csv import compile_to_csv  # Import the correct function
+from compile_to_csv import compile_to_csv  # Import the correct function
 
 class ImageProcessor:
     def __init__(self, image_loc, URL=False):

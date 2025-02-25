@@ -8,9 +8,9 @@ CODE_DIR = os.path.join(ROOT_DIR, 'Backend', 'Code')  # This points to /Root/Bac
 # Add the Backend/Code directory to sys.path
 sys.path.append(CODE_DIR)
 
-from Main.create_caption import *
-from Support.web_scraper import *
-from Support.csv_to_pdf import *
+from create_caption import *
+from web_scraper import *
+from csv_to_pdf import *
 import multiprocessing
 import csv
 import time
