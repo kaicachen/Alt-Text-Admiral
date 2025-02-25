@@ -25,7 +25,8 @@ def create_pdf(file_name):
     for image_url, text in image_text_list:
         try:
             response = requests.get(image_url)
-            response.raise_for_status()
+            if response.status_code != 200:
+                continue
             image = Image.open(BytesIO(response.content))
 
         except Exception as e:
@@ -46,4 +47,4 @@ def create_pdf(file_name):
     print(f"PDF saved as {file_name}.pdf")
 
 if __name__ == "__main__":
-    create_pdf("lied_center")
+    create_pdf("ku_union")
