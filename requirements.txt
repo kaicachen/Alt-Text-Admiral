@@ -9,3 +9,5 @@ selenium
 webdriver-manager
 reportlab
 multiprocessing
+flask
+pandas
