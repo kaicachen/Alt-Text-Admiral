@@ -16,14 +16,13 @@ class ImageProcessor:
         self.loc = image_loc # saves path or url for CSV writing later
 
         if URL: # runs if location passed in is a URL
-            response = requests.get(image_loc)
-            
-            if response.status_code != 200:
+            try:
+                response = requests.get(image_loc)
+                self.image = Image.open(BytesIO(response.content))
+            except:
                 self.image = None
                 print(f"ERROR LOADING IMAGE {self.loc}")
                 return
-            
-            self.image = Image.open(BytesIO(response.content))
 
         else: # runs if a direct file path is given
             self.image = Image.open(image_loc) #.convert("RGB")

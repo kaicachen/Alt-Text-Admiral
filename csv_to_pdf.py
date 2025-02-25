@@ -31,7 +31,11 @@ def create_pdf(file_name):
 
         except Exception as e:
             print(f"Error loading image {image_url}: {e}")
-            image = Image.open(image_url).convert("RGB")
+            try:
+                image = Image.open(image_url).convert("RGB")
+            except:
+                print(f"Error finding local image {image_url}: {e}")
+                continue
 
         img_reader = ImageReader(image)
         
