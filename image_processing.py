@@ -17,6 +17,12 @@ class ImageProcessor:
 
         if URL: # runs if location passed in is a URL
             response = requests.get(image_loc)
+            
+            if response.status_code != 200:
+                self.image = None
+                print(f"ERROR LOADING IMAGE {self.loc}")
+                return
+            
             self.image = Image.open(BytesIO(response.content))
 
         else: # runs if a direct file path is given
