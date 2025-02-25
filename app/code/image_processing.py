@@ -1,16 +1,6 @@
 '''
 This code was written with help from ChatGPT
 '''
-import sys
-import os
-
-# Get the absolute path to the root directory of your project
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  # This will give the path to /Root
-CODE_DIR = os.path.join(ROOT_DIR, 'Backend', 'Code')  # This points to /Root/Backend/Code
-
-# Add the Backend/Code directory to sys.path
-sys.path.append(CODE_DIR)
-
 from transformers import DetrImageProcessor, DetrForObjectDetection, BlipProcessor, BlipForConditionalGeneration, logging
 import torch
 import requests
@@ -18,7 +8,7 @@ from io import BytesIO
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from Support.compile_to_csv import compile_to_csv  # Import the correct function
+from compile_to_csv import compile_to_csv  # Import the correct function
 
 class ImageProcessor:
     def __init__(self, image_loc, URL=False):
