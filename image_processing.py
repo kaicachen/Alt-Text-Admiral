@@ -20,7 +20,7 @@ class ImageProcessor:
             self.image = Image.open(BytesIO(response.content))
 
         else: # runs if a direct file path is given
-            self.image = Image.open(image_loc).convert("RGB")
+            self.image = Image.open(image_loc) #.convert("RGB")
 
         self.image = self.image.convert("RGB")
         logging.set_verbosity_error()
@@ -30,8 +30,12 @@ class ImageProcessor:
         blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
         blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
-        # Prepare the image for caption generation
-        inputs = blip_processor(images=self.image, return_tensors="pt")
+        try:
+            # Prepare the image for caption generation
+            inputs = blip_processor(images=self.image, return_tensors="pt")
+        except:
+            print(f"FAIELD TO PROCESS {self.loc}")
+            return ""
 
         # Generate caption
         out = blip_model.generate(**inputs)
@@ -46,7 +50,11 @@ class ImageProcessor:
         processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
         model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50").to(device)
 
-        inputs = processor(images=self.image, return_tensors="pt").to(device)
+        try:
+            inputs = processor(images=self.image, return_tensors="pt").to(device)
+        except:
+            print(f"FAIELD TO PROCESS {self.loc}")
+            return {}
 
         # Perform inference
         with torch.no_grad():

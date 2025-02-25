@@ -26,7 +26,7 @@ if __name__ == "__main__":
     start_time = time.time()
     
     output_name = "lied_center"
-    site_url = "https://lied.ku.edu/?event=mnozil-brass-2025&event_date=2025-03-03%2019:30"
+    site_url = "https://lied.ku.edu"
     caption_site(site_url, output_name=output_name)
     create_pdf(output_name)
     

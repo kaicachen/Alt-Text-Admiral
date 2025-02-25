@@ -28,6 +28,11 @@ def create_caption(image_path, text, URL=False):
 
     caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
     detected_objects = image_processor.find_image_objects()  # Extract tags from image (image_processing.py)
+
+    # Skip if no information is extracted from the image, likely due to an error
+    if caption == "" and detected_objects == {}:
+        return ""
+
     entities = extract_entities(text)   # Extracts tags from text (text_processing.py)
     entities = mergeTags(entities)  # Fixes issue where some words would be prepended by "##"
     # Example: [Leb, ##ron James]  -> [Lebron James]

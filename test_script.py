@@ -46,7 +46,7 @@ def run_site_tests():
         writer = csv.writer(file)
         
         # Write a header row (optional)
-        writer.writerow(["website", "start_time, end_time, run_time"])
+        writer.writerow(["website", "start_time", "end_time", "run_time"])
     
         total_start_time = time.time()
         for website, output_name in input_data:
