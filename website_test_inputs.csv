@@ -1,0 +1,6 @@
+website, output_file_name
+"https://lied.ku.ed", "lied_center"
+"https://ku.edu", "ku_homepage"
+"https://eecs.ku.edu", "ku_eecs"
+"https://union.ku.edu", "ku_union"
+"https://kuathletics.com", "ku_athletics"
