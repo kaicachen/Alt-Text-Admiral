@@ -8,9 +8,9 @@ CODE_DIR = os.path.join(ROOT_DIR, 'Backend', 'Code')  # This points to /Root/Bac
 # Add the Backend/Code directory to sys.path
 sys.path.append(CODE_DIR)
 
-from Models.image_processing import *
-from Models.text_processing import *
-from Models.sentence_generator import *
+from image_processing import *
+from text_processing import *
+from sentence_generator import *
 
 def mergeTags(entities):  # Function to merge tags
     
