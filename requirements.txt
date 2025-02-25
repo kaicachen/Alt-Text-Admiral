@@ -2,9 +2,9 @@ matplotlib
 transformers
 Pillow
 timm
-torch
-torchvision
-torchaudio
+torch 
+torchvision 
+torchaudio --index-url https://download.pytorch.org/whl/cu121
 selenium
 webdriver-manager
 reportlab

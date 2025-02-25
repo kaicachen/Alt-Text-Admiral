@@ -27,8 +27,8 @@ class ImageProcessor:
 
     def generate_caption_with_blip(self):
         # Initialize the BLIP processor and model
-        blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-        blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+        blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
+        blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
         # Prepare the image for caption generation
         inputs = blip_processor(images=self.image, return_tensors="pt")

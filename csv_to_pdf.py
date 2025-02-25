@@ -39,7 +39,7 @@ def create_pdf(file_name):
             y_position = height - 200
 
         c.drawImage(img_reader, 50, y_position, width=150, height=150)
-        c.drawString(220, y_position + 65, text)
+        c.drawString(100, y_position-20, text)
         y_position -= 200  # Move down for next entry
 
     c.save()
