@@ -1,13 +1,4 @@
-import sys
 import os
-
-# Get the absolute path to the root directory of your project
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  # This will give the path to /Root
-CODE_DIR = os.path.join(ROOT_DIR, 'Backend', 'Code')  # This points to /Root/Backend/Code
-
-# Add the Backend/Code directory to sys.path
-sys.path.append(CODE_DIR)
-
 from image_processing import *
 from text_processing import *
 from sentence_generator import *
@@ -89,8 +80,5 @@ if __name__ == "__main__":
     image_path = "basketball.jpg"
     text = "No. 17 Kansas defeated Colorado 71-59 on Tuesday night at Allen Fieldhouse. The Jayhawks (17-7, 8-5 Big 12) won their first of two matchups between the sides. A big reason for that was KU’s defense — a calling card for Bill Self teams. The Jayhawks stepped up on that end in pivotal moments, doing so in a new look of sorts on Tuesday."
 
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    INPUTS_DIR = os.path.join(BASE_DIR, 'Inputs')
-
-    caption = create_caption(os.path.join(INPUTS_DIR, "Images", image_path), text)
+    caption = create_caption(os.path.join('inputs', "Images", image_path), text)
     print(f"Caption: {caption}")
