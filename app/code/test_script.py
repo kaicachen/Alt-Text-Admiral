@@ -38,7 +38,7 @@ def run_site_tests(pool=1):
 
     # Open and read the CSV file
     # with open(os.path.join("app", "code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
-    with open("inputs/CSVs/website_test_inputs.csv", mode="r", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         next(reader)
@@ -74,16 +74,35 @@ def run_site_tests(pool=1):
             total_end_time - total_start_time
             ])
         
+
 def run_multiprocess_tests():
-    for i in range(1, 17):
-        run_site_tests(pool=1)
+    output_name = "ku_lied"
+    site_url = "https://lied.ku.edu"
+
+    with open(os.path.join("app", "code", "outputs", "CSVs", "multiprocess_test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            "pool",
+            "start_time",
+            "end_time",
+            "run_time"
+        ])
+        for pool in range(1, 17):
+            start_time = time.time()
+            caption_site(site_url, output_name=output_name, pool=pool)
+            create_pdf(f"{output_name}_pool_{pool}")
+            end_time = time.time()
+            print(f"Execution time: {end_time - start_time:.2f} seconds")
+            writer.writerow([
+                pool,
+                start_time,
+                end_time,
+                end_time - start_time
+            ])
 
 
 if __name__ == "__main__":
     # run_tests()
     # create_pdf("test_outputs")
     # run_site_tests()
-    import sys
-    for i in sys.path:
-        print(i)
     run_multiprocess_tests()

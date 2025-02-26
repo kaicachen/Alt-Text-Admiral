@@ -38,7 +38,7 @@ class ImageProcessor:
             # Prepare the image for caption generation
             inputs = blip_processor(images=self.image, return_tensors="pt")
         except:
-            print(f"FAIELD TO PROCESS {self.loc}")
+            print(f"FAILED TO PROCESS {self.loc}")
             return ""
 
         # Generate caption
