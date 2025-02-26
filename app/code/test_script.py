@@ -5,12 +5,11 @@ from main_captioner import *
 import csv
 import time
 
-
-def run_tests(self):
+def run_tests():
     input_data = []
 
     # Open and read the CSV file
-    with open(os.path.join("inputs", "CSVs", "test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "code", "inputs", "CSVs", "test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         next(reader)
@@ -19,7 +18,7 @@ def run_tests(self):
         for row in reader:
             input_data.append(row)
 
-    with open(os.path.join("outputs", "CSVs", "test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "code", "outputs", "CSVs", "test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         
         # Write a header row (optional)
@@ -34,11 +33,12 @@ def run_tests(self):
                 create_caption(image, text, URL=bool(int(url)))
             ])
 
-def run_site_tests(self, pool=1):
+def run_site_tests(pool=1):
     input_data = []
 
     # Open and read the CSV file
-    with open(os.path.join("inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
+    # with open(os.path.join("app", "code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
+    with open("inputs/CSVs/website_test_inputs.csv", mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         next(reader)
@@ -47,7 +47,7 @@ def run_site_tests(self, pool=1):
         for row in reader:
             input_data.append(row)
 
-    with open(os.path.join("outputs", "CSVs", "website_test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "code", "outputs", "CSVs", "website_test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         
         # Write a header row (optional)
@@ -73,9 +73,17 @@ def run_site_tests(self, pool=1):
             total_end_time,
             total_end_time - total_start_time
             ])
+        
+def run_multiprocess_tests():
+    for i in range(1, 17):
+        run_site_tests(pool=1)
 
 
 if __name__ == "__main__":
     # run_tests()
     # create_pdf("test_outputs")
-    run_site_tests()
+    # run_site_tests()
+    import sys
+    for i in sys.path:
+        print(i)
+    run_multiprocess_tests()
