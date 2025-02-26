@@ -28,7 +28,7 @@ def caption_site(url, output_name='site', pool=1):
 
     # No multiprocessing
     if pool == 1:
-        with open(os.path.join("outputs", "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
+        with open(os.path.join("app", "code", "outputs", "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
             
             # Write a header row (optional)
@@ -64,7 +64,7 @@ def caption_site(url, output_name='site', pool=1):
 
         processList.clear()                                             # clears the process references
 
-        with open(os.path.join("outputs", "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
+        with open(os.path.join("app", "code", "outputs", "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
             
             # Write a header row (optional)

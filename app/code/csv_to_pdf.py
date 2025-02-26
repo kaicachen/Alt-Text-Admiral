@@ -10,7 +10,7 @@ import csv
 def create_pdf(file_name):
     image_text_list = []
 
-    with open(os.path.join("outputs", "CSVs", f"{file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "code", "outputs", "CSVs", f"{file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         next(reader)
@@ -19,7 +19,7 @@ def create_pdf(file_name):
         for row in reader:
             image_text_list.append(row)
 
-    c = canvas.Canvas(os.path.join("outputs", "PDFs", f"{file_name}.pdf"), pagesize=letter)
+    c = canvas.Canvas(os.path.join("app", "code", "outputs", "PDFs", f"{file_name}.pdf"), pagesize=letter)
     width, height = letter
     y_position = height - 200  # Initial vertical position
 
