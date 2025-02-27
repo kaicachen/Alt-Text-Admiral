@@ -29,7 +29,7 @@ app = Flask(__name__)
 
 venv_python = os.path.join(".venv", "Scripts", "python.exe")  # Adjust based on OS, for mine I have it as windows
 
-script_path = "app_code/web_scraper.py"
+script_path = "app/app_code/web_scraper.py"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -38,7 +38,7 @@ def index():
         if url:
             try:
                 print(os.getcwd())
-                subprocess.run([venv_python, "app_code/web_scraper.py", url], check=True, capture_output=True,text=True)  # this line is causing app to crash
+                subprocess.run([venv_python, script_path, url], check=True, capture_output=True,text=True)  # this line is causing app to crash
             except subprocess.CalledProcessError as e:
                 print(f"Error: {e}")
                 print(f"Standard Output: {e.stdout}")
