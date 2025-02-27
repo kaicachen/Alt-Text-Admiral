@@ -11,6 +11,8 @@ modifies the CSV file passed to the main_captioner.py
 import pandas as pd
 import ast
 import subprocess
+import os
+import sys
 from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
@@ -22,14 +24,29 @@ app = Flask(__name__)
 #     df = pd.read_csv(csv_file)
 #     df['tags_and_counts'] = df['tags_and_counts'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
 
+###########################
+#CHANGE BELOW BASED ON OS
+
+venv_python = os.path.join(".venv", "Scripts", "python.exe")  # Adjust based on OS, for mine I have it as windows
+
+script_path = "app_code/web_scraper.py"
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         url = request.form.get('url')
         if url:
-            subprocess.run(["python", "webscraper/web_scraper.py", url], check=True)
+            try:
+                print(os.getcwd())
+                subprocess.run([venv_python, "app_code/web_scraper.py", url], check=True, capture_output=True,text=True)  # this line is causing app to crash
+            except subprocess.CalledProcessError as e:
+                print(f"Error: {e}")
+                print(f"Standard Output: {e.stdout}")
+                print(f"Standard Error: {e.stderr}")
+                return render_template('error.html')
             #load_dataframe()
-            return redirect(url_for('annotate', index=0))
+            #return redirect(url_for('annotate', index=0))
+            #return redirect(url_for('complete', index=0))  # this works so the redirection is fine
     return render_template('index.html')
 
 @app.route('/annotate/<int:index>', methods=['GET', 'POST'])
