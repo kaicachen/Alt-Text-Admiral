@@ -87,7 +87,7 @@ def run_multiprocess_tests():
             "end_time",
             "run_time"
         ])
-        for pool in range(1, 17):
+        for pool in range(1, 5):
             start_time = time.time()
             caption_site(site_url, output_name=output_name, pool=pool)
             create_pdf(f"{output_name}_pool_{pool}")
