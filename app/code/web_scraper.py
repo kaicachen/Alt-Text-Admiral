@@ -18,10 +18,12 @@ def scrape(url):  # URL -> List of scraped data
     image_text_data = []
     
     # Find all standard images
-    images = driver.find_elements(By.TAG_NAME, "img")
+    images = driver.find_elements(By.XPATH, "//img[not(ancestor::comment())]")
     for img in images:
         try:
-            img_url = img.get_attribute("src")
+            #If data-lazyload exists then use that as source? else use src?
+            #img_url = img.get_attribute("src")
+            img_url = img.get_attribute("data-lazyload") or img.get_attribute("data-src") or img.get_attribute("src")
             alt_text = img.get_attribute("alt") or ""  # Extract alt text
 
             # Get text from the closest paragraph (<p>), div, or span before & after the image
