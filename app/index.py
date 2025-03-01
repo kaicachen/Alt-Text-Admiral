@@ -29,7 +29,7 @@ app = Flask(__name__)
 
 venv_python = os.path.join(".venv", "Scripts", "python.exe")  # Adjust based on OS, for mine I have it as windows
 
-script_path = "app/app_code/web_scraper.py"
+script_path = "app/app_code/test_script.py"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -37,16 +37,16 @@ def index():
         url = request.form.get('url')
         if url:
             try:
-                print(os.getcwd())
-                subprocess.run([venv_python, script_path, url], check=True, capture_output=True,text=True)  # this line is causing app to crash
+                
+                subprocess.run([venv_python, script_path, url], check=True,text=True)  # this line is causing app to crash
+                return redirect(url_for('complete',index=0))  # On success should go to the complete page
+                
             except subprocess.CalledProcessError as e:
                 print(f"Error: {e}")
                 print(f"Standard Output: {e.stdout}")
                 print(f"Standard Error: {e.stderr}")
                 return render_template('error.html')
             #load_dataframe()
-            #return redirect(url_for('annotate', index=0))
-            #return redirect(url_for('complete', index=0))  # this works so the redirection is fine
     return render_template('index.html')
 
 @app.route('/annotate/<int:index>', methods=['GET', 'POST'])

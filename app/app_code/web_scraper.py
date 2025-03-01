@@ -3,10 +3,12 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 import time
+import sys
 import re
 
 def scrape(url):  # URL -> List of scraped data
     # Set up Selenium WebDriver
+    print("THIS IS RUNNING")
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run without opening browser
 
@@ -87,6 +89,7 @@ def scrape(url):  # URL -> List of scraped data
     return image_text_data
 
 if __name__ == "__main__":
-    site_data = scrape("https://lied.ku.edu")
+    url = sys.argv[1]  # url is passed to script through argv
+    site_data = scrape(url)
     for item in site_data:
         print(f"Image: {item[0]}\nText: {item[1]}\n{'-'*50}")
