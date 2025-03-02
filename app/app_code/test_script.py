@@ -18,7 +18,7 @@ def run_tests():
     input_data = []
 
     # Open and read the CSV file
-    with open(os.path.join("app", "code", "inputs", "CSVs", "test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "inputs", "CSVs", "test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         next(reader)
@@ -27,7 +27,7 @@ def run_tests():
         for row in reader:
             input_data.append(row)
 
-    with open(os.path.join("app", "code", "outputs", "CSVs", "test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         
         # Write a header row (optional)
@@ -46,8 +46,8 @@ def run_site_tests(pool=1):
     input_data = []
 
     # Open and read the CSV file
-    # with open(os.path.join("app", "code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
-    with open(os.path.join("app", "code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
+    # with open(os.path.join("app", "app_code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         next(reader)
@@ -56,7 +56,7 @@ def run_site_tests(pool=1):
         for row in reader:
             input_data.append(row)
 
-    with open(os.path.join("app", "code", "outputs", "CSVs", "website_test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "website_test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         
         # Write a header row (optional)
@@ -88,7 +88,7 @@ def run_multiprocess_tests():
     output_name = "ku_lied"
     site_url = "https://lied.ku.edu"
 
-    with open(os.path.join("app", "code", "outputs", "CSVs", "multiprocess_test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "multiprocess_test_outputs.csv"), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow([
             "pool",
