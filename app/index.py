@@ -13,6 +13,7 @@ import ast
 import subprocess
 import os
 import sys
+import shutil
 from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
@@ -25,9 +26,25 @@ app = Flask(__name__)
 #     df['tags_and_counts'] = df['tags_and_counts'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
 
 ###########################
-#CHANGE BELOW BASED ON OS
+def get_python_path():
+    """Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python."""
+    
+    # 1. Check if running inside a virtual environment
+    if sys.prefix != sys.base_prefix:  
+        return sys.executable  # Return the venv's Python path
 
-venv_python = os.path.join(".venv", "Scripts", "python.exe")  # Adjust based on OS, for mine I have it as windows
+    # 2. Check if a virtual environment exists in common locations
+    possible_venv_dirs = [".venv", "venv", "env"]  # Add other venv folder names if your team uses different ones
+    for venv_dir in possible_venv_dirs:
+        python_subdir = "Scripts" if os.name == "nt" else "bin"
+        venv_python = os.path.join(venv_dir, python_subdir, "python")
+        if os.path.exists(venv_python):
+            return venv_python  # Use the detected virtual environment Python
+
+    # 3. If no virtual environment is found, fall back to system Python
+    return shutil.which("python") or shutil.which("python3")
+
+venv_python = get_python_path()# os.path.join(".venv", "Scripts", "python.exe")  # Adjust based on OS, for mine I have it as windows
 
 script_path = "app/app_code/test_script.py"
 
