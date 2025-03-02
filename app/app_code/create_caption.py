@@ -80,5 +80,5 @@ if __name__ == "__main__":
     image_path = "basketball.jpg"
     text = "No. 17 Kansas defeated Colorado 71-59 on Tuesday night at Allen Fieldhouse. The Jayhawks (17-7, 8-5 Big 12) won their first of two matchups between the sides. A big reason for that was KU’s defense — a calling card for Bill Self teams. The Jayhawks stepped up on that end in pivotal moments, doing so in a new look of sorts on Tuesday."
 
-    caption = create_caption(os.path.join("app", "code", "inputs", "Images", image_path), text)
+    caption = create_caption(os.path.join("app", "app_code", "inputs", "Images", image_path), text)
     print(f"Caption: {caption}")

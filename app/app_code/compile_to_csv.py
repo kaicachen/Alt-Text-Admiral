@@ -18,7 +18,7 @@ def compile_to_csv(csv_filename, image_data):
     #         tag_counts[tag] += 1
 
     # Writing to CSV
-    with open(os.path.join("app", "code", "inputs", "CSVs", csv_filename), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "inputs", "CSVs", csv_filename), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         
         # Writing header
