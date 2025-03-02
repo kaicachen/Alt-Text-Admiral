@@ -9,9 +9,11 @@ import time
 
 def run():
     url = sys.argv[1]  # url is passed to script through argv
-    site_data = scrape(url)
-    for data in site_data:
-        create_caption(data[0],data[1])
+    # site_data = scrape(url)
+    # for data in site_data:
+    #     create_caption(data[0],data[1])
+
+    caption_site(url)
 
 
 def run_tests():
@@ -35,7 +37,7 @@ def run_tests():
         
         for url, image, text in input_data:
             if url == "0":
-                image = os.path.join(self.INPUTS_DIR, "Images", image)
+                image = os.path.join("images", image)
 
             writer.writerow([
                 image,

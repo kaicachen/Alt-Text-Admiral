@@ -12,6 +12,7 @@ import pandas as pd
 import ast
 import subprocess
 import os
+import re
 import sys
 import shutil
 from flask import Flask, render_template, request, redirect, url_for
@@ -56,6 +57,15 @@ def index():
             try:
                 
                 subprocess.run([venv_python, script_path, url], check=True,text=True)  # this line is causing app to crash
+
+                # Good to move this to a separate function and web address but it's here for now for testing
+                # Could mimic this format for the annotating process webpage
+                output_csv = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
+                output_csv = output_csv + "_pool_1.csv"
+                output_dict = pd.read_csv(os.path.join("app", "app_code", "outputs", "CSVs", output_csv)).to_dict(orient="records")
+
+                return render_template("displayed_images.html", data=output_dict)
+
                 return redirect(url_for('complete',index=0))  # On success should go to the complete page
                 
             except subprocess.CalledProcessError as e:
