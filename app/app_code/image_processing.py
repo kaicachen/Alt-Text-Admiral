@@ -14,7 +14,7 @@ class ImageProcessor:
     def __init__(self, image_loc, URL=False):
         self.loc = image_loc # saves path or url for CSV writing later
 
-        if URL: # runs if location passed in is a URL
+        if True: #URL: # runs if location passed in is a URL
             try:
                 response = requests.get(image_loc)
                 self.image = Image.open(BytesIO(response.content))

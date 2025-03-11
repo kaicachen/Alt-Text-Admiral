@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .image-card {
+            width: 200px;
+            text-align: center;
+        }
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Gallery</h1>
+    <div class="gallery">
+        {% for item in data %}
+        <div class="image-card">
+            <img src="{{ item.image_link }}" alt="Image">
+            <p>{{ item.generated_output }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

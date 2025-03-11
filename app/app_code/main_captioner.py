@@ -1,4 +1,5 @@
 import os
+import re
 from create_caption import *
 from web_scraper import *
 from csv_to_pdf import *
@@ -25,6 +26,9 @@ def caption_site(url, output_name='site', pool=1):
 
     if site_data is None:
         return
+
+    if output_name == 'site':
+        output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
 
     # No multiprocessing
     if pool == 1:
