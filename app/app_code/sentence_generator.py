@@ -1,7 +1,7 @@
 from transformers import pipeline, logging
 import torch
 
-def generate_sentence(captions, text):
+def generate_sentence(captions, text, tags):
     logging.set_verbosity_error()
     # Load the model
     device = "cuda" if torch.cuda.is_available() else "cpu"  # Sets active device as GPU if available, otherwise it runs on the CPU
@@ -13,8 +13,8 @@ def generate_sentence(captions, text):
     # output = generator(f"Form a proper sentence using these words and names: {tags}", max_length=1000)
 
     prompt = (  # Prompt to pass into the alt-text generator
-        f"Use the example caption and surrounding text to create a well-structured and fluent ADA compliant alt-text for an image:\n"
-        f"Caption: {captions}\nText: {text}\n\n"  # Ensures that the caption is passed in along with the tags we want
+        f"Use the example caption, surrounding text, and important tags to create a well-structured and fluent ADA compliant alt-text for an image:\n"
+        f"Caption: {captions}\nText: {text}\nTags: {tags}\n"  # Ensures that the caption is passed in along with the tags we want
         f"Make sure the sentence is clear, natural, and grammatically correct."
 
         # ============================================ ADA-Compliant Alt-text Rules ============================================
@@ -23,6 +23,8 @@ def generate_sentence(captions, text):
         f"Alt-text should refer to relevant content provided by the image, rather than simply describing how the image looks."
         f"Alt-text should not contain any extra or unnecessary information, and should not repeat information that is already provided in the text."
         f"Alt-text must be in the same language as the main content."
+        f"Please keep your response to a maximum of 150 characters.\n"
+        "**Important:** You must use the provided caption, surrounding text, and tags to create the description. Do NOT generate unrelated or generic responses.\n\n"
     )
 
     

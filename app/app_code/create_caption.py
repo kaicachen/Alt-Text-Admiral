@@ -27,7 +27,6 @@ def mergeTags(entities):  # Function to merge tags
 def create_caption(image_path, text, URL=False):
     
     URL = image_path.startswith("http") or image_path.startswith("https")
-    print("HELLO")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
     
     caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
@@ -40,14 +39,15 @@ def create_caption(image_path, text, URL=False):
     entities = extract_entities(text)   # Extracts tags from text (text_processing.py)
     entities = mergeTags(entities)  # Fixes issue where some words would be prepended by "##"
     # Example: [Leb, ##ron James]  -> [Lebron James]
-
+    '''
     tags = ""  # Create tags variable to store all gathered tags
+    
 
     for object, quantity in detected_objects.items():  # Add image tags to tag string
         # cur_string = f"{object} {quantity}, "
         cur_string = f"{object}, "
         tags += cur_string
-    
+    '''
     # Add text tags to tag string
     for person in entities["People"]:  # Add all people
         tags += f"{person}, "
@@ -55,8 +55,8 @@ def create_caption(image_path, text, URL=False):
         tags += f"{person}, "
     '''
 
-    print(f"Caption: {caption}\nText: {text}")
-    return generate_sentence(caption, text)  # Pass the created caption and extracted tags to our alt-text generator
+    print(f"Caption: {caption}\nText: {text}\nTags: {tags}")
+    return generate_sentence(caption, text, tags)  # Pass the created caption and extracted tags to our alt-text generator
 
 if __name__ == "__main__":
     # image_path = "images/basketball.jpg"
