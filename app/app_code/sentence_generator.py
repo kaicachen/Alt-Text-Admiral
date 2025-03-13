@@ -1,7 +1,7 @@
 from transformers import pipeline, logging
 import torch
 
-def generate_sentence(captions, tags):
+def generate_sentence(captions, text):
     logging.set_verbosity_error()
     # Load the model
     device = "cuda" if torch.cuda.is_available() else "cpu"  # Sets active device as GPU if available, otherwise it runs on the CPU
@@ -13,8 +13,8 @@ def generate_sentence(captions, tags):
     # output = generator(f"Form a proper sentence using these words and names: {tags}", max_length=1000)
 
     prompt = (  # Prompt to pass into the alt-text generator
-        f"Use the example caption and tags to create a well-structured and fluent ADA compliant alt-text for an image:\n"
-        f"Caption: {captions}\nTags: {tags}\n\n"  # Ensures that the caption is passed in along with the tags we want
+        f"Use the example caption and surrounding text to create a well-structured and fluent ADA compliant alt-text for an image:\n"
+        f"Caption: {captions}\nText: {text}\n\n"  # Ensures that the caption is passed in along with the tags we want
         f"Make sure the sentence is clear, natural, and grammatically correct."
 
         # ============================================ ADA-Compliant Alt-text Rules ============================================

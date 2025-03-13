@@ -36,7 +36,7 @@ def create_caption(image_path, text, URL=False):
     # Skip if no information is extracted from the image, likely due to an error
     if caption == "" and detected_objects == {}:
         return ""
-
+    '''
     entities = extract_entities(text)   # Extracts tags from text (text_processing.py)
     entities = mergeTags(entities)  # Fixes issue where some words would be prepended by "##"
     # Example: [Leb, ##ron James]  -> [Lebron James]
@@ -53,24 +53,10 @@ def create_caption(image_path, text, URL=False):
         tags += f"{person}, "
     for person in entities["Organizations"]: # Add all organizations
         tags += f"{person}, "
+    '''
 
-    # We just do this for now because the OTHER category usually isn't important for alt text
-
-    # for tag, tag_list in entities.items():
-    #     cur_string = ""
-    #     for entity in tag_list:
-    #         cur_string += f"{entity}, "
-    #     tags += cur_string
-
-    # for tag, tag_list in entities.items():
-    #     cur_string = f"{tag}: ("
-    #     for entity in tag_list:
-    #         cur_string += f"{entity}, "
-    #     cur_string += ") "
-    #     tags += cur_string
-
-    print(f"Caption: {caption}\nTags: {tags}")
-    return generate_sentence(caption, tags)  # Pass the created caption and extracted tags to our alt-text generator
+    print(f"Caption: {caption}\nText: {text}")
+    return generate_sentence(caption, text)  # Pass the created caption and extracted tags to our alt-text generator
 
 if __name__ == "__main__":
     # image_path = "images/basketball.jpg"
