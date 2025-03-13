@@ -3,8 +3,10 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 import time
+import csv
 import sys
 import re
+import os
 
 def scrape(url):  # URL -> List of scraped data
     # Set up Selenium WebDriver
@@ -88,6 +90,21 @@ def scrape(url):  # URL -> List of scraped data
             print(f"Error processing Revolution Slider image: {e}")
     
     driver.quit()
+
+    # Create CSV output of scraped tuples
+    output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_ALL)
+        
+        # Write a header row (optional)
+        writer.writerow(["image_link", "surrounding_text"])
+        
+        for image, text in image_text_data:
+            writer.writerow([
+                image,
+                text
+            ])
+
     return image_text_data
 
 if __name__ == "__main__":
