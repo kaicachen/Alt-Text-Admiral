@@ -13,8 +13,8 @@ from compile_to_csv import compile_to_csv  # Import the correct function
 class ImageProcessor:
     def __init__(self, image_loc, URL=False):
         self.loc = image_loc # saves path or url for CSV writing later
-
-        if True: #URL: # runs if location passed in is a URL
+        
+        if URL: #URL: # runs if location passed in is a URL
             try:
                 response = requests.get(image_loc)
                 self.image = Image.open(BytesIO(response.content))
@@ -22,6 +22,7 @@ class ImageProcessor:
                 self.image = None
                 print(f"ERROR LOADING IMAGE {self.loc}")
                 return
+            
 
         else: # runs if a direct file path is given
             self.image = Image.open(image_loc) #.convert("RGB")

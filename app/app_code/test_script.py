@@ -36,11 +36,14 @@ def run_tests():
         writer.writerow(["image_loc", "generated_output"])
         
         for url, image, text in input_data:
+            old_image_name = image
+            print(image)
             if url == "0":
-                image = os.path.join("images", image)
+                base_path = os.path.join(os.path.dirname(__file__), "inputs", "Images")
+                image = os.path.join(base_path, image)
 
             writer.writerow([
-                image,
+                old_image_name,
                 create_caption(image, text, URL=bool(int(url)))
             ])
 
@@ -113,8 +116,8 @@ def run_multiprocess_tests():
 
 
 if __name__ == "__main__":
-    # run_tests()
+    run_tests()
     # create_pdf("test_outputs")
     # run_site_tests()
     # run_multiprocess_tests()
-    run()
+    # run()
