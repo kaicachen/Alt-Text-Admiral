@@ -16,8 +16,14 @@ import numpy as np
 import evaluate
 from transformers import TrainingArguments, Trainer
 
+##here we load things to make our own usage of the model
+from web_scraper import * #web scraper to get URLS?
+# maybe pull code directly from the file for more control?
+#man lets just try with one thing.
+
 metric = evaluate.load("accuracy")
 tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-large")
+dataset = load_dataset("imdb")
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
@@ -34,11 +40,10 @@ training_args = TrainingArguments(output_dir="test_trainer", eval_strategy="epoc
 
 
 def train_model(dataset):
-    
     tokenized_datasets = dataset.map(tokenize_function, batched=True)
     small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
     small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
-
+    #we gonna give exactly one example for the trainer and see what that does
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -55,7 +60,9 @@ def train_model(dataset):
 #what i need: captions, tags from sentence generator to make the prompt. PLus the prompt. I kinda also need the image site and link? so i can make good alt text
 #then I combine prompt and the alt text to make the input for the model.
 #I could redo all of the code so It pauses on each image. or I make new code that does that.
-#
+# What I want (Site URL, Image URL, prompt, good alt text)
+# we get site URL from initial input, image url from src, prompt from the generator, and we provide good alt text
+#so ...... how do i get all the things in order. Need to pass to a certain file. Ugh, we need to streamline this shit
 
 
 
