@@ -121,7 +121,7 @@ def test_image_exclusions(url, pool=1):
 
     print("All scraped images:\n------------------------------------------------------------")
     # Print all image links
-    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         # Read a header row
@@ -138,7 +138,7 @@ def test_image_exclusions(url, pool=1):
     
     exclude_images(url, image_idx)
     process_csv(url, pool=pool)
-    create_pdf(f"{output_name}_pool_{pool}.csv")
+    create_pdf(f"{output_name}_pool_{pool}")
 
 if __name__ == "__main__":
     # run_tests()

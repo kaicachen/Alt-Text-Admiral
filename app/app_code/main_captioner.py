@@ -103,7 +103,7 @@ def exclude_images(url, image_idx):
     output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
 
     # Store all site tuples
-    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         # Read a header row
@@ -135,7 +135,7 @@ def process_csv(url, pool=1):
     output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
     site_data = []
 
-    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
         # Read a header row
