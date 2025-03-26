@@ -1,4 +1,6 @@
 import os
+import hashlib
+import sqlite3
 from image_processing import *
 from text_processing import *
 from sentence_generator import *
@@ -25,9 +27,18 @@ def mergeTags(entities):  # Function to merge tags
 
 
 def create_caption(image_path, text, URL=False):
-    
+    # Open cache database
+    cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
+    cache_db_cursor = cache_db.cursor()
+
+    # Compute hash to see if alt text has already been generated
+    hash = hashlib.sha256(str((image_path, text)).encode())
+    cache_db_cursor.execute("SELECT * FROM cached_results WHERE hash=?", (str(hash.hexdigest())))
+    db_fetch = cache_db_cursor.fetchall()
+
+    print(f"fetched from DB: {db_fetch}")
+
     URL = image_path.startswith("http") or image_path.startswith("https")
-    print("HELLO")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
     
     caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
