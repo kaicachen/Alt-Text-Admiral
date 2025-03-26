@@ -10,3 +10,4 @@ webdriver-manager
 reportlab
 flask
 pandas
+google-generativeai
