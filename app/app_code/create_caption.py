@@ -2,6 +2,7 @@ import os
 from image_processing import *
 from text_processing import *
 from sentence_generator import *
+from gemini import *
 
 def mergeTags(entities):  # Function to merge tags
     
@@ -55,8 +56,13 @@ def create_caption(image_path, text, URL=False):
         tags += f"{person}, "
     '''
 
-    print(f"Caption: {caption}\nText: {text}\nTags: {tags}")
-    return generate_sentence(caption, text, tags)  # Pass the created caption and extracted tags to our alt-text generator
+    print(f"Caption: {caption}\n")
+    if (len(text)> 200):
+        text = text[:200] + "..."
+    
+    return geminiGenerate(caption,text,tags)
+
+    #return generate_sentence(caption, text, tags)  # Pass the created caption and extracted tags to our alt-text generator
 
 if __name__ == "__main__":
     # image_path = "images/basketball.jpg"
