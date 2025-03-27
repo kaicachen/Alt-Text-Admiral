@@ -1,6 +1,5 @@
 import os
 from image_processing import *
-from text_processing import *
 from sentence_generator import *
 from gemini import *
 
