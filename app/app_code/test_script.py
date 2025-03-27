@@ -78,7 +78,7 @@ def run_site_tests(pool=1):
                 end_time,
                 end_time - start_time
             ])
-            create_pdf(output_name)
+            create_pdf(f"{output_name}_pool_{pool}")
 
         total_end_time = time.time()
         writer.writerow([
@@ -116,8 +116,8 @@ def run_multiprocess_tests():
 
 
 if __name__ == "__main__":
-    run_tests()
+    # run_tests()
     # create_pdf("test_outputs")
-    # run_site_tests()
+    run_site_tests()
     # run_multiprocess_tests()
     # run()
