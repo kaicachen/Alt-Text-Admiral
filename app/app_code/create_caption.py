@@ -47,10 +47,10 @@ def create_caption(image_path, text, URL=False, fetch_db=True):
         cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
         db_fetch = cache_db_cursor.fetchone()
 
-    # Return previously generated alt text
-    if len(db_fetch) != 0:
-        cache_db.close()
-        return db_fetch[0]
+        # Return previously generated alt text
+        if len(db_fetch) != 0:
+            cache_db.close()
+            return db_fetch[0]
 
     # Create image processor object
     URL = image_path.startswith("http") or image_path.startswith("https")
