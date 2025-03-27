@@ -26,7 +26,7 @@ def mergeTags(entities):  # Function to merge tags
 
 def create_caption(image_path, text, URL=False):
     
-    URL = image_path.startswith("http") or image_path.startswith("https")
+    # URL = image_path.startswith("http") or image_path.startswith("https")
     print("HELLO")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
     
