@@ -26,12 +26,14 @@ def mergeTags(entities):  # Function to merge tags
 
 def create_caption(image_path, text, URL=False):
     
-    URL = image_path.startswith("http") or image_path.startswith("https")
+    
     # URL = image_path.startswith("http") or image_path.startswith("https")
     print("HELLO")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
     
-    caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
+    #caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
+
+    caption = image_processor.generate_caption_with_gemini()
     detected_objects = image_processor.find_image_objects()  # Extract tags from image (image_processing.py)
 
     # Skip if no information is extracted from the image, likely due to an error
@@ -57,8 +59,6 @@ def create_caption(image_path, text, URL=False):
         tags += f"{person}, "
     '''
     return geminiGenerate(caption,text,tags)
-    #print(f"Caption: {caption}\nText: {text}\nTags: {tags}")
-    #return generate_sentence(caption, text, tags)  # Pass the created caption and extracted tags to our alt-text generator
 
 if __name__ == "__main__":
     # image_path = "images/basketball.jpg"

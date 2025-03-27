@@ -5,18 +5,26 @@ def geminiGenerate(caption,text,tags):
     genai.configure(api_key=API_KEY)
     model=genai.GenerativeModel("gemini-1.5-flash")
     response = model.generate_content(
-        f"Use the example caption, surrounding text, and important tags to create a well-structured and fluent ADA compliant alt-text for an image:\n"
-        f"Caption: {caption}\nText: {text}\nTags: {tags}\n"  # Ensures that the caption is passed in along with the tags we want
-        f"Make sure the sentence is clear, natural, and grammatically correct."
-
-        # ============================================ ADA-Compliant Alt-text Rules ============================================
-        f"Alt-text should be short and to the point."
-        f"Alt-text should communicate the same information as the visual content."
-        f"Alt-text should refer to relevant content provided by the image, rather than simply describing how the image looks."
-        f"Alt-text should not contain any extra or unnecessary information, and should not repeat information that is already provided in the text."
-        f"Alt-text must be in the same language as the main content."
-        f"Please keep your response to a maximum of 150 characters.\n"
-        "**Important:** You must use the provided caption, surrounding text, and tags to create the description. Do NOT generate unrelated or generic responses.\n\n")
+        f"You are generating **ADA-compliant** alt text based on the given **caption, surrounding text, and tags**.\n\n"
+        f"### **Input Data:**\n"
+        f"- **Caption:** {caption}\n"
+        f"- **Surrounding Text:** {text}\n"
+        f"- **Tags:** {tags}\n\n"
+        
+        f"### **Guidelines for Alt Text:**\n"
+        f"1. **Be concise:** Keep the alt text under **150 characters**.\n"
+        f"2. **Be descriptive and meaningful:** Focus on the **essential content** of the image, rather than just its appearance.\n"
+        f"3. **Avoid redundancy:** Do **not** repeat details already provided in the surrounding text.\n"
+        f"4. **Use natural language:** Write in a **clear, fluent, and grammatically correct** way.\n"
+        f"5. **Maintain relevance:** Your response **must** include details from the caption, text, and tags.\n"
+        f"6. **Do NOT** generate generic alt text. The description should be unique to the image.\n\n"
+        
+        f"### **Examples:**\n"
+        f"**Good Alt Text:** 'A person in a wheelchair crossing the street on a sunny day.' (Concise, relevant, and informative)\n"
+        f"**Bad Alt Text:** 'An image of a person outside.' (Too vague, lacks key details)\n\n"
+        
+        f"Now, generate **one** alt text description following these rules."
+        )
     
     return response.text
 
