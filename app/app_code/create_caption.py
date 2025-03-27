@@ -26,24 +26,26 @@ def mergeTags(entities):  # Function to merge tags
     return entities  # Returns the entire entities dictionary
 
 
-def create_caption(image_path, text, URL=False):
-    # Open cache database
-    cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
-    cache_db_cursor = cache_db.cursor()
+def create_caption(image_path, text, URL=False, fetch_db=True):
+    # Flag to bypass database access for testing
+    if fetch_db:
+        # Open cache database
+        cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
+        cache_db_cursor = cache_db.cursor()
 
-    # Ensure the table exists
-    cache_db_cursor.execute("""
-        CREATE TABLE IF NOT EXISTS cached_results (
-            hash VARCHAR(255) PRIMARY KEY,
-            alt_text TEXT,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-                            """)
-    
-    # Compute hash to see if alt text has already been generated
-    hash = hashlib.sha256(str((image_path, text)).encode())
-    cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
-    db_fetch = cache_db_cursor.fetchone()
+        # Ensure the table exists
+        cache_db_cursor.execute("""
+            CREATE TABLE IF NOT EXISTS cached_results (
+                hash VARCHAR(255) PRIMARY KEY,
+                alt_text TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                                """)
+        
+        # Compute hash to see if alt text has already been generated
+        hash = hashlib.sha256(str((image_path, text)).encode())
+        cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
+        db_fetch = cache_db_cursor.fetchone()
 
     # Return previously generated alt text
     if len(db_fetch) != 0:
@@ -98,19 +100,20 @@ def create_caption(image_path, text, URL=False):
     print(f"Caption: {caption}\nTags: {tags}")
     alt_text = generate_sentence(caption, tags) # Pass the created caption and extracted tags to our alt-text generator
 
-    # Store in database
-    cache_db_cursor.execute("INSERT INTO cached_results (hash, alt_text) VALUES (?, ?)", (hash.hexdigest(), alt_text))
+    if fetch_db:
+        # Store in database
+        cache_db_cursor.execute("INSERT INTO cached_results (hash, alt_text) VALUES (?, ?)", (hash.hexdigest(), alt_text))
 
-    # NOT WORKING FOR NOW BUT NEEDED SO DB IS PURGED WHEN TOO LARGE
-    # # Delete the oldest rows if count exceeds 500
-    # cache_db_cursor.execute("""
-    #     DELETE FROM cached_results WHERE timestamp IN (
-    #         SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT (SELECT COUNT(*) - 500 FROM cached_results)
-    #         )
-    #                         """)
-    
-    cache_db.commit()
-    cache_db.close()
+        # NOT WORKING FOR NOW BUT NEEDED SO DB IS PURGED WHEN TOO LARGE
+        # # Delete the oldest rows if count exceeds 500
+        # cache_db_cursor.execute("""
+        #     DELETE FROM cached_results WHERE timestamp IN (
+        #         SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT (SELECT COUNT(*) - 500 FROM cached_results)
+        #         )
+        #                         """)
+        
+        cache_db.commit()
+        cache_db.close()
 
     return alt_text
 
