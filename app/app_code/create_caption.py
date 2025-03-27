@@ -31,16 +31,30 @@ def create_caption(image_path, text, URL=False):
     cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
     cache_db_cursor = cache_db.cursor()
 
+    # Ensure the table exists
+    cache_db_cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cached_results (
+            hash VARCHAR(255) PRIMARY KEY,
+            alt_text TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+                            """)
+    
     # Compute hash to see if alt text has already been generated
     hash = hashlib.sha256(str((image_path, text)).encode())
-    cache_db_cursor.execute("SELECT * FROM cached_results WHERE hash=?", (str(hash.hexdigest())))
-    db_fetch = cache_db_cursor.fetchall()
+    cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
+    db_fetch = cache_db_cursor.fetchone()
 
-    print(f"fetched from DB: {db_fetch}")
+    # Return previously generated alt text
+    if len(db_fetch) != 0:
+        cache_db.close()
+        return db_fetch[0]
 
+    # Create image processor object
     URL = image_path.startswith("http") or image_path.startswith("https")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
     
+    # Create caption and find objects
     caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
     detected_objects = image_processor.find_image_objects()  # Extract tags from image (image_processing.py)
 
@@ -48,6 +62,7 @@ def create_caption(image_path, text, URL=False):
     if caption == "" and detected_objects == {}:
         return ""
 
+    # Extract text entities
     entities = extract_entities(text)   # Extracts tags from text (text_processing.py)
     entities = mergeTags(entities)  # Fixes issue where some words would be prepended by "##"
     # Example: [Leb, ##ron James]  -> [Lebron James]
@@ -81,7 +96,24 @@ def create_caption(image_path, text, URL=False):
     #     tags += cur_string
 
     print(f"Caption: {caption}\nTags: {tags}")
-    return generate_sentence(caption, tags)  # Pass the created caption and extracted tags to our alt-text generator
+    alt_text = generate_sentence(caption, tags) # Pass the created caption and extracted tags to our alt-text generator
+
+    # Store in database
+    cache_db_cursor.execute("INSERT INTO cached_results (hash, alt_text) VALUES (?, ?)", (hash.hexdigest(), alt_text))
+
+    # NOT WORKING FOR NOW BUT NEEDED SO DB IS PURGED WHEN TOO LARGE
+    # # Delete the oldest rows if count exceeds 500
+    # cache_db_cursor.execute("""
+    #     DELETE FROM cached_results WHERE timestamp IN (
+    #         SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT (SELECT COUNT(*) - 500 FROM cached_results)
+    #         )
+    #                         """)
+    
+    cache_db.commit()
+    cache_db.close()
+
+    return alt_text
+
 
 if __name__ == "__main__":
     # image_path = "images/basketball.jpg"
