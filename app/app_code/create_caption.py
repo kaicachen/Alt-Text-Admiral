@@ -55,7 +55,7 @@ def create_caption(image_path, text, URL=False, fetch_db=True):
             return db_fetch[0]
 
     # Create image processor object
-    URL = image_path.startswith("http") or image_path.startswith("https")
+    # URL = image_path.startswith("http") or image_path.startswith("https")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
     
     # Create caption and find objects
