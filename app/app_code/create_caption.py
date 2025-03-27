@@ -48,7 +48,9 @@ def create_caption(image_path, text, URL=False, fetch_db=True):
         db_fetch = cache_db_cursor.fetchone()
 
         # Return previously generated alt text
-        if len(db_fetch) != 0:
+        if db_fetch:
+            cache_db_cursor.execute("UPDATE cached_results SET timestamp=CURRENT_TIMESTAMP WHERE hash=?", (hash.hexdigest(),))
+            cache_db.commit()
             cache_db.close()
             return db_fetch[0]
 
@@ -111,6 +113,16 @@ def create_caption(image_path, text, URL=False, fetch_db=True):
         #         SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT (SELECT COUNT(*) - 500 FROM cached_results)
         #         )
         #                         """)
+
+        # Check if the row count exceeds 500, then delete the oldest rows
+        cache_db_cursor.execute("SELECT COUNT(*) FROM cached_results")
+        row_count = cache_db_cursor.fetchone()[0]
+
+        if row_count > 500:
+            cache_db_cursor.execute("""
+                DELETE FROM cached_results
+                WHERE timestamp = (SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT 1)
+                                    """)
         
         cache_db.commit()
         cache_db.close()
