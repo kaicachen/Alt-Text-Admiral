@@ -47,7 +47,7 @@ def get_python_path():
 
 venv_python = get_python_path()# os.path.join(".venv", "Scripts", "python.exe")  # Adjust based on OS, for mine I have it as windows
 
-script_path = "app/app_code/test_script.py"
+script_path = "app/app_code/main.py"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
