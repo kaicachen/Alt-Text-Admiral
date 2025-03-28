@@ -64,6 +64,13 @@ def train_model(dataset):
 # we get site URL from initial input, image url from src, prompt from the generator, and we provide good alt text
 #so ...... how do i get all the things in order. Need to pass to a certain file. Ugh, we need to streamline this shit
 
+#okay in a bass ackwards way I can use just the prompt and make text from that.
+
+def create_data(data_file):
+    #take in a datafile, from json which is of the form prompt,response.
+    #how to make json files
+    pass
+
 
 
 if __name__ == "__main__":  # Used for testing purposes
