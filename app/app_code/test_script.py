@@ -117,7 +117,7 @@ def run_multiprocess_tests():
 
 if __name__ == "__main__":
     start = time.time()
-    run_tests()
+    run_site_tests()
     end = time.time()
 
     print(f"ELAPSED TIME: {end-start}\n")

@@ -49,6 +49,7 @@ def create_caption(image_path, text, URL=False, fetch_db=True):
 
         # Return previously generated alt text
         if db_fetch:
+            print("Fetching from DB")
             cache_db_cursor.execute("UPDATE cached_results SET timestamp=CURRENT_TIMESTAMP WHERE hash=?", (hash.hexdigest(),))
             cache_db.commit()
             cache_db.close()
