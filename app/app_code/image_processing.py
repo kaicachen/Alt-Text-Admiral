@@ -71,7 +71,7 @@ class ImageProcessor:
         try:
             inputs = processor(images=self.image, return_tensors="pt").to(device)
         except:
-            print(f"FAIELD TO PROCESS {self.loc}")
+            print(f"FAILED TO PROCESS {self.loc}")
             return {}
 
         # Perform inference
