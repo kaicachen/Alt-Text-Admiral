@@ -1,7 +1,7 @@
 import os
 from image_processing import *
-from text_processing import *
 from sentence_generator import *
+from gemini import *
 
 def mergeTags(entities):  # Function to merge tags
     
@@ -26,51 +26,39 @@ def mergeTags(entities):  # Function to merge tags
 
 def create_caption(image_path, text, URL=False):
     
+    
     # URL = image_path.startswith("http") or image_path.startswith("https")
     print("HELLO")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
     
-    caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
+    #caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
+
+    caption = image_processor.generate_caption_with_gemini()
     detected_objects = image_processor.find_image_objects()  # Extract tags from image (image_processing.py)
 
     # Skip if no information is extracted from the image, likely due to an error
     if caption == "" and detected_objects == {}:
         return ""
-
+    '''
     entities = extract_entities(text)   # Extracts tags from text (text_processing.py)
     entities = mergeTags(entities)  # Fixes issue where some words would be prepended by "##"
     # Example: [Leb, ##ron James]  -> [Lebron James]
-
+    '''
     tags = ""  # Create tags variable to store all gathered tags
+    
 
     for object, quantity in detected_objects.items():  # Add image tags to tag string
         # cur_string = f"{object} {quantity}, "
         cur_string = f"{object}, "
         tags += cur_string
-    
+    '''
     # Add text tags to tag string
     for person in entities["People"]:  # Add all people
         tags += f"{person}, "
     for person in entities["Organizations"]: # Add all organizations
         tags += f"{person}, "
-
-    # We just do this for now because the OTHER category usually isn't important for alt text
-
-    # for tag, tag_list in entities.items():
-    #     cur_string = ""
-    #     for entity in tag_list:
-    #         cur_string += f"{entity}, "
-    #     tags += cur_string
-
-    # for tag, tag_list in entities.items():
-    #     cur_string = f"{tag}: ("
-    #     for entity in tag_list:
-    #         cur_string += f"{entity}, "
-    #     cur_string += ") "
-    #     tags += cur_string
-
-    print(f"Caption: {caption}\nTags: {tags}")
-    return generate_sentence(caption, tags)  # Pass the created caption and extracted tags to our alt-text generator
+    '''
+    return geminiGenerate(caption,text,tags)
 
 if __name__ == "__main__":
     # image_path = "images/basketball.jpg"

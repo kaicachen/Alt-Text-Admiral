@@ -15,7 +15,7 @@ import os
 import re
 import sys
 import shutil
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 
 app = Flask(__name__)
 # csv_file = "detection_results.csv"
@@ -101,6 +101,10 @@ def complete():
         subprocess.run(["python", "models/main_captioner.py"], check=True)
         return "Captioning process started."
     return render_template('complete.html')
+
+@app.route('/api/data', methods=['GET'])
+def get_data():
+    return jsonify({"message": "Hello from Flask!", "status": "success"})
 
 if __name__ == '__main__':
     #load_dataframe()
