@@ -8,6 +8,9 @@ from io import BytesIO
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import google.generativeai as genai
+import time
+from gemini import *
 from compile_to_csv import compile_to_csv  # Import the correct function
 
 class ImageProcessor:
@@ -29,6 +32,16 @@ class ImageProcessor:
 
         self.image = self.image.convert("RGB")
         logging.set_verbosity_error()
+
+    def generate_caption_with_gemini(self):
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        API_KEY = retrieveKey()
+        genai.configure(api_key=API_KEY)
+        time.sleep(1)
+        try:
+            return model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
+        except:
+            return ""
 
     def generate_caption_with_blip(self):
         # Initialize the BLIP processor and model
@@ -58,7 +71,7 @@ class ImageProcessor:
         try:
             inputs = processor(images=self.image, return_tensors="pt").to(device)
         except:
-            print(f"FAIELD TO PROCESS {self.loc}")
+            print(f"FAILED TO PROCESS {self.loc}")
             return {}
 
         # Perform inference

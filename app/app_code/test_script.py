@@ -141,7 +141,11 @@ def test_image_exclusions(url, pool=1):
     create_pdf(f"{output_name}_pool_{pool}")
 
 if __name__ == "__main__":
-    # run_tests()
+    start = time.time()
+    run_tests()
+    end = time.time()
+
+    print(f"ELAPSED TIME: {end-start}\n")
     # create_pdf("test_outputs")
     # run_site_tests()
     # run_multiprocess_tests()
