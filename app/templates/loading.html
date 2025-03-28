@@ -1,0 +1,24 @@
+<!-- <!DOCTYPE html>
+<html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EECS 582 Capstone Project</title>
+    <p>It's loading I swear.....</p>
+
+    <script>
+        // Poll the server for completion (you can also track the process some other way)
+        setTimeout(function() {
+            fetch('/check_process_complete')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "done") {
+                        // Redirect to the complete page
+                        window.location.href = "/displayed_images";
+                    } else {
+                        // Retry after 5 seconds if process is not done
+                        setTimeout(arguments.callee, 5000);
+                    }
+                });
+        }, 5000);  // Start checking after 5 seconds
+    </script>
+</html> -->

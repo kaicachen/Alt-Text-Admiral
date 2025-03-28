@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EECS 582 Capstone Project</title>
+    <style>
+        /* The Modal (background) */
+        .modal {
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 40px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+        }
+
+        .outerDiv {
+            border: 2px solid black;
+            padding: 10px;
+        }
+
+        .imgNum {
+            float: right;
+        }
+
+
+        .finishedTagging {
+            width: 100%;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        input, button {
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <h1>Tag Images As:</h1>
+            <div class="imgTagging"></div>
+            <button class="finishedTagging">Finish Tagging</button>
+
+        </div>
+    </div>
+
+    <script>
+        var taggedList = []; //1 = keep, 2 = link, 3 = decorative, 4 = discard
+
+        var buttonList = [];
+        var modal = document.getElementById("myModal");
+        var close = document.getElementsByClassName("close")[0];
+        var taggingInsert = document.getElementsByClassName("imgTagging")[0];
+        var imageList = JSON.parse('{{ image_links | tojson | safe }}');//var csv = "{{ url_for('static', filename='img1.jpg') }},{{ url_for('static', filename='img2.jpg') }}";
+
+        function populateModal(imageList){
+            //imageList = csv.split(",");
+            let i = 0;
+            imageList.forEach(function(img) {
+                taggedList.push(0);
+                
+                //this looks awful but i need to create separate elements for each item
+                let outerDiv = document.createElement("div");
+                let btnDiv = document.createElement("div");
+                let numTracker = document.createElement("div");
+
+                let span1 = document.createElement("span");
+                let span2 = document.createElement("span");
+                let span3 = document.createElement("span");
+
+                let info = document.createElement("button");
+                let link = document.createElement("button");
+                let deco = document.createElement("button");
+                let noInc = document.createElement("button");
+
+                let numSpan = document.createElement("span");
+                let imgNum = document.createElement("p");
+
+                var scrapedImg = document.createElement("img");
+
+                imgNum.textContent = i;
+                imgNum.className = "imgNum";
+
+                noInc.className = "noInc";
+                deco.className = "deco";
+                link.className = "link";
+                info.className = "info";
+
+                outerDiv.className = "outerDiv";
+
+                noInc.textContent ="Don't Include";
+                deco.textContent = "Decorative";
+                link.textContent = "Link";
+                info.textContent = "Informative (Default)";
+
+                
+                noInc.dataset.iteration = deco.dataset.iteration = link.dataset.iteration = info.dataset.iteration = i;
+                noInc.dataset.clicked = deco.dataset.clicked = link.dataset.clicked = info.dataset.clicked = 1;
+
+
+                buttonList.push([info, link, deco, noInc]);
+
+                scrapedImg.src = img.trim();
+                scrapedImg.height = "100";
+
+                span1.append(info);
+                span2.append(link);
+                span3.append(deco);
+
+                btnDiv.append(span1, span2, span3, scrapedImg);
+                outerDiv.append(imgNum, scrapedImg, btnDiv, noInc);
+
+                taggingInsert.appendChild(outerDiv);
+
+                highlightSelected(i, 0)
+                i++;
+            });
+        }
+
+        function selectTag(btnPressed) {
+            let i = btnPressed.dataset.iteration;
+            let result;
+            switch(btnPressed.className) {
+                case "noInc":
+                    result = 3;
+                    break;
+                case "deco":
+                    result = 2;
+                    break;
+                case "link":
+                    result = 1;
+                    break;
+                default:
+                    result = 0;
+            }
+
+            
+            taggedList[i] = result;
+            highlightSelected(i, result)
+        }
+
+        function highlightSelected(imgIndex, btnIndex) {
+            buttonList[imgIndex].forEach(function(b) {
+                b.style.backgroundColor = "white"; 
+                b.style.color = "black";
+            });
+
+            // Set the selected button to grey
+            buttonList[imgIndex][btnIndex].style.backgroundColor = "grey";  
+            buttonList[imgIndex][btnIndex].style.color = "white";
+        }
+
+        window.onclick = function(event) {
+            if (event.target.className == "finishedTagging") { 
+                fetch("/loading", {
+                    method: "POST",
+                    body: JSON.stringify({ taggedList: taggedList }),  // Send the full object
+                    headers: { "Content-Type": "application/json" }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to process tags');
+                    }
+                    // If successful, the server will handle the redirect
+                    window.location.href = "/displayed_images";  // Redirect to the displayed images page
+                })
+                .catch(error => {
+                    console.error("Error:", error);  // Handle any errors
+                });
+
+                modal.style.display = "none";
+            }
+
+            if (event.target.dataset.clicked == 1) {
+                selectTag(event.target);
+            }
+        }
+
+
+        // window.onclick = function(event) {
+        // if (event.target.className == "finishedTagging") { // Saves data and changes to loading page
+        //     fetch("/loading", {
+        //         method: "POST",
+        //         body: JSON.stringify({ taggedList: taggedList }),
+        //         headers: { "Content-Type": "application/json" }
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log("Processed tags:", data);
+        //         window.location.href = "/loading";  // Redirect to loading page
+        //     });
+        //     modal.style.display = "none";
+        // }
+
+        // if (event.target.dataset.clicked == 1) {
+        //     selectTag(event.target);
+            
+        // }
+        // }
+
+        populateModal(imageList);
+        
+    </script>
+</body>
+</html>

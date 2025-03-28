@@ -132,20 +132,20 @@ def test_image_exclusions(url, pool=1):
             print(f"{count}: {image}")
             count += 1
 
-    print("------------------------------------------------------------\nEnter image indices to exclude, separate by a space")
+    print("------------------------------------------------------------\nEnter the image type of each image in order, separate by a space")
     index_string = input("Indices: ")
     image_idx = [int(x) for x in index_string.split()]
     
     exclude_images(url, image_idx)
     process_csv(url, pool=pool)
-    create_pdf(f"{output_name}_pool_{pool}")
+
 
 if __name__ == "__main__":
-    start = time.time()
-    run_tests()
-    end = time.time()
+    # start = time.time()
+    # run_tests()
+    # end = time.time()
 
-    print(f"ELAPSED TIME: {end-start}\n")
+    # print(f"ELAPSED TIME: {end-start}\n")
     # create_pdf("test_outputs")
     # run_site_tests()
     # run_multiprocess_tests()

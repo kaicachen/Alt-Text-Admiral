@@ -6,6 +6,7 @@ from csv_to_pdf import *
 import multiprocessing
 import csv
 import time
+import json
 
 # Takes in split list of images and text from main function and returns them captioned with run time
 def _multiprocess_caption(site_data, process_number, return_values):
@@ -95,9 +96,6 @@ def exclude_images(url, image_idx):
     # Early exit for no changes
     if len(image_idx) == 0:
         return
-    
-    # Sort indices in reverse order to pop from bottom up
-    image_idx.sort(reverse=True)
 
     site_data = []
     output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
@@ -112,21 +110,24 @@ def exclude_images(url, image_idx):
         for row in reader:
             site_data.append(tuple(row))
 
-    # Remove images based on index
-    for image in image_idx:
-        site_data.pop(image)
+    print(f"Length of site data: {len(site_data)} length of image_idx: {len(image_idx)}")
 
     # Write updated list
     with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, quoting=csv.QUOTE_ALL)
         
         # Write a header row
-        writer.writerow(["image_link", "surrounding_text"])
+        writer.writerow(["image_type", "image_link", "surrounding_text"])
         
-        for image, text in site_data:
+        for i in range(len(site_data)):
+            # Don't write exclusions
+            if image_idx[i] == 3:
+                continue
+
             writer.writerow([
-                image,
-                text
+                image_idx[i],
+                site_data[i][0],
+                site_data[i][1]
             ])
 
 
@@ -155,72 +156,81 @@ def process_csv(url, pool=1):
             # Write a header row (optional)
             writer.writerow(["image_link", "generated_output"])
             
-            for image, text in site_data:
+            for type, image, text in site_data:
                 writer.writerow([
                     image,
                     create_caption(image, text, URL=True)
                 ])
 
-    # Multiprocessing
-    else:
-        sublistSize  = len(site_data) // pool                 # number of images per multiprocessor list
-        splitSiteData = []                                              # creates list that will store subsets of the possible keys for multiprocessing
-        processList   = []                                              # creates list that will store the process references
-        return_values = multiprocessing.Manager().dict()                # initialized shared dictionary for return values
-        site_data_iterator = iter(site_data)
+    # # Multiprocessing
+    # else:
+    #     sublistSize  = len(site_data) // pool                 # number of images per multiprocessor list
+    #     splitSiteData = []                                              # creates list that will store subsets of the possible keys for multiprocessing
+    #     processList   = []                                              # creates list that will store the process references
+    #     return_values = multiprocessing.Manager().dict()                # initialized shared dictionary for return values
+    #     site_data_iterator = iter(site_data)
 
-        # startTime = time.perf_counter()                                 # records the start time of the iteration
-        for i in range(pool):                                           # iterates over the number of processes to split
-            splitSiteData.append([])                                         # appends a new list to store each process' site data
-            for j in range(sublistSize):                                    # iterates over the set size of the sublist
-                splitSiteData[i].append(next(site_data_iterator))                # appends the next value of the itertools iterator
+    #     # startTime = time.perf_counter()                                 # records the start time of the iteration
+    #     for i in range(pool):                                           # iterates over the number of processes to split
+    #         splitSiteData.append([])                                         # appends a new list to store each process' site data
+    #         for j in range(sublistSize):                                    # iterates over the set size of the sublist
+    #             splitSiteData[i].append(next(site_data_iterator))                # appends the next value of the itertools iterator
 
-        for i in range(len(splitSiteData)):                              # iterates through the split key lists
-            processList.append(multiprocessing.Process(target=_multiprocess_caption, args=(splitSiteData[i], i, return_values)))
-                                                                            # appends process reference calling tryKeys with each possibleKey sublist
-            processList[i].start()                                          # starts the process
+    #     for i in range(len(splitSiteData)):                              # iterates through the split key lists
+    #         processList.append(multiprocessing.Process(target=_multiprocess_caption, args=(splitSiteData[i], i, return_values)))
+    #                                                                         # appends process reference calling tryKeys with each possibleKey sublist
+    #         processList[i].start()                                          # starts the process
 
-        for process in processList:                                     # iterates through the processes
-            process.join()                                                  # joins them to end the processes
+    #     for process in processList:                                     # iterates through the processes
+    #         process.join()                                                  # joins them to end the processes
 
-        processList.clear()                                             # clears the process references
+    #     processList.clear()                                             # clears the process references
 
-        with open(os.path.join("app", "app_code", "outputs", "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file)
+    #     with open(os.path.join("app", "app_code", "outputs", "CSVs", f"{output_name}_pool_{pool}.csv"), mode="w", newline="", encoding="utf-8") as file:
+    #         writer = csv.writer(file)
             
-            # Write a header row (optional)
-            writer.writerow(["image_link", "generated_output"])
+    #         # Write a header row (optional)
+    #         writer.writerow(["image_link", "generated_output"])
         
-            captioned_images = []
-            run_times = []
+    #         captioned_images = []
+    #         run_times = []
 
-            for i in return_values:
-                captioned_images.extend(return_values[i][0])
-                run_times.append(return_values[i][1])
+    #         for i in return_values:
+    #             captioned_images.extend(return_values[i][0])
+    #             run_times.append(return_values[i][1])
 
-            for image, text in captioned_images:
-                writer.writerow([
-                    image,
-                    text
-                ])
+    #         for image, text in captioned_images:
+    #             writer.writerow([
+    #                 image,
+    #                 text
+    #             ])
 
-            writer.writerow(["RUN_TIMES", run_times])
+    #         writer.writerow(["RUN_TIMES", run_times])
 
+    # with open(os.path.join("app", "app_code", "outputs", "Status", f"COMPLETED_{output_name}.txt"), mode="w", newline="", encoding="utf-8") as file:
+    #     file.write(F"Completed processing {url}")
 
 if __name__ == "__main__":
-    start_time = time.time()
+    url = sys.argv[1]
+    tags = json.loads(sys.argv[2])
+    print(f"URL: {url}")
+    print(f"TAGS: {tags}")
+    exclude_images(url, tags)
+    process_csv(url)
+    print("exited process csv")
+    # start_time = time.time()
     
-    output_name = "ku_lied"
-    site_url = "https://lied.ku.edu"
-    # caption_site(site_url, output_name=output_name)
-    # create_pdf(f"{output_name}_pool_1")
+    # output_name = "ku_lied"
+    # site_url = "https://lied.ku.edu"
+    # # caption_site(site_url, output_name=output_name)
+    # # create_pdf(f"{output_name}_pool_1")
     
+    # # end_time = time.time()
+    # # print(f"Execution time: {end_time - start_time:.2f} seconds")
+
+    # start_time = time.time()
+    # pool = 4
+    # caption_site(site_url, output_name=output_name, pool=pool)
+    # create_pdf(f"{output_name}_pool_{pool}")
     # end_time = time.time()
     # print(f"Execution time: {end_time - start_time:.2f} seconds")
-
-    start_time = time.time()
-    pool = 4
-    caption_site(site_url, output_name=output_name, pool=pool)
-    create_pdf(f"{output_name}_pool_{pool}")
-    end_time = time.time()
-    print(f"Execution time: {end_time - start_time:.2f} seconds")

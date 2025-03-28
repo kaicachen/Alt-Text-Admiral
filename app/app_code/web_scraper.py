@@ -110,5 +110,3 @@ def scrape(url):  # URL -> List of scraped data
 if __name__ == "__main__":
     url = sys.argv[1]  # url is passed to script through argv
     site_data = scrape(url)
-    for item in site_data:
-        print(f"Image: {item[0]}\nText: {item[1]}\n{'-'*50}")
