@@ -88,7 +88,6 @@ def run_site_tests(pool=1):
             total_end_time - total_start_time
             ])
         
-
 def run_multiprocess_tests():
     output_name = "ku_lied"
     site_url = "https://lied.ku.edu"
@@ -114,14 +113,41 @@ def run_multiprocess_tests():
                 end_time - start_time
             ])
 
+def test_image_exclusions(url, pool=1):
+    output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
+
+    scraped = scrape(url)
+    print(f"Scraped {len(scraped)} tuples")
+
+    print("All scraped images:\n------------------------------------------------------------")
+    # Print all image links
+    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
+        reader = csv.reader(file)
+        
+        # Read a header row
+        next(reader)
+        
+        count = 0
+        for image, text in reader:
+            print(f"{count}: {image}")
+            count += 1
+
+    print("------------------------------------------------------------\nEnter the image type of each image in order, separate by a space")
+    index_string = input("Indices: ")
+    image_idx = [int(x) for x in index_string.split()]
+    
+    exclude_images(url, image_idx)
+    process_csv(url, pool=pool)
+
 
 if __name__ == "__main__":
     start = time.time()
     run_site_tests()
     end = time.time()
 
-    print(f"ELAPSED TIME: {end-start}\n")
+    # print(f"ELAPSED TIME: {end-start}\n")
     # create_pdf("test_outputs")
     # run_site_tests()
     # run_multiprocess_tests()
     # run()
+    # test_image_exclusions("https://ku.edu/")
