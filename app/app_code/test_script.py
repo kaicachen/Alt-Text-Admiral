@@ -51,7 +51,6 @@ def run_site_tests(pool=1):
     input_data = []
 
     # Open and read the CSV file
-    # with open(os.path.join("app", "app_code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
     with open(os.path.join("app", "app_code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         
@@ -78,7 +77,7 @@ def run_site_tests(pool=1):
                 end_time,
                 end_time - start_time
             ])
-            create_pdf(output_name)
+            create_pdf(f"{output_name}_pool_{pool}")
 
         total_end_time = time.time()
         writer.writerow([
@@ -141,13 +140,13 @@ def test_image_exclusions(url, pool=1):
 
 
 if __name__ == "__main__":
-    # start = time.time()
-    # run_tests()
-    # end = time.time()
+    start = time.time()
+    run_site_tests()
+    end = time.time()
 
     # print(f"ELAPSED TIME: {end-start}\n")
     # create_pdf("test_outputs")
     # run_site_tests()
     # run_multiprocess_tests()
     # run()
-    test_image_exclusions("https://ku.edu/")
+    # test_image_exclusions("https://ku.edu/")

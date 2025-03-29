@@ -30,6 +30,11 @@ def scrape(url):  # URL -> List of scraped data
             img_url = img.get_attribute("data-lazyload") or img.get_attribute("data-src") or img.get_attribute("src")
             alt_text = img.get_attribute("alt") or ""  # Extract alt text
 
+            # Clean img_url
+            if img_url[:2] == '//':
+                print(f"Changing {img_url}")
+                img_url = 'https:' + img_url
+
             # Get text from the closest paragraph (<p>), div, or span before & after the image
             prev_text = ""
             next_text = ""

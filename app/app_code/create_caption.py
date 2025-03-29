@@ -1,4 +1,6 @@
 import os
+import hashlib
+import sqlite3
 from image_processing import *
 from sentence_generator import *
 from gemini import *
@@ -24,13 +26,39 @@ def mergeTags(entities):  # Function to merge tags
     return entities  # Returns the entire entities dictionary
 
 
-def create_caption(image_path, text, URL=False):
-    
-    
+def create_caption(image_type, image_path, text, URL=False, fetch_db=True):
+    # Flag to bypass database access for testing
+    if fetch_db:
+        # Open cache database
+        cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
+        cache_db_cursor = cache_db.cursor()
+
+        # Ensure the table exists
+        cache_db_cursor.execute("""
+            CREATE TABLE IF NOT EXISTS cached_results (
+                hash VARCHAR(255) PRIMARY KEY,
+                alt_text TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                                """)
+        
+        # Compute hash to see if alt text has already been generated
+        hash = hashlib.sha256(str((type, image_path, text)).encode())
+        cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
+        db_fetch = cache_db_cursor.fetchone()
+
+        # Return previously generated alt text
+        if db_fetch:
+            print("Fetching from DB")
+            cache_db_cursor.execute("UPDATE cached_results SET timestamp=CURRENT_TIMESTAMP WHERE hash=?", (hash.hexdigest(),))
+            cache_db.commit()
+            cache_db.close()
+            return db_fetch[0]
+
+    # Create image processor object
+
     # URL = image_path.startswith("http") or image_path.startswith("https")
-    print("HELLO")
     image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
-    
     #caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
 
     caption = image_processor.generate_caption_with_gemini()
@@ -39,6 +67,7 @@ def create_caption(image_path, text, URL=False):
     # Skip if no information is extracted from the image, likely due to an error
     if caption == "" and detected_objects == {}:
         return ""
+
     '''
     entities = extract_entities(text)   # Extracts tags from text (text_processing.py)
     entities = mergeTags(entities)  # Fixes issue where some words would be prepended by "##"
@@ -51,6 +80,7 @@ def create_caption(image_path, text, URL=False):
         # cur_string = f"{object} {quantity}, "
         cur_string = f"{object}, "
         tags += cur_string
+
     '''
     # Add text tags to tag string
     for person in entities["People"]:  # Add all people
@@ -58,7 +88,35 @@ def create_caption(image_path, text, URL=False):
     for person in entities["Organizations"]: # Add all organizations
         tags += f"{person}, "
     '''
-    return geminiGenerate(caption,text,tags)
+
+    alt_text = geminiGenerate(image_type, caption,text,tags) # Pass the created caption and extracted tags to our alt-text generator
+
+    if fetch_db:
+        # Store in database
+        cache_db_cursor.execute("INSERT INTO cached_results (hash, alt_text) VALUES (?, ?)", (hash.hexdigest(), alt_text))
+
+        # NOT WORKING FOR NOW BUT NEEDED SO DB IS PURGED WHEN TOO LARGE
+        # # Delete the oldest rows if count exceeds 500
+        # cache_db_cursor.execute("""
+        #     DELETE FROM cached_results WHERE timestamp IN (
+        #         SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT (SELECT COUNT(*) - 500 FROM cached_results)
+        #         )
+        #                         """)
+
+        # Check if the row count exceeds 500, then delete the oldest rows
+        cache_db_cursor.execute("SELECT COUNT(*) FROM cached_results")
+        row_count = cache_db_cursor.fetchone()[0]
+
+        if row_count > 500:
+            cache_db_cursor.execute("""
+                DELETE FROM cached_results
+                WHERE timestamp = (SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT 1)
+                                    """)
+        
+        cache_db.commit()
+        cache_db.close()
+
+    return alt_text
 
 if __name__ == "__main__":
     # image_path = "images/basketball.jpg"

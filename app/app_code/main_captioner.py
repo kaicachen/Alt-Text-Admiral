@@ -159,7 +159,7 @@ def process_csv(url, pool=1):
             for type, image, text in site_data:
                 writer.writerow([
                     image,
-                    create_caption(image, text, URL=True)
+                    create_caption(type, image, text, URL=True)
                 ])
 
     # # Multiprocessing
@@ -217,7 +217,6 @@ if __name__ == "__main__":
     print(f"TAGS: {tags}")
     exclude_images(url, tags)
     process_csv(url)
-    print("exited process csv")
     # start_time = time.time()
     
     # output_name = "ku_lied"

@@ -1,6 +1,6 @@
 import google.generativeai as genai
 
-def geminiGenerate(caption,text,tags):
+def geminiGenerate(image_type, caption,text,tags):
     API_KEY = retrieveKey()
     genai.configure(api_key=API_KEY)
     model=genai.GenerativeModel("gemini-1.5-flash")
