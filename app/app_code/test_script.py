@@ -51,7 +51,6 @@ def run_site_tests(pool=1):
     input_data = []
 
     # Open and read the CSV file
-    # with open(os.path.join("app", "app_code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
     with open(os.path.join("app", "app_code", "inputs", "CSVs", "website_test_inputs.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
         

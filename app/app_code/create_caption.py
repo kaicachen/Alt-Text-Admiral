@@ -26,7 +26,7 @@ def mergeTags(entities):  # Function to merge tags
     return entities  # Returns the entire entities dictionary
 
 
-def create_caption(image_path, text, URL=False, fetch_db=True):
+def create_caption(image_type, image_path, text, URL=False, fetch_db=True):
     # Flag to bypass database access for testing
     if fetch_db:
         # Open cache database
@@ -43,7 +43,7 @@ def create_caption(image_path, text, URL=False, fetch_db=True):
                                 """)
         
         # Compute hash to see if alt text has already been generated
-        hash = hashlib.sha256(str((image_path, text)).encode())
+        hash = hashlib.sha256(str((type, image_path, text)).encode())
         cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
         db_fetch = cache_db_cursor.fetchone()
 
@@ -89,7 +89,7 @@ def create_caption(image_path, text, URL=False, fetch_db=True):
         tags += f"{person}, "
     '''
 
-    alt_text = geminiGenerate(caption,text,tags) # Pass the created caption and extracted tags to our alt-text generator
+    alt_text = geminiGenerate(image_type, caption,text,tags) # Pass the created caption and extracted tags to our alt-text generator
 
     if fetch_db:
         # Store in database
