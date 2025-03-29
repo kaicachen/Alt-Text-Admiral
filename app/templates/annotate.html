@@ -54,6 +54,9 @@
     </style>
 </head>
 <body>
+    <h1>Generating alt-text...</h1>
+    <p>This process may take several minutes.</p>
+
     <!-- The Modal -->
     <div id="myModal" class="modal">
         <!-- Modal content -->
@@ -173,7 +176,7 @@
 
         window.onclick = function(event) {
             if (event.target.className == "finishedTagging") { 
-                fetch("/loading", {
+                fetch("/process_images", {
                     method: "POST",
                     body: JSON.stringify({ taggedList: taggedList }),  // Send the full object
                     headers: { "Content-Type": "application/json" }
@@ -196,28 +199,6 @@
                 selectTag(event.target);
             }
         }
-
-
-        // window.onclick = function(event) {
-        // if (event.target.className == "finishedTagging") { // Saves data and changes to loading page
-        //     fetch("/loading", {
-        //         method: "POST",
-        //         body: JSON.stringify({ taggedList: taggedList }),
-        //         headers: { "Content-Type": "application/json" }
-        //     })
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         console.log("Processed tags:", data);
-        //         window.location.href = "/loading";  // Redirect to loading page
-        //     });
-        //     modal.style.display = "none";
-        // }
-
-        // if (event.target.dataset.clicked == 1) {
-        //     selectTag(event.target);
-            
-        // }
-        // }
 
         populateModal(imageList);
         
