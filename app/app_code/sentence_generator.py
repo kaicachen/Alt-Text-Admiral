@@ -52,9 +52,9 @@ def train_generate_sentence(captions, tags, image_url):
         f"Alt-text should refer to relevant content provided by the image, rather than simply describing how the image looks. "
         f"Alt-text should not contain any extra or unnecessary information, and should not repeat information that is already provided in the text. "
         f"Alt-text must be in the same language as the main content. "
-        f"Use the example caption and tags to create a well-structured and fluent ADA compliant alt-text for an image:\n"
+        f"Use the example caption and tags to create a well-structured and fluent ADA compliant alt-text for an image:"
         
-        f"Caption: {captions}\nTags: {tags}\n\n"  # Ensures that the caption is passed in along with the tags we want
+        f"Caption: {captions}Tags: {tags}"  # Ensures that the caption is passed in along with the tags we want
         f"Make sure the sentence is clear, natural, and grammatically correct."
     )
 
@@ -69,7 +69,7 @@ def train_generate_sentence(captions, tags, image_url):
 
     # Save as JSONL
     jsonl_filename = "alt_text_dataset_pre.jsonl"
-    with open(os.path.join("app", "app_code", "outputs", "training_json", f"{jsonl_filename}"), "a", encoding="utf-8") as file:
+    with open(os.path.join("app", "app_code", "outputs", "training_json","unprocessed", f"{jsonl_filename}"), "a", encoding="utf-8") as file:
         for entry in training_data:
             file.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
