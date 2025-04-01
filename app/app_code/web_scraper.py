@@ -2,20 +2,59 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+import requests
 import time
 import csv
 import sys
 import re
 import os
 
+# Tests connection to URL
+def _test_url(url):
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        return True
+    except:
+        return False
+
+# Tests connection to URL and sanitizes if needed
+def _validate_url(url):
+    if _test_url(url):
+        return url
+    
+    # Case of 'www.example.com'
+    if url[:4] == "www.":
+        cleaned_url = "https://" + url
+        if _test_url(cleaned_url):
+            return cleaned_url
+        cleaned_url = "http://" + url
+        if _test_url(cleaned_url):
+            return cleaned_url
+        else:
+            raise Exception("Failed to sanitize URL and connect")
+    
+    # Case of 'example.com'
+    else:
+        cleaned_url = "https://www." + url
+        if _test_url(cleaned_url):
+            return cleaned_url
+        cleaned_url = "http://www." + url
+        if _test_url(cleaned_url):
+            return cleaned_url
+        else:
+            raise Exception("Failed to sanitize URL and connect")
+
+
 def scrape(url):  # URL -> List of scraped data
+    validated_url = _validate_url(url)
     # Set up Selenium WebDriver
     print("THIS IS RUNNING")
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run without opening browser
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get(url)  # Change to your target site
+    driver.get(validated_url)  # Change to your target site
 
     time.sleep(3)  # Allow JavaScript to load content
 
