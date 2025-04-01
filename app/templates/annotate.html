@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>EECS 582 Capstone Project</title>
     <style>
         /* The Modal (background) */
@@ -56,6 +57,10 @@
 <body>
     <h1>Generating alt-text...</h1>
     <p>This process may take several minutes.</p>
+    <div class="loader-container">
+        <div class="loader"></div>
+    </div>
+    
 
     <!-- The Modal -->
     <div id="myModal" class="modal">
