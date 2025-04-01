@@ -81,12 +81,13 @@
         var close = document.getElementsByClassName("close")[0];
         var taggingInsert = document.getElementsByClassName("imgTagging")[0];
         var imageList = JSON.parse('{{ image_links | tojson | safe }}');//var csv = "{{ url_for('static', filename='img1.jpg') }},{{ url_for('static', filename='img2.jpg') }}";
+        var imageTags = JSON.parse('{{ image_tags | tojson | safe }}');
 
         function populateModal(imageList){
             //imageList = csv.split(",");
             let i = 0;
             imageList.forEach(function(img) {
-                taggedList.push(0);
+                taggedList.push(imageTags[i]);
                 
                 //this looks awful but i need to create separate elements for each item
                 let outerDiv = document.createElement("div");
@@ -141,7 +142,7 @@
 
                 taggingInsert.appendChild(outerDiv);
 
-                highlightSelected(i, 0)
+                highlightSelected(i, imageTags[i])
                 i++;
             });
         }

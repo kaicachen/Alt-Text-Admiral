@@ -70,6 +70,7 @@ def index():
 def annotate():
     # Reads scraped data from CSV output
     image_links = []
+    image_tags = []
     filename = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
     with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{filename}.csv"), mode="r", newline="", encoding="utf-8") as file:
         reader = csv.reader(file)
@@ -78,9 +79,15 @@ def annotate():
         next(reader)
         
         for row in reader:
+            if row[0] == 'true':
+                image_tag = 3
+            else:
+                image_tag = 0
+            
             image_links.append(row[0])
+            image_tags.append(image_tag)
 
-    return render_template("annotate.html", image_links=image_links)
+    return render_template("annotate.html", image_links=image_links, image_tags=image_tags)
 
 
 '''JSON to process annotations from user'''
