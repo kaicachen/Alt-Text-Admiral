@@ -11,6 +11,7 @@
         position: fixed; /* Stay in place */
         z-index: 1; /* Sit on top */
         padding-top: 40px; /* Location of the box */
+        padding-bottom: 40px;
         left: 0;
         top: 0;
         width: 100%; /* Full width */
@@ -24,7 +25,7 @@
         .modal-content {
         background-color: #fefefe;
         margin: auto;
-        padding: 20px;
+        padding: 50px;
         border: 1px solid #888;
         width: 50%;
         }
@@ -52,6 +53,16 @@
             margin-top: 10px;
         }
 
+        .websiteDiv {
+            height: 100%;
+            width: 30%;
+            right: 0px;
+            background-color: black;
+
+        }
+
+        
+
     </style>
 </head>
 <body>
@@ -63,18 +74,25 @@
     
 
     <!-- The Modal -->
-    <div id="myModal" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <h1>Tag Images As:</h1>
-            <div class="imgTagging"></div>
-            <button class="finishedTagging">Finish Tagging</button>
+    <span>
+        <div id="myModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <h1>Tag Images As:</h1>
+                <div class="imgTagging"></div>
+                <button class="finishedTagging">Finish Tagging</button>
 
+            </div>
         </div>
-    </div>
+    </span>
+    <span>
+        <div class="websiteDiv">
+            <iframe id="website"></iframe>
+        </div>
+    </span>
 
     <script>
-        var taggedList = []; //1 = keep, 2 = link, 3 = decorative, 4 = discard
+        var taggedList = []; //0 = keep, 1 = link, 2 = decorative, 3 = discard
 
         var buttonList = [];
         var modal = document.getElementById("myModal");
@@ -82,6 +100,8 @@
         var taggingInsert = document.getElementsByClassName("imgTagging")[0];
         var imageList = JSON.parse('{{ image_links | tojson | safe }}');//var csv = "{{ url_for('static', filename='img1.jpg') }},{{ url_for('static', filename='img2.jpg') }}";
         var imageTags = JSON.parse('{{ image_tags | tojson | safe }}');
+
+        document.getElementById("website").src = localStorage.getItem("url");
 
         function populateModal(imageList){
             //imageList = csv.split(",");
@@ -129,9 +149,17 @@
 
 
                 buttonList.push([info, link, deco, noInc]);
+                outerDiv.width = "300";
 
                 scrapedImg.src = img.trim();
-                scrapedImg.height = "100";
+                if (scrapedImg.width >= (outerDiv.width)) {
+                    scrapedImg.width = outerDiv.width;
+                }
+
+                if (scrapedImg.width == 1 && scrapedImg.height == 1){
+                    taggedList[i] = 3;
+                    return;
+                }
 
                 span1.append(info);
                 span2.append(link);

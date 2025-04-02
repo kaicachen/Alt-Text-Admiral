@@ -58,9 +58,15 @@
     <p>Enter a URL to begin the web scraping process.</p>
     
     <form action="/" method="post">
-        <input type="text" name="url" placeholder="Enter URL here" required>
-        <button type="submit">Start Scraping</button>
+        <input id="URLbox" type="text" name="url" placeholder="Enter URL here" required>
+        <button onclick="sumbitURL()" type="submit">Start Scraping</button>
     </form>
 
+    <script>
+        function sumbitURL() {
+            let inputURL = document.getElementById("URLbox").value;
+            localStorage.setItem("url", inputURL);
+        }
+    </script>
 </body>
 </html>
