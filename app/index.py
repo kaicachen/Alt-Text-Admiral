@@ -61,9 +61,13 @@ def index():
                 print(f"Standard Output: {e.stdout}")
                 print(f"Standard Error: {e.stderr}")
                 return render_template('error.html')
-
+    
     return render_template('index.html')
 
+@app.route('/message',methods=['GET'])
+def test():
+    return jsonify({"message": "Hello!!!"})
+    
 
 '''Page to allow for user annotations of images'''
 @app.route('/annotate', methods=['GET', 'POST'])
