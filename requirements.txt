@@ -9,5 +9,6 @@ selenium
 webdriver-manager
 reportlab
 flask
+flask-cors
 pandas
 google-generativeai

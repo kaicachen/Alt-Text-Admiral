@@ -18,8 +18,10 @@ import csv
 import json
 import shutil
 from flask import Flask, render_template, request, redirect, url_for, jsonify
+#from flask_cors import CORS
 
 app = Flask(__name__)
+#CORS(app)
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
 def get_python_path():
