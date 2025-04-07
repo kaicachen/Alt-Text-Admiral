@@ -11,3 +11,6 @@ reportlab
 flask
 pandas
 google-generativeai
+Authlib
+requests
+dotenv

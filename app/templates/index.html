@@ -52,9 +52,15 @@
         }
 
     </style>
+    <script>
+        function openLoginPopup() {
+            window.open("/google/", "Login", "width=500,height=600");
+        }
+    </script>
 </head>
 <body>
     <h1>Image Alt-Text Generation Tool</h1>
+    <button onclick="openLoginPopup()">Login with Google</button>
     <p>Enter a URL to begin the web scraping process.</p>
     
     <form action="/" method="post">

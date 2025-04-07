@@ -17,9 +17,20 @@ import sys
 import csv
 import json
 import shutil
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+import string
+import random
+from dotenv import load_dotenv
+from authlib.integrations.flask_client import OAuth
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 
 app = Flask(__name__)
+load_dotenv()
+
+''' Oauth Setup'''
+app.secret_key = os.getenv('APP_SECRET')
+app.config['SERVER_NAME'] = 'localhost:5000'
+oauth = OAuth(app)
+''' Oauth Setup '''
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
 def get_python_path():
@@ -116,6 +127,47 @@ def displayed_images():
 @app.route('/api/data', methods=['GET'])
 def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
+
+''' Oauth Google '''
+def generate_nonce():
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+
+@app.route('/google/')
+def google():
+    nonce = generate_nonce()
+    session['nonce'] = nonce
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET_WEB = os.getenv('GOOGLE_CLIENT_SECRET')
+    CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+    oauth.register(
+        name='google',
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET_WEB,
+        server_metadata_url=CONF_URL,
+        client_kwargs={
+            'scope': 'openid email profile'
+        }
+    )
+     
+    # Redirect to google_auth function
+    redirect_uri = url_for('google_auth', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
+ 
+@app.route('/google/auth/')
+def google_auth():
+    token = oauth.google.authorize_access_token()
+    nonce = session.pop('nonce', None)
+    if not nonce:
+        return "Error: No nonce found, possible session timeout", 400
+    try:
+        user = oauth.google.parse_id_token(token, nonce=nonce)
+        print("Google User:", user)
+        return redirect('/')
+    except Exception as e:
+        return f"Error while parsing ID token: {str(e)}", 400
+    return redirect('/')
+    
+''' Oauth Google '''
 
 
 if __name__ == '__main__':

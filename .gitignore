@@ -3,3 +3,5 @@ venv/
 __pycache__/
 app/app_code/__pycache__/
 key.txt
+secret.py
+.env
