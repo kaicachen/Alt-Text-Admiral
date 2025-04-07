@@ -28,6 +28,13 @@
         padding: 50px;
         border: 1px solid #888;
         width: 50%;
+        box-sizing: border-box;
+        }
+
+        .combinedPages {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
         }
 
         .outerDiv {
@@ -54,14 +61,23 @@
         }
 
         .websiteDiv {
-            height: 100%;
-            width: 30%;
-            right: 0px;
+            width: 40%;
             background-color: black;
-
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
+        .websiteDiv iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
         
+        .addImages {
+            padding: 5px;
+
+        }
 
     </style>
 </head>
@@ -77,19 +93,24 @@
     <span>
         <div id="myModal" class="modal">
             <!-- Modal content -->
-            <div class="modal-content">
-                <h1>Tag Images As:</h1>
-                <div class="imgTagging"></div>
-                <button class="finishedTagging">Finish Tagging</button>
+            <div class="combinedPages">
+                <div class="modal-content">
+                    <h1>Tag Images As:</h1>
+                    <div class="imgTagging"></div>
+                    <div>
+                        <a>Don't See your Images?</a>
+                        <button id="addImages">Add Images</button>
+                    </div>
+                    <button class="finishedTagging">Finish Tagging</button>
 
+                </div>
+
+                <div class="websiteDiv">
+                    <iframe id="website"></iframe> 
+                </div>
             </div>
         </div>
-    </span>
-    <span>
-        <div class="websiteDiv">
-            <iframe id="website"></iframe>
-        </div>
-    </span>
+  
 
     <script>
         var taggedList = []; //0 = keep, 1 = link, 2 = decorative, 3 = discard
@@ -101,6 +122,8 @@
         var imageList = JSON.parse('{{ image_links | tojson | safe }}');//var csv = "{{ url_for('static', filename='img1.jpg') }},{{ url_for('static', filename='img2.jpg') }}";
         var imageTags = JSON.parse('{{ image_tags | tojson | safe }}');
 
+        var currentIndex = imageList.length;
+
         document.getElementById("website").src = localStorage.getItem("url");
 
         function populateModal(imageList){
@@ -109,70 +132,109 @@
             imageList.forEach(function(img) {
                 taggedList.push(imageTags[i]);
                 
-                //this looks awful but i need to create separate elements for each item
-                let outerDiv = document.createElement("div");
-                let btnDiv = document.createElement("div");
-                let numTracker = document.createElement("div");
-
-                let span1 = document.createElement("span");
-                let span2 = document.createElement("span");
-                let span3 = document.createElement("span");
-
-                let info = document.createElement("button");
-                let link = document.createElement("button");
-                let deco = document.createElement("button");
-                let noInc = document.createElement("button");
-
-                let numSpan = document.createElement("span");
-                let imgNum = document.createElement("p");
-
-                var scrapedImg = document.createElement("img");
-
-                imgNum.textContent = i;
-                imgNum.className = "imgNum";
-
-                noInc.className = "noInc";
-                deco.className = "deco";
-                link.className = "link";
-                info.className = "info";
-
-                outerDiv.className = "outerDiv";
-
-                noInc.textContent ="Don't Include";
-                deco.textContent = "Decorative";
-                link.textContent = "Link";
-                info.textContent = "Informative (Default)";
-
-                
-                noInc.dataset.iteration = deco.dataset.iteration = link.dataset.iteration = info.dataset.iteration = i;
-                noInc.dataset.clicked = deco.dataset.clicked = link.dataset.clicked = info.dataset.clicked = 1;
-
-
-                buttonList.push([info, link, deco, noInc]);
-                outerDiv.width = "300";
-
-                scrapedImg.src = img.trim();
-                if (scrapedImg.width >= (outerDiv.width)) {
-                    scrapedImg.width = outerDiv.width;
-                }
-
-                if (scrapedImg.width == 1 && scrapedImg.height == 1){
-                    taggedList[i] = 3;
-                    return;
-                }
-
-                span1.append(info);
-                span2.append(link);
-                span3.append(deco);
-
-                btnDiv.append(span1, span2, span3, scrapedImg);
-                outerDiv.append(imgNum, scrapedImg, btnDiv, noInc);
-
-                taggingInsert.appendChild(outerDiv);
-
-                highlightSelected(i, imageTags[i])
+                createImageBox(i, img.trim(), imageTags[i]);
                 i++;
             });
+            let addImagesBtn = document.getElementById("addImages")
+
+            let fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept="image/*";
+            fileInput.style.display = "none";
+
+            document.body.appendChild(fileInput);
+
+            addImagesBtn.addEventListener("click", function (event) {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener("change", function (event) {
+                const files = event.target.files;
+
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        const imageSrc = e.target.result;
+
+                        // Add to imageList and taggedList
+                        imageList.push(imageSrc);
+                        taggedList.push(0); // default to informative
+                        createImageBox(currentIndex, imageSrc, 0); // Use 0 for default tag
+                        currentIndex++;
+                    };
+
+                    reader.readAsDataURL(file); // Convert image to base64 string
+                });
+            });
+        }
+
+        function createImageBox(i, imgSrc, tagValue) {
+            let outerDiv = document.createElement("div");
+            let btnDiv = document.createElement("div");
+            let numTracker = document.createElement("div");
+
+            let span1 = document.createElement("span");
+            let span2 = document.createElement("span");
+            let span3 = document.createElement("span");
+
+            let info = document.createElement("button");
+            let link = document.createElement("button");
+            let deco = document.createElement("button");
+            let noInc = document.createElement("button");
+
+            let numSpan = document.createElement("span");
+            let imgNum = document.createElement("p");
+
+            var scrapedImg = document.createElement("img");
+
+            imgNum.textContent = i;
+            imgNum.className = "imgNum";
+
+            noInc.className = "noInc";
+            deco.className = "deco";
+            link.className = "link";
+            info.className = "info";
+
+            outerDiv.className = "outerDiv";
+
+            noInc.textContent ="Don't Include";
+            deco.textContent = "Decorative";
+            link.textContent = "Link";
+            info.textContent = "Informative (Default)";
+
+                
+            noInc.dataset.iteration = deco.dataset.iteration = link.dataset.iteration = info.dataset.iteration = i;
+            noInc.dataset.clicked = deco.dataset.clicked = link.dataset.clicked = info.dataset.clicked = 1;
+
+
+            buttonList.push([info, link, deco, noInc]);
+            outerDiv.width = "300";
+
+            scrapedImg.onload = function () {
+                if (scrapedImg.width >= outerDiv.offsetWidth) {
+                    scrapedImg.style.width = "80%";
+                    scrapedImg.style.height = "auto";
+                }
+            };
+
+
+            if (scrapedImg.width == 1 && scrapedImg.height == 1){
+                taggedList[i] = 3;
+                return;
+            }
+            scrapedImg.src = imgSrc;
+
+            span1.append(info);
+            span2.append(link);
+            span3.append(deco);
+
+            btnDiv.append(span1, span2, span3, scrapedImg);
+            outerDiv.append(imgNum, scrapedImg, btnDiv, noInc);
+
+            taggingInsert.appendChild(outerDiv);
+
+            highlightSelected(i, tagValue)
         }
 
         function selectTag(btnPressed) {
@@ -207,6 +269,7 @@
             buttonList[imgIndex][btnIndex].style.backgroundColor = "grey";  
             buttonList[imgIndex][btnIndex].style.color = "white";
         }
+
 
         window.onclick = function(event) {
             if (event.target.className == "finishedTagging") { 
