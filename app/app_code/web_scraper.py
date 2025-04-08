@@ -1,7 +1,7 @@
-from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+from selenium import webdriver
 import requests
 import time
 import csv
@@ -9,17 +9,19 @@ import sys
 import re
 import os
 
-# Tests connection to URL
+'''Tests connection to URL'''
 def _test_url(url):
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
         return True
+    
     except:
         return False
 
-# Tests connection to URL and sanitizes if needed
+'''Tests connection to URL and sanitizes if needed'''
 def _validate_url(url):
+    # Ensure reachable URL and early exit if not
     if _test_url(url):
         return url
     
@@ -28,9 +30,11 @@ def _validate_url(url):
         cleaned_url = "https://" + url
         if _test_url(cleaned_url):
             return cleaned_url
+        
         cleaned_url = "http://" + url
         if _test_url(cleaned_url):
             return cleaned_url
+        
         else:
             raise Exception("Failed to sanitize URL and connect")
     
@@ -39,35 +43,43 @@ def _validate_url(url):
         cleaned_url = "https://www." + url
         if _test_url(cleaned_url):
             return cleaned_url
+        
         cleaned_url = "http://www." + url
         if _test_url(cleaned_url):
             return cleaned_url
+        
         else:
             raise Exception("Failed to sanitize URL and connect")
 
-
-def scrape(url):  # URL -> List of scraped data
+'''Scrapes a given URL to create tuples of images and surrounding text'''
+def scrape_site(url):
+    # Validates URL
     validated_url = _validate_url(url)
+
     # Set up Selenium WebDriver
-    print("THIS IS RUNNING")
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # Run without opening browser
+
+    # Run without opening a browser
+    options.add_argument("--headless")
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get(validated_url)  # Change to your target site
+    driver.get(validated_url)
 
-    time.sleep(3)  # Allow JavaScript to load content
+    # Allow JavaScript to load content
+    time.sleep(3)
 
+    # Initializes empty list to store image, text tuples
     image_text_data = []
     
     # Find all standard images
     images = driver.find_elements(By.XPATH, "//img[not(ancestor::comment())]")
     for img in images:
         try:
-            #If data-lazyload exists then use that as source? else use src?
-            #img_url = img.get_attribute("src")
+            # If data-lazyload exists then use that as source, else use src
             img_url = img.get_attribute("data-lazyload") or img.get_attribute("data-src") or img.get_attribute("src")
-            alt_text = img.get_attribute("alt") or ""  # Extract alt text
+
+            # Extract alt-text
+            alt_text = img.get_attribute("alt") or ""
 
             # Clean img_url
             if img_url[:2] == '//':
@@ -95,8 +107,11 @@ def scrape(url):  # URL -> List of scraped data
                 try:
                     parent = parent.find_element(By.XPATH, "..")
                     parent_text = parent.text.strip()
+
+                    # Stop if valid text is found
                     if parent_text:
-                        break  # Stop if we find valid text
+                        break
+
                 except:
                     break
 
@@ -135,22 +150,28 @@ def scrape(url):  # URL -> List of scraped data
     
     driver.quit()
 
-    # Create CSV output of scraped tuples
+    # Replaces characters in the URL to make it a valid file name
     output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
+
+    # Create CSV output of image, text tuples
     with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, quoting=csv.QUOTE_ALL)
         
-        # Write a header row (optional)
+        # Write a header row
         writer.writerow(["image_link", "surrounding_text"])
         
+        # Writes image, text tuple
         for image, text in image_text_data:
             writer.writerow([
                 image,
                 text
             ])
 
+    # Returns image, text tuple list for easy access
     return image_text_data
 
+
 if __name__ == "__main__":
-    url = sys.argv[1]  # url is passed to script through argv
-    site_data = scrape(url)
+    # URL is passed to script through argv
+    url = sys.argv[1]
+    site_data = scrape_site(url)

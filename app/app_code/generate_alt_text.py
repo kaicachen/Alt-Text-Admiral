@@ -1,15 +1,15 @@
-import os
-import re
 from create_caption import *
 from web_scraper import *
 from csv_to_pdf import *
-import csv
 import json
+import csv
+import os
+import re
 
 '''Scrapes entire site and generates alt-text for all images found'''
 def process_site(url):
     # Scrape site
-    site_data = scrape(url)
+    site_data = scrape_site(url)
 
     # Early exit if no data is scraped
     if site_data is None:

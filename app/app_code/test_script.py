@@ -9,7 +9,7 @@ import time
 
 def run():
     url = sys.argv[1]  # url is passed to script through argv
-    # site_data = scrape(url)
+    # site_data = scrape_site(url)
     # for data in site_data:
     #     create_caption(data[0],data[1])
 
@@ -115,7 +115,7 @@ def run_multiprocess_tests():
 def test_image_exclusions(url, pool=1):
     output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
 
-    scraped = scrape(url)
+    scraped = scrape_site(url)
     print(f"Scraped {len(scraped)} tuples")
 
     print("All scraped images:\n------------------------------------------------------------")
