@@ -1,7 +1,7 @@
 import os
 from create_caption import *
 from csv_to_pdf import create_pdf
-from main_captioner import *
+from app.app_code.generate_alt_text import *
 from web_scraper import *
 import csv
 import time
@@ -13,7 +13,7 @@ def run():
     # for data in site_data:
     #     create_caption(data[0],data[1])
 
-    # caption_site(url)
+    # process_site(url)
 
     output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
 
@@ -38,7 +38,7 @@ def run():
     image_idx = [int(x) for x in index_string.split()]
     
     exclude_images(url, image_idx)
-    process_csv(url, pool=1)
+    process_csv(url)
 
 if __name__ == "__main__":
     run()

@@ -26,12 +26,12 @@ class ImageProcessor:
                 print(f"ERROR LOADING IMAGE {self.loc}")
                 return
             
-
         else: # runs if a direct file path is given
             self.image = Image.open(image_loc) #.convert("RGB")
 
         self.image = self.image.convert("RGB")
         logging.set_verbosity_error()
+
 
     def generate_caption_with_gemini(self):
         model = genai.GenerativeModel("gemini-1.5-flash")
@@ -42,6 +42,7 @@ class ImageProcessor:
             return model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
         except:
             return ""
+
 
     def generate_caption_with_blip(self):
         # Initialize the BLIP processor and model
@@ -60,6 +61,7 @@ class ImageProcessor:
         caption = blip_processor.decode(out[0], skip_special_tokens=True)
         
         return caption
+
 
     def find_image_objects(self, show_graph=False):
         # Load the model and processor (DETR - Facebook's object detection model)
