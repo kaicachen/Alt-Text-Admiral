@@ -1,7 +1,9 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from csv import reader, writer, QUOTE_ALL
 import google.generativeai as genai
+from dotenv import load_dotenv
 from data_processor import *
+from os import path, getenv
 from sqlite3 import connect
 from hashlib import sha256
 from web_scraper import *
@@ -9,16 +11,15 @@ from json import loads
 from time import sleep
 from torch import cuda
 from sys import argv
-from os import path
 from re import sub
 
 
 class SiteProcessor:
     def __init__(self, url, annotations):
+        load_dotenv()
         # Loads Gemini model
         self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        API_KEY = self._retrieveKey()
-        genai.configure(api_key=API_KEY)
+        genai.configure(api_key=getenv('GEMINI_API_KEY'))
         sleep(1)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU
@@ -41,7 +42,7 @@ class SiteProcessor:
         self.annotations = annotations
 
 
-    def _generate_alt_text(self, image_type, image_url, text, fetch_db=False):
+    def _generate_alt_text(self, image_type, image_url, text, fetch_db=True):
         # Open cache database
         cache_db = connect(path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
@@ -65,7 +66,7 @@ class SiteProcessor:
             cache_db_cursor.execute("UPDATE cached_results SET timestamp=CURRENT_TIMESTAMP WHERE hash=?", (hash.hexdigest(),))
 
         # Returns database value if enabled
-        if fetch_db:
+        if fetch_db and db_fetch:
             cache_db.commit()
             cache_db.close()
             return db_fetch[0]
@@ -174,12 +175,6 @@ class SiteProcessor:
                     image,
                     self._generate_alt_text(type, image, text)
                 ])
-
-
-    '''Retrieve Gemini API key'''
-    def _retrieveKey(self):
-        file = open("key.txt","r")
-        return file.readline()
     
 
     def process_site(self):
