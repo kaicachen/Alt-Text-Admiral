@@ -1,10 +1,8 @@
-import os
-from create_caption import *
-from csv_to_pdf import create_pdf
-from app.app_code._generate_image_caption import *
+from site_processor import *
 from web_scraper import *
-import csv
 import time
+import csv
+import os
 
 
 def run():

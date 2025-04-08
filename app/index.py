@@ -98,7 +98,7 @@ def process_images():
     tagged_list = data.get("taggedList", [])
 
     # Generates alt-text for images
-    subprocess.run([python_path, "app/app_code/main_captioner.py", url, json.dumps(tagged_list)], check=True, text=True)  # this line is causing app to crash
+    subprocess.run([python_path, "app/app_code/site_processor.py", url, json.dumps(tagged_list)], check=True, text=True)  # this line is causing app to crash
     return redirect(url_for('displayed_images'))
 
 
@@ -106,8 +106,7 @@ def process_images():
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
     # Reads images and corresponding generated alt-text from CSV output
-    output_csv = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
-    output_csv = output_csv + "_pool_1.csv"
+    output_csv = re.sub(r'[\/:*?"<>|]', '-', url)[:20] + ".csv"
     output_dict = pd.read_csv(os.path.join("app", "app_code", "outputs", "CSVs", output_csv)).to_dict(orient="records")
 
     return render_template("displayed_images.html", data=output_dict)
