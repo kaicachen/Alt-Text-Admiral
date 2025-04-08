@@ -1,9 +1,8 @@
 import os
 import hashlib
 import sqlite3
-from image_processing import *
+from app.app_code.data_processor import *
 from sentence_generator import *
-from gemini import *
 
 def mergeTags(entities):  # Function to merge tags
     
@@ -58,11 +57,11 @@ def create_caption(image_type, image_path, text, URL=False, fetch_db=True):
     # Create image processor object
 
     # URL = image_path.startswith("http") or image_path.startswith("https")
-    image_processor = ImageProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
-    #caption = image_processor.generate_caption_with_blip()  # Generate caption through Salesforce Blip captioning
+    image_processor = DataProcessor(image_path, URL=URL)  # Instantiate an Image Processor Class
+    #caption = image_processor._generate_image_caption_with_blip()  # Generate caption through Salesforce Blip captioning
 
-    caption = image_processor.generate_caption_with_gemini()
-    detected_objects = image_processor.find_image_objects()  # Extract tags from image (image_processing.py)
+    caption = image_processor._generate_image_caption()
+    detected_objects = image_processor._generate_image_objects()  # Extract tags from image (image_processing.py)
 
     # Skip if no information is extracted from the image, likely due to an error
     if caption == "" and detected_objects == {}:
@@ -89,7 +88,7 @@ def create_caption(image_type, image_path, text, URL=False, fetch_db=True):
         tags += f"{person}, "
     '''
 
-    alt_text = geminiGenerate(image_type, caption,text,tags) # Pass the created caption and extracted tags to our alt-text generator
+    alt_text = image_processor._generate_image_caption(image_type, caption,text,tags) # Pass the created caption and extracted tags to our alt-text generator
 
     if fetch_db:
         # Store in database

@@ -1,7 +1,7 @@
 import os
 from create_caption import *
 from csv_to_pdf import create_pdf
-from app.app_code.generate_alt_text import *
+from app.app_code._generate_image_caption import *
 from web_scraper import *
 import csv
 import time
