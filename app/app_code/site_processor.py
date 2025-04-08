@@ -20,7 +20,6 @@ class SiteProcessor:
         # Loads Gemini model
         self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
         genai.configure(api_key=getenv('GEMINI_API_KEY'))
-        print(getenv('GEMINI_API_KEY'))
         sleep(1)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU
@@ -58,7 +57,7 @@ class SiteProcessor:
                                 """)
         
         # Compute hash to see if alt text has already been generated
-        hash = sha256(str((type, image_url, text)).encode())
+        hash = sha256(str((image_type, image_url, text)).encode())
         cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
         db_fetch = cache_db_cursor.fetchone()
 
@@ -80,7 +79,7 @@ class SiteProcessor:
 
         # Update database with newest alt-text
         if db_fetch:
-            cache_db_cursor.execute("UPDATE cached_results SET alt_text=? WHERE hash=?", (hash.hexdigest(), alt_text))
+            cache_db_cursor.execute("UPDATE cached_results SET alt_text=? WHERE hash=?", (alt_text, hash.hexdigest()))
 
         # Add to database
         else:

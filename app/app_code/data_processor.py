@@ -12,7 +12,7 @@ class DataProcessor:
         self.loc = image_loc
 
         # Store image type and text
-        self.image_type = image_type
+        self.image_type = int(image_type)
         self.text = text
 
         # Store models and processor
@@ -159,8 +159,8 @@ class DataProcessor:
 
     '''Fully process the inputted data and return the alt-text'''
     def process_data(self):
-        if self.image is None:
-            return ""
+        if self.image is None or self.image_type == 2:
+            return " "
         
         image_caption = self._generate_image_caption()
         image_objects = self._generate_image_objects()
