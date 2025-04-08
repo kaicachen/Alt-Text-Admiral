@@ -6,6 +6,9 @@ from sqlite3 import connect
 from hashlib import sha256
 from web_scraper import *
 from json import loads
+from time import sleep
+from torch import cuda
+from sys import argv
 from os import path
 from re import sub
 
@@ -16,10 +19,10 @@ class SiteProcessor:
         self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
         API_KEY = self._retrieveKey()
         genai.configure(api_key=API_KEY)
-        time.sleep(1)
+        sleep(1)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU
-        self._device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._device = "cuda" if cuda.is_available() else "cpu"
 
         # Load the DETR model and processor
         self._detr_processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
@@ -38,7 +41,7 @@ class SiteProcessor:
         self.annotations = annotations
 
 
-    def _generate_alt_text(self, image_type, image_url, text, fetch_db=True):
+    def _generate_alt_text(self, image_type, image_url, text, fetch_db=False):
         # Open cache database
         cache_db = connect(path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
@@ -185,7 +188,7 @@ class SiteProcessor:
 
 
 if __name__ == "__main__":
-    url = sys.argv[1]
-    annotations = loads(sys.argv[2])
+    url = argv[1]
+    annotations = loads(argv[2])
     site_processor = SiteProcessor(url, annotations)
     site_processor.process_site()
