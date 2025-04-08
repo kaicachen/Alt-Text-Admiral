@@ -102,15 +102,31 @@ class DataProcessor:
         not_generated = True
         sleep_length = 1
 
+        caption_input = ""
+        text_input = ""
+        objects_input = ""
+
+        # Does not include the following items in the prompt if they do not exist
+        if image_caption:
+            caption_input = f"- **Caption:** {image_caption}\n"
+
+        if self.text:
+            text_input = f"- **Surrounding Text:** {self.text}\n"
+
+        if image_objects:
+            objects_input = f"- **Tags:** {image_objects}\n"
+
         # Keeps attempting until completion or manual time out
         while(not_generated):
             try:
                 response = self._gemini_model.generate_content(
-                    f"You are generating **ADA-compliant** alt text based on the given **caption, surrounding text, and tags**.\n\n"
+                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
                     f"### **Input Data:**\n"
-                    f"- **Caption:** {image_caption}\n"
-                    f"- **Surrounding Text:** {self.text}\n"
-                    f"- **Tags:** {image_objects}\n\n"
+                    f"{caption_input}"
+                    f"{text_input}"
+                    f"{objects_input}"
+
+                    f"\n"
                     
                     f"### **Guidelines for Alt Text:**\n"
                     f"1. **Be concise:** Keep the alt text under **150 characters**.\n"
