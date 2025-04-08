@@ -1,156 +1,184 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-import requests
-import time
-import csv
-import sys
-import re
-import os
+from csv import writer, QUOTE_ALL
+from selenium import webdriver
+from re import sub, search
+from requests import get
+from time import sleep
+from sys import argv
+from os import path
 
-# Tests connection to URL
-def _test_url(url):
-    try:
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        return True
-    except:
-        return False
+'''Class to perform webscraping of image and text tuples'''
+class WebScraper:
+    def __init__(self, url):
+        self.site_url = url
 
-# Tests connection to URL and sanitizes if needed
-def _validate_url(url):
-    if _test_url(url):
-        return url
-    
-    # Case of 'www.example.com'
-    if url[:4] == "www.":
-        cleaned_url = "https://" + url
-        if _test_url(cleaned_url):
-            return cleaned_url
-        cleaned_url = "http://" + url
-        if _test_url(cleaned_url):
-            return cleaned_url
-        else:
-            raise Exception("Failed to sanitize URL and connect")
-    
-    # Case of 'example.com'
-    else:
-        cleaned_url = "https://www." + url
-        if _test_url(cleaned_url):
-            return cleaned_url
-        cleaned_url = "http://www." + url
-        if _test_url(cleaned_url):
-            return cleaned_url
-        else:
-            raise Exception("Failed to sanitize URL and connect")
+        # Replaces characters in the URL to make it a valid file name
+        self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
 
-
-def scrape(url):  # URL -> List of scraped data
-    validated_url = _validate_url(url)
-    # Set up Selenium WebDriver
-    print("THIS IS RUNNING")
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # Run without opening browser
-
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get(validated_url)  # Change to your target site
-
-    time.sleep(3)  # Allow JavaScript to load content
-
-    image_text_data = []
-    
-    # Find all standard images
-    images = driver.find_elements(By.XPATH, "//img[not(ancestor::comment())]")
-    for img in images:
+    '''Tests connection to URL'''
+    def _test_url(self, url):
         try:
-            #If data-lazyload exists then use that as source? else use src?
-            #img_url = img.get_attribute("src")
-            img_url = img.get_attribute("data-lazyload") or img.get_attribute("data-src") or img.get_attribute("src")
-            alt_text = img.get_attribute("alt") or ""  # Extract alt text
+            response = get(url, timeout=5)
+            response.raise_for_status()
+            return True
+        
+        except:
+            return False
 
-            # Clean img_url
-            if img_url[:2] == '//':
-                print(f"Changing {img_url}")
-                img_url = 'https:' + img_url
+    '''Tests connection to URL and sanitizes if needed'''
+    def _validate_url(self):
+        # Ensure reachable URL and early exit if not
+        if self._test_url(self.site_url):
+            return url
+        
+        # Case of 'www.example.com'
+        if self.site_url[:4] == "www.":
+            cleaned_url = "https://" + url
+            if self._test_url(cleaned_url):
+                return cleaned_url
+            
+            cleaned_url = "http://" + url
+            if self._test_url(cleaned_url):
+                return cleaned_url
+            
+            else:
+                raise Exception("Failed to sanitize URL and connect")
+        
+        # Case of 'example.com'
+        else:
+            cleaned_url = "https://www." + url
+            if self._test_url(cleaned_url):
+                return cleaned_url
+            
+            cleaned_url = "http://www." + url
+            if self._test_url(cleaned_url):
+                return cleaned_url
+            
+            else:
+                raise Exception("Failed to sanitize URL and connect")
 
-            # Get text from the closest paragraph (<p>), div, or span before & after the image
-            prev_text = ""
-            next_text = ""
 
+    '''Scrapes a given URL to create tuples of images and surrounding text'''
+    def scrape_site(self):
+        # Validates URL
+        validated_url = self._validate_url()
+
+        # Set up Selenium WebDriver
+        options = webdriver.ChromeOptions()
+
+        # Run without opening a browser
+        options.add_argument("--headless")
+
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver.get(validated_url)
+
+        # Allow JavaScript to load content
+        sleep(3)
+
+        # Initializes empty list to store image, text tuples
+        image_text_data = []
+        
+        # Find all standard images
+        images = driver.find_elements(By.XPATH, "//img[not(ancestor::comment())]")
+        for img in images:
             try:
-                prev_text = img.find_element(By.XPATH, "preceding::p[1] | preceding::div[1] | preceding::span[1]").text.strip()
-            except:
-                pass
+                # If data-lazyload exists then use that as source, else use src
+                img_url = img.get_attribute("data-lazyload") or img.get_attribute("data-src") or img.get_attribute("src")
 
-            try:
-                next_text = img.find_element(By.XPATH, "following::p[1] | following::div[1] | following::span[1]").text.strip()
-            except:
-                pass
+                # Extract alt-text
+                alt_text = img.get_attribute("alt") or ""
 
-            # Get text from multiple levels of parent elements
-            parent_text = ""
-            parent = img
-            for _ in range(3):  # Check up to 3 levels up
+                # Clean img_url
+                if img_url[:2] == '//':
+                    print(f"Changing {img_url}")
+                    img_url = 'https:' + img_url
+
+                # Get text from the closest paragraph (<p>), div, or span before & after the image
+                prev_text = ""
+                next_text = ""
+
                 try:
-                    parent = parent.find_element(By.XPATH, "..")
-                    parent_text = parent.text.strip()
-                    if parent_text:
-                        break  # Stop if we find valid text
+                    prev_text = img.find_element(By.XPATH, "preceding::p[1] | preceding::div[1] | preceding::span[1]").text.strip()
                 except:
-                    break
+                    pass
 
-            # Combine all text sources
-            surrounding_text = " ".join(filter(None, [alt_text, prev_text, parent_text, next_text]))
-            image_text_data.append((img_url, surrounding_text))
+                try:
+                    next_text = img.find_element(By.XPATH, "following::p[1] | following::div[1] | following::span[1]").text.strip()
+                except:
+                    pass
 
-        except Exception as e:
-            print(f"Error processing image: {e}")
-    
-    # Find Revolution Slider images (which use divs with background images)
-    rev_slider_divs = driver.find_elements(By.XPATH, "//div[contains(@class, 'rev_slider') or contains(@class, 'tp-bgimg')]")
-    for div in rev_slider_divs:
-        try:
-            style = div.get_attribute("style")
-            match = re.search(r'url\((.*?)\)', style)
-            if match:
-                img_url = match.group(1).strip('"')
-                
-                # Get text from surrounding elements
+                # Get text from multiple levels of parent elements
                 parent_text = ""
-                parent = div
+                parent = img
                 for _ in range(3):  # Check up to 3 levels up
                     try:
                         parent = parent.find_element(By.XPATH, "..")
                         parent_text = parent.text.strip()
+
+                        # Stop if valid text is found
                         if parent_text:
-                            break  # Stop if we find valid text
+                            break
+
                     except:
                         break
-                
-                image_text_data.append((img_url, parent_text))
-        
-        except Exception as e:
-            print(f"Error processing Revolution Slider image: {e}")
-    
-    driver.quit()
 
-    # Create CSV output of scraped tuples
-    output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
-    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{output_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file, quoting=csv.QUOTE_ALL)
-        
-        # Write a header row (optional)
-        writer.writerow(["image_link", "surrounding_text"])
-        
-        for image, text in image_text_data:
-            writer.writerow([
-                image,
-                text
-            ])
+                # Combine all text sources
+                surrounding_text = " ".join(filter(None, [alt_text, prev_text, parent_text, next_text]))
+                image_text_data.append((img_url, surrounding_text))
 
-    return image_text_data
+            except Exception as e:
+                print(f"Error processing image: {e}")
+        
+        # Find Revolution Slider images (which use divs with background images)
+        rev_slider_divs = driver.find_elements(By.XPATH, "//div[contains(@class, 'rev_slider') or contains(@class, 'tp-bgimg')]")
+        for div in rev_slider_divs:
+            try:
+                style = div.get_attribute("style")
+                match = search(r'url\((.*?)\)', style)
+                if match:
+                    img_url = match.group(1).strip('"')
+                    
+                    # Get text from surrounding elements
+                    parent_text = ""
+                    parent = div
+                    for _ in range(3):  # Check up to 3 levels up
+                        try:
+                            parent = parent.find_element(By.XPATH, "..")
+                            parent_text = parent.text.strip()
+                            if parent_text:
+                                break  # Stop if we find valid text
+                        except:
+                            break
+                    
+                    image_text_data.append((img_url, parent_text))
+            
+            except Exception as e:
+                print(f"Error processing Revolution Slider image: {e}")
+        
+        driver.quit()
+
+        # Create CSV output of image, text tuples
+        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
+            csv_writer = writer(file, quoting=QUOTE_ALL)
+            
+            # Write a header row
+            csv_writer.writerow(["image_link", "surrounding_text"])
+            
+            # Writes image, text tuple
+            for image, text in image_text_data:
+                csv_writer.writerow([
+                    image,
+                    text
+                ])
+
+        # Returns image, text tuple list for easy access
+        return image_text_data
+
 
 if __name__ == "__main__":
-    url = sys.argv[1]  # url is passed to script through argv
-    site_data = scrape(url)
+    # URL is passed to script through argv
+    url = argv[1]
+    web_scraper = WebScraper(url)
+    site_data = web_scraper.scrape_site()
