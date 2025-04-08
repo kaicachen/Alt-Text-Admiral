@@ -39,7 +39,7 @@ class SiteProcessor:
         self.annotations = annotations
 
 
-    def _generate_alt_text(self, image_type, image_url, text, fetch_db=False):
+    def _generate_alt_text(self, image_type, image_url, text, fetch_db=True):
         # Open cache database
         cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
