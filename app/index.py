@@ -40,13 +40,13 @@ def get_python_path():
     # 2. Check if a virtual environment exists in common locations
     possible_venv_dirs = [".venv", "venv", "env"]  # Add other venv folder names if your team uses different ones
     for venv_dir in possible_venv_dirs:
-        python_subdir = "Scripts" if name == "nt" else "bin"
+        python_subdir = "Scripts" if os_name == "nt" else "bin"
         python_path = path.join(venv_dir, python_subdir, "python")
         if path.exists(python_path):
             return python_path  # Use the detected virtual environment Python
 
     # 3. If no virtual environment is found, fall back to system Python
-    return which("python") or which("python3")
+    return shutil_which("python") or shutil_which("python3")
 
 
 python_path = get_python_path()
@@ -83,12 +83,12 @@ def annotate():
     image_tags = []
     filename = sub(r'[\/:*?"<>|]', '-', url)[:20]
     with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{filename}.csv"), mode="r", newline="", encoding="utf-8") as file:
-        reader = csv_reader(file)
+        csv_reader = reader(file)
         
         # Read a header row
-        next(reader)
+        next(csv_reader)
         
-        for row in reader:
+        for row in csv_reader:
             if row[0] == 'true':
                 image_tag = 3
             else:
@@ -108,7 +108,7 @@ def process_images():
     tagged_list = data.get("taggedList", [])
 
     # Generates alt-text for images
-    run([python_path, "app/app_code/main_captioner.py", url, dumps(tagged_list)], check=True, text=True)  # this line is causing app to crash
+    run([python_path, "app/app_code/site_processor.py", url, json_dumps(tagged_list)], check=True, text=True)  # this line is causing app to crash
     return redirect(url_for('displayed_images'))
 
 
@@ -116,8 +116,7 @@ def process_images():
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
     # Reads images and corresponding generated alt-text from CSV output
-    output_csv = sub(r'[\/:*?"<>|]', '-', url)[:20]
-    output_csv = output_csv + "_pool_1.csv"
+    output_csv = sub(r'[\/:*?"<>|]', '-', url)[:20] + ".csv"
     output_dict = read_csv(path.join("app", "app_code", "outputs", "CSVs", output_csv)).to_dict(orient="records")
 
     return render_template("displayed_images.html", data=output_dict)

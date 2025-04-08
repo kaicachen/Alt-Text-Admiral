@@ -1,19 +1,17 @@
-import os
-from create_caption import *
-from csv_to_pdf import create_pdf
-from main_captioner import *
+from site_processor import *
 from web_scraper import *
-import csv
 import time
+import csv
+import os
 
 
 def run():
     url = sys.argv[1]  # url is passed to script through argv
-    # site_data = scrape(url)
+    # site_data = scrape_site(url)
     # for data in site_data:
     #     create_caption(data[0],data[1])
 
-    caption_site(url)
+    process_site(url)
 
 
 def run_tests():
@@ -69,7 +67,7 @@ def run_site_tests(pool=1):
         total_start_time = time.time()
         for website, output_name in input_data:
             start_time = time.time()
-            caption_site(website, output_name=output_name, pool=pool)
+            process_site(website)
             end_time = time.time()
             writer.writerow([
                 website,
@@ -101,7 +99,7 @@ def run_multiprocess_tests():
         ])
         for pool in range(1, 5):
             start_time = time.time()
-            caption_site(site_url, output_name=output_name, pool=pool)
+            process_site(site_url)
             create_pdf(f"{output_name}_pool_{pool}")
             end_time = time.time()
             print(f"Execution time: {end_time - start_time:.2f} seconds")
@@ -115,7 +113,7 @@ def run_multiprocess_tests():
 def test_image_exclusions(url, pool=1):
     output_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
 
-    scraped = scrape(url)
+    scraped = scrape_site(url)
     print(f"Scraped {len(scraped)} tuples")
 
     print("All scraped images:\n------------------------------------------------------------")
@@ -136,7 +134,7 @@ def test_image_exclusions(url, pool=1):
     image_idx = [int(x) for x in index_string.split()]
     
     exclude_images(url, image_idx)
-    process_csv(url, pool=pool)
+    process_csv(url)
 
 
 if __name__ == "__main__":
