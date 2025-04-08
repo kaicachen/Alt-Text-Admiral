@@ -1,7 +1,7 @@
-import os
+from os import path
 import hashlib
 import sqlite3
-from image_processing import *
+from image_processing import ImageProcessor
 from sentence_generator import *
 from gemini import *
 
@@ -30,7 +30,7 @@ def create_caption(image_type, image_path, text, URL=False, fetch_db=True):
     # Flag to bypass database access for testing
     if fetch_db:
         # Open cache database
-        cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
+        cache_db = sqlite3.connect(path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
 
         # Ensure the table exists
@@ -129,5 +129,5 @@ if __name__ == "__main__":
     image_path = "basketball.jpg"
     text = "No. 17 Kansas defeated Colorado 71-59 on Tuesday night at Allen Fieldhouse. The Jayhawks (17-7, 8-5 Big 12) won their first of two matchups between the sides. A big reason for that was KU’s defense — a calling card for Bill Self teams. The Jayhawks stepped up on that end in pivotal moments, doing so in a new look of sorts on Tuesday."
 
-    caption = create_caption(os.path.join("app", "app_code", "inputs", "Images", image_path), text)
+    caption = create_caption(path.join("app", "app_code", "inputs", "Images", image_path), text)
     print(f"Caption: {caption}")

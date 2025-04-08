@@ -8,17 +8,16 @@ it asks the user to mark whether images are decorative, links, or infographics. 
 modifies the CSV file passed to the main_captioner.py 
 '''
 
-import pandas as pd
-import ast
-import subprocess
-import os
-import re
-import sys
-import csv
-import json
-import shutil
-import string
-import random
+from pandas import read_csv
+from subprocess import run, CalledProcessError
+from os import getenv, path, name
+from re import sub
+from sys import prefix, base_prefix, executable
+from csv import reader as csv_reader
+from json import dumps
+from shutil import which
+from string import ascii_letters, digits
+from random import choices
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
@@ -27,7 +26,7 @@ app = Flask(__name__)
 load_dotenv()
 
 ''' Oauth Setup'''
-app.secret_key = os.getenv('APP_SECRET')
+app.secret_key = getenv('APP_SECRET')
 app.config['SERVER_NAME'] = 'localhost:5000'
 oauth = OAuth(app)
 ''' Oauth Setup '''
@@ -35,19 +34,19 @@ oauth = OAuth(app)
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
 def get_python_path():
     # 1. Check if running inside a virtual environment
-    if sys.prefix != sys.base_prefix:  
-        return sys.executable  # Return the venv's Python path
+    if prefix != base_prefix:  
+        return executable  # Return the venv's Python path
 
     # 2. Check if a virtual environment exists in common locations
     possible_venv_dirs = [".venv", "venv", "env"]  # Add other venv folder names if your team uses different ones
     for venv_dir in possible_venv_dirs:
-        python_subdir = "Scripts" if os.name == "nt" else "bin"
-        python_path = os.path.join(venv_dir, python_subdir, "python")
-        if os.path.exists(python_path):
+        python_subdir = "Scripts" if name == "nt" else "bin"
+        python_path = path.join(venv_dir, python_subdir, "python")
+        if path.exists(python_path):
             return python_path  # Use the detected virtual environment Python
 
     # 3. If no virtual environment is found, fall back to system Python
-    return shutil.which("python") or shutil.which("python3")
+    return which("python") or which("python3")
 
 
 python_path = get_python_path()
@@ -64,10 +63,10 @@ def index():
         if url:
             try:
                 # Runs the web scraper on the given site
-                subprocess.run([python_path, "app/app_code/web_scraper.py", url], check=True,text=True)
+                run([python_path, "app/app_code/web_scraper.py", url], check=True,text=True)
                 return redirect(url_for('annotate'))
                 
-            except subprocess.CalledProcessError as e:
+            except CalledProcessError as e:
                 print(f"Error: {e}")
                 print(f"Standard Output: {e.stdout}")
                 print(f"Standard Error: {e.stderr}")
@@ -82,9 +81,9 @@ def annotate():
     # Reads scraped data from CSV output
     image_links = []
     image_tags = []
-    filename = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
-    with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{filename}.csv"), mode="r", newline="", encoding="utf-8") as file:
-        reader = csv.reader(file)
+    filename = sub(r'[\/:*?"<>|]', '-', url)[:20]
+    with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{filename}.csv"), mode="r", newline="", encoding="utf-8") as file:
+        reader = csv_reader(file)
         
         # Read a header row
         next(reader)
@@ -109,7 +108,7 @@ def process_images():
     tagged_list = data.get("taggedList", [])
 
     # Generates alt-text for images
-    subprocess.run([python_path, "app/app_code/main_captioner.py", url, json.dumps(tagged_list)], check=True, text=True)  # this line is causing app to crash
+    run([python_path, "app/app_code/main_captioner.py", url, dumps(tagged_list)], check=True, text=True)  # this line is causing app to crash
     return redirect(url_for('displayed_images'))
 
 
@@ -117,9 +116,9 @@ def process_images():
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
     # Reads images and corresponding generated alt-text from CSV output
-    output_csv = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
+    output_csv = sub(r'[\/:*?"<>|]', '-', url)[:20]
     output_csv = output_csv + "_pool_1.csv"
-    output_dict = pd.read_csv(os.path.join("app", "app_code", "outputs", "CSVs", output_csv)).to_dict(orient="records")
+    output_dict = read_csv(path.join("app", "app_code", "outputs", "CSVs", output_csv)).to_dict(orient="records")
 
     return render_template("displayed_images.html", data=output_dict)
 
@@ -130,14 +129,14 @@ def get_data():
 
 ''' Oauth Google '''
 def generate_nonce():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    return ''.join(choices(ascii_letters + digits, k=16))
 
 @app.route('/google/')
 def google():
     nonce = generate_nonce()
     session['nonce'] = nonce
-    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-    GOOGLE_CLIENT_SECRET_WEB = os.getenv('GOOGLE_CLIENT_SECRET')
+    GOOGLE_CLIENT_ID = getenv('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET_WEB = getenv('GOOGLE_CLIENT_SECRET')
     CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
     oauth.register(
         name='google',

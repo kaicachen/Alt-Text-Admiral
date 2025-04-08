@@ -5,21 +5,13 @@
     - csv_filename (str): The name of the output CSV file.
     - image_data (list of dicts): A list of dictionaries containing image metadata.
 """
-import os
-import csv
-from collections import defaultdict
+from os import path
+from csv import writer as csv_writer
 
 def compile_to_csv(csv_filename, image_data):
-    # tag_counts = defaultdict(int)
-
-    # # Count tag occurrences across all images
-    # for img in image_data:
-    #     for tag in img["tags"]:
-    #         tag_counts[tag] += 1
-
     # Writing to CSV
-    with open(os.path.join("app", "app_code", "inputs", "CSVs", csv_filename), mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
+    with open(path.join("app", "app_code", "inputs", "CSVs", csv_filename), mode="w", newline="", encoding="utf-8") as file:
+        writer = csv_writer(file)
         
         # Writing header
         writer.writerow(["image_name", "tags_and_counts", "is_decorative", "is_link", "is_infographic"])
