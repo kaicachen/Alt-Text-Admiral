@@ -1,14 +1,13 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
-from data_processor import *
+from csv import reader, writer, QUOTE_ALL
 import google.generativeai as genai
+from data_processor import *
+from sqlite3 import connect
+from hashlib import sha256
 from web_scraper import *
-import hashlib
-import sqlite3
-import os
-import json
-import csv
-import os
-import re
+from json import loads
+from os import path
+from re import sub
 
 
 class SiteProcessor:
@@ -33,7 +32,7 @@ class SiteProcessor:
         self.site_url = url
 
         # Replaces characters in the URL to make it a valid file name
-        self.file_name = re.sub(r'[\/:*?"<>|]', '-', url)[:20]
+        self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
 
         # Saves image annotations
         self.annotations = annotations
@@ -41,7 +40,7 @@ class SiteProcessor:
 
     def _generate_alt_text(self, image_type, image_url, text, fetch_db=True):
         # Open cache database
-        cache_db = sqlite3.connect(os.path.join("app", "app_code", "cached_results.db"))
+        cache_db = connect(path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
 
         # Ensure the table exists
@@ -54,7 +53,7 @@ class SiteProcessor:
                                 """)
         
         # Compute hash to see if alt text has already been generated
-        hash = hashlib.sha256(str((type, image_url, text)).encode())
+        hash = sha256(str((type, image_url, text)).encode())
         cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
         db_fetch = cache_db_cursor.fetchone()
 
@@ -108,22 +107,22 @@ class SiteProcessor:
         site_data = []
 
         # Reads all image, text tuples scraped from the URL
-        with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
-            reader = csv.reader(file)
+        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
+            csv_reader = reader(file)
             
             # Read a header row
-            next(reader)
+            next(csv_reader)
             
             # Stores the image, text tuple
-            for row in reader:
+            for row in csv_reader:
                 site_data.append(tuple(row))
 
         # Reopens the same CSV to write the updated list with exclusions
-        with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file, quoting=csv.QUOTE_ALL)
+        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
+            csv_writer = writer(file, quoting=QUOTE_ALL)
             
             # Write a header row
-            writer.writerow(["image_type", "image_link", "surrounding_text"])
+            csv_writer.writerow(["image_type", "image_link", "surrounding_text"])
             
             # Iterate through image, text tuples
             for i in range(len(site_data)):
@@ -132,7 +131,7 @@ class SiteProcessor:
                     continue
 
                 # Rewrite tuples
-                writer.writerow([
+                csv_writer.writerow([
                     self.annotations[i],
                     site_data[i][0],
                     site_data[i][1]
@@ -145,14 +144,14 @@ class SiteProcessor:
         site_data = []
 
         # Reads all image, text tuples scraped from the URL
-        with open(os.path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
-            reader = csv.reader(file)
+        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
+            csv_reader = reader(file)
             
             # Read a header row
-            next(reader)
+            next(csv_reader)
             
             # Stores the image, text tuple
-            for row in reader:
+            for row in csv_reader:
                 site_data.append(tuple(row))
 
         # Early exit if there are no images to process
@@ -160,15 +159,15 @@ class SiteProcessor:
             return
 
         # Opens a file to store the output of images and alt-text
-        with open(os.path.join("app", "app_code", "outputs", "CSVs", f"{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file, quoting=csv.QUOTE_ALL)
+        with open(path.join("app", "app_code", "outputs", "CSVs", f"{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
+            csv_writer = writer(file, quoting=QUOTE_ALL)
             
             # Write a header row
-            writer.writerow(["image_link", "generated_output"])
+            csv_writer.writerow(["image_link", "generated_output"])
 
             # Writes the image URL and alt-text to the CSV
             for type, image, text in site_data:
-                writer.writerow([
+                csv_writer.writerow([
                     image,
                     self._generate_alt_text(type, image, text)
                 ])
@@ -187,6 +186,6 @@ class SiteProcessor:
 
 if __name__ == "__main__":
     url = sys.argv[1]
-    annotations = json.loads(sys.argv[2])
+    annotations = loads(sys.argv[2])
     site_processor = SiteProcessor(url, annotations)
     site_processor.process_site()

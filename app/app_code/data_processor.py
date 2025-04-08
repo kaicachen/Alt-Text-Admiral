@@ -1,8 +1,8 @@
+from torch import no_grad, tensor
+from requests import get
+from time import sleep
 from io import BytesIO
 from PIL import Image
-import requests
-import torch
-import time
 
 
 '''Class to handle all processing of a image, text tuple passed in'''
@@ -14,7 +14,7 @@ class DataProcessor:
         # Location is a URL
         if URL:
             try:
-                response = requests.get(image_loc)
+                response = get(image_loc)
                 self.image = Image.open(BytesIO(response.content))
 
             except:
@@ -57,7 +57,7 @@ class DataProcessor:
                 # Wait before regenerating and increase sleep time incase of repeat error
                 if "You exceeded your current quota" in str(e) and sleep_length < 10:
                     print(f"ResourceExhausted occured, sleeping for {sleep_length} second then regenerating")
-                    time.sleep(sleep_length)
+                    sleep(sleep_length)
                     sleep_length +=1
 
                 else:
@@ -75,11 +75,11 @@ class DataProcessor:
             return {}
 
         # Perform inference
-        with torch.no_grad():
+        with no_grad():
             outputs = self._detr_model(**inputs)
 
         # Process results
-        target_sizes = torch.tensor([self.image.size[::-1]])  # (height, width)
+        target_sizes = tensor([self.image.size[::-1]])  # (height, width)
         results = self._detr_processor.post_process_object_detection(outputs, target_sizes=target_sizes)[0]
 
         # Prepare metadata storage
@@ -132,7 +132,7 @@ class DataProcessor:
                 # Wait before regenerating and increase sleep time incase of repeat error
                 if "You exceeded your current quota" in str(e) and sleep_length < 10:
                     print(f"ResourceExhausted occured, sleeping for {sleep_length} second then regenerating")
-                    time.sleep(sleep_length)
+                    sleep(sleep_length)
                     sleep_length +=1
 
                 else:
