@@ -188,7 +188,5 @@ class SiteProcessor:
 if __name__ == "__main__":
     url = sys.argv[1]
     annotations = json.loads(sys.argv[2])
-    print(f"URL: {url}")
-    print(f"ANNOTATIONS: {annotations}")
     site_processor = SiteProcessor(url, annotations)
     site_processor.process_site()
