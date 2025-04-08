@@ -20,6 +20,7 @@ class SiteProcessor:
         # Loads Gemini model
         self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
         genai.configure(api_key=getenv('GEMINI_API_KEY'))
+        print(getenv('GEMINI_API_KEY'))
         sleep(1)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU

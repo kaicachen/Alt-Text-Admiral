@@ -10,7 +10,17 @@ class DataProcessor:
     def __init__(self, image_loc, image_type, text, gemini_model, detr_model, detr_processor, device, URL=True):
         # Saves image path for future output
         self.loc = image_loc
-        
+
+        # Store image type and text
+        self.image_type = image_type
+        self.text = text
+
+        # Store models and processor
+        self._gemini_model = gemini_model
+        self._detr_model = detr_model
+        self._detr_processor = detr_processor
+        self._device = device
+
         # Location is a URL
         if URL:
             try:
@@ -29,16 +39,6 @@ class DataProcessor:
         # Convert image to RGB
         self.image = self.image.convert("RGB")
 
-        # Store image type and text
-        self.image_type = image_type
-        self.text = text
-
-        # Store models and processor
-        self._gemini_model = gemini_model
-        self._detr_model = detr_model
-        self._detr_processor = detr_processor
-        self._device = device
-
 
     '''Generates a generic caption of the image'''
     def _generate_image_caption(self):
@@ -51,7 +51,7 @@ class DataProcessor:
             try:
                 caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
                 not_generated = False
-                return
+                return caption
             
             except Exception as e:
                 # Wait before regenerating and increase sleep time incase of repeat error
@@ -143,6 +143,9 @@ class DataProcessor:
 
     '''Fully process the inputted data and return the alt-text'''
     def process_data(self):
+        if self.image is None:
+            return ""
+        
         image_caption = self._generate_image_caption()
         image_objects = self._generate_image_objects()
         
