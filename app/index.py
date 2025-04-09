@@ -17,7 +17,9 @@ import sys
 import csv
 import json
 import shutil
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+import requests
+
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 
 app = Flask(__name__)
 
@@ -116,6 +118,26 @@ def displayed_images():
 @app.route('/api/data', methods=['GET'])
 def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
+
+
+@app.route('/checkURL')
+def checkURL():
+    newURL = request.args.get('url') 
+    try:
+        response = requests.head(newURL, timeout=3)
+        return jsonify({'valid': response.status_code < 400})
+    except:
+        return jsonify({'valid':False})
+    
+# @app.route("/proxy")
+# def proxy():
+#     try:
+#         response = requests.get(url, timeout=5)
+#         content_type = response.headers.get('Content-Type', 'text/html')
+#         return Response(response.content, content_type=content_type)
+#     except Exception as e:
+#         print(f"Proxy error: {e}")
+#         return Response(f"Error fetching URL: {e}", status=500)
 
 
 if __name__ == '__main__':

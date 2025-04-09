@@ -124,7 +124,13 @@
 
         var currentIndex = imageList.length;
 
-        document.getElementById("website").src = localStorage.getItem("url");
+        (async () => {
+            const cleaned = await cleanURL(localStorage.getItem("url"));
+            //document.getElementById("website").src = "/proxy?url="+cleaned;
+            document.getElementById("website").src = cleaned;
+
+        })();
+
 
         function populateModal(imageList){
             //imageList = csv.split(",");
@@ -268,6 +274,32 @@
             // Set the selected button to grey
             buttonList[imgIndex][btnIndex].style.backgroundColor = "grey";  
             buttonList[imgIndex][btnIndex].style.color = "white";
+        }
+
+        async function cleanURL(url) {
+            if ((url.startsWith("https://")) || (url.startsWith("http://"))) {
+                return url
+            }
+            else {
+                let https = "https://" + url;
+                let http = "http://" + url;
+
+                let res = await fetch(`/checkURL?url=${encodeURIComponent(https)}`);
+                let data = await res.json();
+  
+                if (data.valid) {    
+                    return https;
+                } 
+
+                res = await fetch(`/checkURL?url=${encodeURIComponent(http)}`);
+                data = await res.json();
+
+                if (data.valid) {    
+                    return http;
+                } 
+                
+                return null;
+            }
         }
 
 
