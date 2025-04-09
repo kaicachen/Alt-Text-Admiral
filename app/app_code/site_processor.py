@@ -42,7 +42,8 @@ class SiteProcessor:
         self.annotations = annotations
 
 
-    def _generate_alt_text(self, image_type, image_url, text, fetch_db=True):
+    '''Generate alt-text from the given data or fetch from the database if possible'''
+    def _generate_alt_text(self, image_type, image_url, text, href, fetch_db=True):
         # Open cache database
         cache_db = connect(path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
@@ -57,7 +58,7 @@ class SiteProcessor:
                                 """)
         
         # Compute hash to see if alt text has already been generated
-        hash = sha256(str((image_type, image_url, text)).encode())
+        hash = sha256(str((image_type, image_url, text, href)).encode())
         cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
         db_fetch = cache_db_cursor.fetchone()
 
@@ -72,7 +73,7 @@ class SiteProcessor:
             return db_fetch[0]
 
         # Create data processor object
-        image_processor = DataProcessor(image_url, image_type, text, self._gemini_model, self._detr_model, self._detr_processor, self._device)
+        image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_model, self._detr_model, self._detr_processor, self._device)
 
         # Generate alt-text
         alt_text = image_processor.process_data()
@@ -138,7 +139,8 @@ class SiteProcessor:
                 csv_writer.writerow([
                     self.annotations[i],
                     site_data[i][0],
-                    site_data[i][1]
+                    site_data[i][1],
+                    site_data[i][2]
                 ])
 
 
@@ -170,10 +172,10 @@ class SiteProcessor:
             csv_writer.writerow(["image_link", "generated_output"])
 
             # Writes the image URL and alt-text to the CSV
-            for type, image, text in site_data:
+            for type, image, text, href in site_data:
                 csv_writer.writerow([
                     image,
-                    self._generate_alt_text(type, image, text)
+                    self._generate_alt_text(type, image, text, href)
                 ])
     
 

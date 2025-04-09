@@ -194,6 +194,6 @@ class WebScraper:
 
 if __name__ == "__main__":
     # URL is passed to script through argv
-    url = "cnn.com" #argv[1]
+    url = argv[1]
     web_scraper = WebScraper(url)
     site_data = web_scraper.scrape_site()

@@ -1,5 +1,6 @@
+from requests import get, exceptions
 from torch import no_grad, tensor
-from requests import get
+from bs4 import BeautifulSoup
 from time import sleep
 from io import BytesIO
 from PIL import Image
@@ -7,13 +8,14 @@ from PIL import Image
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, gemini_model, detr_model, detr_processor, device, URL=True):
+    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True):
         # Saves image path for future output
         self.loc = image_loc
 
-        # Store image type and text
+        # Store image type, text, and href
         self.image_type = int(image_type)
         self.text = text
+        self.href = href
 
         # Store models and processor
         self._gemini_model = gemini_model
@@ -96,6 +98,7 @@ class DataProcessor:
 
         return detected_objects
     
+
     '''Generates alt-text based on the image caption and tags with the specified type'''
     def _generate_alt_text(self, image_caption, image_objects):
         # Check if generation has completed
@@ -156,11 +159,88 @@ class DataProcessor:
 
         return response.text
     
+    
+    '''Gets the H1 text from a given link if it exists'''
+    def _get_link_title(self):
+        try:
+            # Gets a response from the URL and raises an error for failure
+            response = get(self.href)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            h1 = soup.find('h1')
+            if h1:
+                return h1.get_text(strip=True)
+            else:
+                return None
+            
+        # Error in getting a response from the URL
+        except exceptions.RequestException as e:
+            print(f"Error fetching URL: {e}")
+            return None
+        
+
+    '''Generates a description of the destination link attached to the image'''
+    def _generate_link_description(self):
+        # Early exit if no href scraped
+        if not self.href:
+            return "NO HREF FOUND"
+        
+        # Return site title if found
+        link_title = self._get_link_title()
+        if link_title:
+            return f"Links to: {link_title}"
+        
+        # Check if generation is complete
+        not_generated = True
+        sleep_length = 1
+
+        # Prompt Gemini to describe the site
+        while(not_generated):
+            try:
+                response = self._gemini_model.generate_content(
+                    f"You are generating **ADA-compliant** alt text describing the destination of the following link**.\n\n"
+                    f"### **Input Data:**\n"
+                    f"{self.href}"
+
+                    f"\n"
+                    
+                    f"### **Guidelines for Alt Text:**\n"
+                    f"1. **Be concise:** Keep the alt text under **150 characters**.\n"
+                    f"2. **Be descriptive and meaningful:** Focus on the **basic content** of the website, rather than the details.\n"
+                    f"4. **Use natural language:** Write in a **clear, fluent, and grammatically correct** way.\n"
+                    f"5. **Maintain relevance:** Your response **must** include information of the website's primary focus.\n"
+                    f"6. **Do NOT** generate generic alt text. The description should be unique to the website.\n\n"
+                    
+                    f"### **Examples:**\n"
+                    f"**Good Alt Text:** 'A view of a user's shopping cart.' (Concise, relevant, and informative)\n"
+                    f"**Bad Alt Text:** 'A link to a page.' (Too vague, lacks key details)\n\n"
+                    
+                    f"Now, generate **one** alt text description following these rules."
+                    )
+                not_generated = False
+
+            except Exception as e:
+                # Wait before regenerating and increase sleep time incase of repeat error
+                if "You exceeded your current quota" in str(e) and sleep_length < 10:
+                    print(f"ResourceExhausted occured, sleeping for {sleep_length} second then regenerating")
+                    sleep(sleep_length)
+                    sleep_length +=1
+
+                else:
+                    raise e
+                
+        return response.text
+    
 
     '''Fully process the inputted data and return the alt-text'''
     def process_data(self):
+        # Return empty tag if no image is present or if "decorative" type
         if self.image is None or self.image_type == 2:
             return " "
+        
+        if self.image_type == 1:
+            return self._generate_link_description()
         
         image_caption = self._generate_image_caption()
         image_objects = self._generate_image_objects()
