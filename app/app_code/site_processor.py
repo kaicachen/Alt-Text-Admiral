@@ -21,14 +21,15 @@ class SiteProcessor:
         # Load environmental variables
         load_dotenv()
 
-        # Loads Gemini model
-        self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        genai.configure(api_key=getenv('GEMINI_API_KEY'))
-        sleep(1)
-
         # Get environmental variables
+        gemini_key  : str = getenv("GEMINI_API_KEY")
         supabase_url: str = getenv("SUPABASE_URL")
         supabase_key: str = getenv("SUPABASE_API_KEY")
+
+        # Loads Gemini model
+        self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+        genai.configure(api_key=gemini_key)
+        sleep(1)
 
         # Initializes Supabase Connection
         self._supabase: Client = create_client(supabase_url, supabase_key)
