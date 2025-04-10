@@ -1,10 +1,11 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from supabase import create_client, Client
 from csv import reader, writer, QUOTE_ALL
+from datetime import datetime, timezone
 import google.generativeai as genai
 from dotenv import load_dotenv
 from data_processor import *
-from os import path, getenv
+from os import path, getenv, getcwd
 from sqlite3 import connect
 from hashlib import sha256
 from web_scraper import *
@@ -19,14 +20,18 @@ class SiteProcessor:
     def __init__(self, url, annotations):
         # Load environmental variables
         load_dotenv()
-        
+
         # Loads Gemini model
         self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
         genai.configure(api_key=getenv('GEMINI_API_KEY'))
         sleep(1)
 
+        # Get environmental variables
+        supabase_url: str = getenv("SUPABASE_URL")
+        supabase_key: str = getenv("SUPABASE_API_KEY")
+
         # Initializes Supabase Connection
-        self._supabase: Client = create_client(getenv("SUPABASE_URL"), getenv("SUPABASE_API_KEY"))
+        self._supabase: Client = create_client(supabase_url, supabase_key)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU
         self._device = "cuda" if cuda.is_available() else "cpu"
@@ -49,49 +54,30 @@ class SiteProcessor:
 
 
     '''Generate alt-text from the given data or fetch from the database if possible'''
-    def _generate_alt_text(self, image_type, image_url, text, href, fetch_db=True):
-        # Open cache database
-        # cache_db = connect(path.join("app", "app_code", "cached_results.db"))
-        # cache_db_cursor = cache_db.cursor()
-
-        # # Ensure the table exists
-        # cache_db_cursor.execute("""
-        #     CREATE TABLE IF NOT EXISTS cached_results (
-        #         hash VARCHAR(255) PRIMARY KEY,
-        #         alt_text TEXT,
-        #         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        #         )
-        #                         """)
-        
+    def _generate_alt_text(self, image_type, image_url, text, href, fetch_db=True):        
         # Compute hash to see if alt text has already been generated
         hash = sha256(str((image_type, image_url, text, href)).encode())
-        # cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
-        # db_fetch = cache_db_cursor.fetchone()
 
         # Attempt to read from database
         response = (
             self._supabase.table("Cached Results")
             .select("alt_text")
             .eq("hash", hash.hexdigest())
-            #.maybe_single()
             .execute()
             )
 
         # Updates the timestamp of the value if found in database
         if len(response.data):
-            # cache_db_cursor.execute("UPDATE cached_results SET timestamp=CURRENT_TIMESTAMP WHERE hash=?", (hash.hexdigest(),))
-
             response = (
                 self._supabase.table("Cached Results")
-                .update({"last_access" : "CURRENT_TIMESTAMP"})
+                .update({"last_access" : datetime.now(timezone.utc).isoformat()})
                 .eq("hash", hash.hexdigest())
                 .execute()
             )
 
         # Returns database value if enabled
         if fetch_db and len(response.data):
-            print(response.data)
-            return response.data[0]
+            return response.data[0]["alt_text"]
 
         # Create data processor object
         image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_model, self._detr_model, self._detr_processor, self._device)
@@ -101,8 +87,6 @@ class SiteProcessor:
 
         # Update database with newest alt-text
         if len(response.data):
-            # cache_db_cursor.execute("UPDATE cached_results SET alt_text=? WHERE hash=?", (alt_text, hash.hexdigest()))
-
             response = (
                 self._supabase.table("Cached Results")
                 .update({"alt_text" : alt_text})
@@ -112,8 +96,6 @@ class SiteProcessor:
 
         # Add to database
         else:
-            # cache_db_cursor.execute("INSERT INTO cached_results (hash, alt_text) VALUES (?, ?)", (hash.hexdigest(), alt_text))
-
             try:
                 response = (
                     self._supabase.table("Cached Results")
@@ -124,21 +106,7 @@ class SiteProcessor:
                     )
                 
             except Exception as e:
-                print(f"Error adding question to the database: {e}")
-
-
-        # # Check if the row count exceeds 500, then delete the oldest rows
-        # cache_db_cursor.execute("SELECT COUNT(*) FROM cached_results")
-        # row_count = cache_db_cursor.fetchone()[0]
-
-        # if row_count > 500:
-        #     cache_db_cursor.execute("""
-        #         DELETE FROM cached_results
-        #         WHERE timestamp = (SELECT timestamp FROM cached_results ORDER BY timestamp ASC LIMIT 1)
-        #                             """)
-        
-        # cache_db.commit()
-        # cache_db.close()
+                print(f"Error adding tuple to the database: hash: {hash.hexdigest()}, alt-text: {alt_text}, ERROR: {e}")
 
         return alt_text
 
