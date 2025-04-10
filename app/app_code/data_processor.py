@@ -10,7 +10,7 @@ from json import load as json_load, dump as json_dump, JSONDecodeError
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = False):
+    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = True):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -217,9 +217,9 @@ class DataProcessor:
         #add to the dataset into a jsonl file
         training_data = [{ #This is the data that will be added to the jsonl file
                 "link" : f"{self.loc}",
-                "input": f"{self._prompt}",
-                "output": "DUMMY OUTPUT"
+                "input": f"{self._prompt}"
             }]
+            
         # appedn.jsonl to the filename
         jsonl_filename = f"{dataset_filename}.jsonl"
         
