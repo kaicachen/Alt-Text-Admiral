@@ -5,10 +5,12 @@ from time import sleep
 from io import BytesIO
 from PIL import Image
 
+from os.path import join
+from json import load as json_load, dump as json_dump, JSONDecodeError
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True):
+    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = False):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -22,6 +24,11 @@ class DataProcessor:
         self._detr_model = detr_model
         self._detr_processor = detr_processor
         self._device = device
+        
+        #true if data is saved for training, false otherwise
+        self._training = training
+        #The prompt to add to training.
+        self._prompt = ""
 
         # Location is a URL
         if URL:
@@ -145,6 +152,31 @@ class DataProcessor:
                     
                     f"Now, generate **one** alt text description following these rules."
                     )
+                if self._training:
+                    self._prompt = (
+                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
+                    f"### **Input Data:**\n"
+                    f"{caption_input}"
+                    f"{text_input}"
+                    f"{objects_input}"
+
+                    f"\n"
+                    
+                    f"### **Guidelines for Alt Text:**\n"
+                    f"1. **Be concise:** Keep the alt text under **150 characters**.\n"
+                    f"2. **Be descriptive and meaningful:** Focus on the **essential content** of the image, rather than just its appearance.\n"
+                    f"3. **Avoid redundancy:** Do **not** repeat details already provided in the surrounding text.\n"
+                    f"4. **Use natural language:** Write in a **clear, fluent, and grammatically correct** way.\n"
+                    f"5. **Maintain relevance:** Your response **must** include details from the caption, text, and tags.\n"
+                    f"6. **Do NOT** generate generic alt text. The description should be unique to the image.\n\n"
+                    
+                    f"### **Examples:**\n"
+                    f"**Good Alt Text:** 'A person in a wheelchair crossing the street on a sunny day.' (Concise, relevant, and informative)\n"
+                    f"**Bad Alt Text:** 'An image of a person outside.' (Too vague, lacks key details)\n\n"
+                    
+                    f"Now, generate **one** alt text description following these rules."
+                    )
+                    self._save_to_dataset("informative_dataset")
                 not_generated = False
 
             except Exception as e:
@@ -178,7 +210,41 @@ class DataProcessor:
         except exceptions.RequestException as e:
             print(f"Error fetching URL: {e}")
             return None
+
+
+    '''Adds site/image data to the unprocessed training dataset'''
+    def _save_to_dataset(self, dataset_filename:str ="default_dataset"):
+        #add to the dataset into a jsonl file
+        training_data = [{ #This is the data that will be added to the jsonl file
+                "link" : f"{self.loc}",
+                "input": f"{self._prompt}",
+                "output": "DUMMY OUTPUT"
+            }]
+        # appedn.jsonl to the filename
+        jsonl_filename = f"{dataset_filename}.jsonl"
         
+        # open the json, convert to list, append new data, resave
+        try:
+            with open(join("app", "app_code", "outputs", "training_json","unprocessed", f"{jsonl_filename}"), "r", encoding="utf-8") as file:
+                data = json_load(file) # Load existing data from the JSONL file into a list
+        except FileNotFoundError:#if the file does not exist, create empty list
+            print(f"Error: File not found: {jsonl_filename}\nNew file will be created.")
+            data = []
+        except JSONDecodeError: #if the file is not a valid json, create empty list
+            print(f"Error: Invalid JSON format in: {jsonl_filename}\nNew file will be created.")
+            data = []
+        
+        data.append(training_data[0])  # Append the new data to the existing list
+
+        # Save the updated data back to the JSONL file
+        try:
+            with open(join("app", "app_code", "outputs", "training_json","unprocessed", f"{jsonl_filename}"), "w", encoding="utf-8") as file:
+                json_dump(data, file, ensure_ascii=False, indent=4)  # Write the updated data to the file in JSON format
+            print(f"Dataset saved as {jsonl_filename}")
+        except Exception as e:#on failure to save, print error message
+            print(f"Error saving dataset: {e}")
+
+
 
     '''Generates a description of the destination link attached to the image'''
     def _generate_link_description(self):
@@ -218,6 +284,28 @@ class DataProcessor:
                     
                     f"Now, generate **one** alt text description following these rules."
                     )
+                if self._training:
+                    self._prompt = (
+                    f"You are generating **ADA-compliant** alt text describing the destination of the following link**.\n\n"
+                    f"### **Input Data:**\n"
+                    f"{self.href}"
+
+                    f"\n"
+                    
+                    f"### **Guidelines for Alt Text:**\n"
+                    f"1. **Be concise:** Keep the alt text under **150 characters**.\n"
+                    f"2. **Be descriptive and meaningful:** Focus on the **basic content** of the website, rather than the details.\n"
+                    f"4. **Use natural language:** Write in a **clear, fluent, and grammatically correct** way.\n"
+                    f"5. **Maintain relevance:** Your response **must** include information of the website's primary focus.\n"
+                    f"6. **Do NOT** generate generic alt text. The description should be unique to the website.\n\n"
+                    
+                    f"### **Examples:**\n"
+                    f"**Good Alt Text:** 'A view of a user's shopping cart.' (Concise, relevant, and informative)\n"
+                    f"**Bad Alt Text:** 'A link to a page.' (Too vague, lacks key details)\n\n"
+                    
+                    f"Now, generate **one** alt text description following these rules."
+                    )
+                    self._save_to_dataset("link_dataset")
                 not_generated = False
 
             except Exception as e:
