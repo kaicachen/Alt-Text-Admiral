@@ -11,11 +11,15 @@ from os import path
 
 '''Class to perform webscraping of image and text tuples'''
 class WebScraper:
-    def __init__(self, url):
+    def __init__(self, url,isExtension):
         self.site_url = url
+        
 
         # Replaces characters in the URL to make it a valid file name
-        self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
+        if(isExtension == "True"):
+            self.file_name=url
+        else:
+            self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
 
     '''Tests connection to URL'''
     def _test_url(self, url):
@@ -180,5 +184,5 @@ class WebScraper:
 if __name__ == "__main__":
     # URL is passed to script through argv
     url = argv[1]
-    web_scraper = WebScraper(url)
+    web_scraper = WebScraper(url,"False")
     site_data = web_scraper.scrape_site()

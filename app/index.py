@@ -55,7 +55,7 @@ def index():
         if url:
             try:
                 # Runs the web scraper on the given site
-                run([python_path, "app/app_code/web_scraper.py", url], check=True,text=True)
+                run([python_path, "app/app_code/web_scraper.py", url, False], check=True,text=True)
                 return redirect(url_for('annotate'))
                 
             except CalledProcessError as e:
@@ -66,9 +66,17 @@ def index():
     
     return render_template('index.html')
 
-@app.route('/message',methods=['GET'])
+@app.route('/extension',methods=['POST','GET'])
 def test():
-    return jsonify({"message": "Hello!!!"})
+    data = request.get_json()
+    global url
+    url = data["url"]
+    run([python_path, "app/app_code/web_scraper.py", url, "True"], check=True,text=True)
+    
+
+    return redirect(url_for('annotate'))
+
+
     
 
 '''Page to allow for user annotations of images'''
@@ -78,13 +86,15 @@ def annotate():
     image_links = []
     image_tags = []
     filename = sub(r'[\/:*?"<>|]', '-', url)[:20]
+    
     with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{filename}.csv"), mode="r", newline="", encoding="utf-8") as file:
         csv_reader = reader(file)
         
         # Read a header row
         next(csv_reader)
         
-        for row in csv_reader:
+        for row in csv_reader:  # NOT WORKING HERE. CHECK BACK LATER
+            print("RUNNING!!!\n")
             if row[0] == 'true':
                 image_tag = 3
             else:
@@ -92,7 +102,7 @@ def annotate():
             
             image_links.append(row[0])
             image_tags.append(image_tag)
-
+    
     return render_template("annotate.html", image_links=image_links, image_tags=image_tags)
 
 
