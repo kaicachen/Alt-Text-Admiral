@@ -5,8 +5,7 @@ from datetime import datetime, timezone
 import google.generativeai as genai
 from dotenv import load_dotenv
 from data_processor import *
-from os import path, getenv, getcwd
-from sqlite3 import connect
+from os import path, getenv
 from hashlib import sha256
 from web_scraper import *
 from json import loads
