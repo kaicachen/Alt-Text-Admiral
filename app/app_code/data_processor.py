@@ -5,8 +5,8 @@ from time import sleep
 from io import BytesIO
 from PIL import Image
 
-from os.path import join
-from json import load as json_load, dump as json_dump, JSONDecodeError
+
+from training import Trainer
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
@@ -25,10 +25,14 @@ class DataProcessor:
         self._detr_processor = detr_processor
         self._device = device
         
+
         #true if data is saved for training, false otherwise
-        self._training = training
-        #The prompt to add to training.
-        self._prompt = ""
+        if training:
+            self._trainer = Trainer(gemini_model.model_name)
+            self._training = True
+        else:
+            self._trainer = None
+            self._training = False
 
         # Location is a URL
         if URL:
@@ -153,7 +157,7 @@ class DataProcessor:
                     f"Now, generate **one** alt text description following these rules."
                     )
                 if self._training:
-                    self._prompt = (
+                    self._trainer.add_to_dataset(self.loc, (
                     f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
                     f"### **Input Data:**\n"
                     f"{caption_input}"
@@ -175,8 +179,7 @@ class DataProcessor:
                     f"**Bad Alt Text:** 'An image of a person outside.' (Too vague, lacks key details)\n\n"
                     
                     f"Now, generate **one** alt text description following these rules."
-                    )
-                    self._save_to_dataset("informative_dataset")
+                    ), image_type="informative")
                 not_generated = False
 
             except Exception as e:
@@ -210,41 +213,6 @@ class DataProcessor:
         except exceptions.RequestException as e:
             print(f"Error fetching URL: {e}")
             return None
-
-
-    '''Adds site/image data to the unprocessed training dataset'''
-    def _save_to_dataset(self, dataset_filename:str ="default_dataset"):
-        #add to the dataset into a jsonl file
-        training_data = [{ #This is the data that will be added to the jsonl file
-                "link" : f"{self.loc}",
-                "input": f"{self._prompt}"
-            }]
-            
-        # appedn.jsonl to the filename
-        jsonl_filename = f"{dataset_filename}.jsonl"
-        
-        # open the json, convert to list, append new data, resave
-        try:
-            with open(join("app", "app_code", "outputs", "training_json","unprocessed", f"{jsonl_filename}"), "r", encoding="utf-8") as file:
-                data = json_load(file) # Load existing data from the JSONL file into a list
-        except FileNotFoundError:#if the file does not exist, create empty list
-            print(f"Error: File not found: {jsonl_filename}\nNew file will be created.")
-            data = []
-        except JSONDecodeError: #if the file is not a valid json, create empty list
-            print(f"Error: Invalid JSON format in: {jsonl_filename}\nNew file will be created.")
-            data = []
-        
-        data.append(training_data[0])  # Append the new data to the existing list
-
-        # Save the updated data back to the JSONL file
-        try:
-            with open(join("app", "app_code", "outputs", "training_json","unprocessed", f"{jsonl_filename}"), "w", encoding="utf-8") as file:
-                json_dump(data, file, ensure_ascii=False, indent=4)  # Write the updated data to the file in JSON format
-            print(f"Dataset saved as {jsonl_filename}")
-        except Exception as e:#on failure to save, print error message
-            print(f"Error saving dataset: {e}")
-
-
 
     '''Generates a description of the destination link attached to the image'''
     def _generate_link_description(self):
@@ -285,7 +253,7 @@ class DataProcessor:
                     f"Now, generate **one** alt text description following these rules."
                     )
                 if self._training:
-                    self._prompt = (
+                    self._trainer.add_to_dataset(self.loc, (
                     f"You are generating **ADA-compliant** alt text describing the destination of the following link**.\n\n"
                     f"### **Input Data:**\n"
                     f"{self.href}"
@@ -304,8 +272,8 @@ class DataProcessor:
                     f"**Bad Alt Text:** 'A link to a page.' (Too vague, lacks key details)\n\n"
                     
                     f"Now, generate **one** alt text description following these rules."
-                    )
-                    self._save_to_dataset("link_dataset")
+                    ), image_type="link")
+
                 not_generated = False
 
             except Exception as e:

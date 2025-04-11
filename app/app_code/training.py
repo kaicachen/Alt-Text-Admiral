@@ -15,20 +15,21 @@ from PIL import Image, ImageTk, ImageOps
 from tkinter import scrolledtext
 
 from os.path import join
+from os import getenv
 from json import load as json_load, dump as json_dump, JSONDecodeError
 
 
-from google import generativeai as genai
+from google import genai
+from google.genai import types
+from google.genai.types import CreateTuningJobConfig, TuningDataset, TuningExample
 
-from google.generativeai.models import list_models
-from google.generativeai.models import create_tuned_model
-from google.generativeai.models import update_tuned_model
-
-from google.generativeai import types
 
 class Trainer:
-    def __init__(self):
-        self.working = False
+    def __init__(self, model_name:str):
+        self._model_name = model_name[7:] #reomove the "model\" because it is not a vlid file name
+        self._full_model_name = model_name #save the full model name for later use  
+        self._client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
+        print(f"Trainer initialized with model name: {self._model_name}")  # Print the model name for debugging
     
     ### this is such a nightmare of a function.
     #complete the dataset by creating the proper output given a prompt and image.
@@ -113,7 +114,7 @@ class Trainer:
     
 
     '''Add data to an unprocessed dataset'''
-    def add_to_dataset(self, dataset_filename:str, image_url:str, prompt:str): #used to make the dataset in a program for help.
+    def add_to_dataset(self, image_url:str, prompt:str, image_type:str = ""): #used to make the dataset in a program for help.
         #add to the dataset into a jsonl file
         training_data = [{ #This is the data that will be added to the jsonl file
                 "link" : f"{image_url}",
@@ -121,7 +122,7 @@ class Trainer:
             }]
         
         # appedn.jsonl to the filename
-        jsonl_filename = f"{dataset_filename}.jsonl"
+        jsonl_filename = f"{image_type}{self._model_name}.jsonl"
         
         # open the json, convert to list, append new data, resave
         try:
@@ -147,21 +148,31 @@ class Trainer:
 
     def create_gemini_model(self, dataset_filename:str): #where dataset is the name of the json file
         #call the google create model thing to do the thing
-        create_tuned_model(genai.GenerativeModel("gemini-1.5-flash"),
-                        dataset_filename,
-                        "ada_gemini-1.5-flash",
-                            "ADA gemini",
-                            "Model for generating ADA compliant alt text")
-                            # temperature= 0.0,
-                            # top_p: float | None = None,
-                            # top_k: int | None = None,
-                            # epoch_count: int | None = None,
-                            # batch_size: int | None = None,
-                            # learning_rate: float | None = None,
-                            # input_key: str = "text_input",
-                            # output_key: str = "output",
-                            # client: ModelServiceClient | None = None,
-                            # request_options: RequestOptionsType | None = None)
+        data = json_load(open(join("app", "app_code", "outputs", "training_json","processed", dataset_filename), 'r')) # Load the training data from the JSON file
+        training_data = TuningDataset(
+            examples=[TuningExample(
+                text_input=i,  # Use the 'input' field from the JSON data
+                output=o  # Use the 'output' field from the JSON data
+            ) for i,o in data
+            ]
+        )
+
+        tuning_job = self._client.tunings.tune(
+            base_model='models/gemini-1.5-flash-001-tuning',
+            training_dataset=training_data,
+            config=CreateTuningJobConfig(
+                epoch_count= 5,
+                batch_size=4,
+                learning_rate=0.001,
+                tuned_model_display_name="test tuned model"
+            )
+        )
+        print(tuning_job)
+    
+    def check_tuning_job_status(self, job_id:str):
+        #check the status of the tuning job
+        tuning_job = self._client.tunings.get(name='tunedModels/test-tuned-model-3oiys9watw0x')
+        print(tuning_job)
 
 
     def update_gemini_model(dataset_filename:str): #where dataset is the name of the json file
@@ -174,4 +185,11 @@ if __name__ == "__main__":  # Used for testing purposes
     # for model_info in genai.models.list():  # List all available models
     #     print(model_info.name)
 
-    Trainer.complete_dataset("informative_dataset.jsonl")
+    #Trainer.complete_dataset("informativegemini-1.5-flash.jsonl")
+    print("Starting Trainer...")
+    dummy = Trainer("models/gemini-1.5-flash")
+    dummy._client.models.list() #list all models
+    for model_info in dummy._client.models.list():
+        print(model_info.name)
+    #dummy.create_gemini_model("processed_informativegemini-1.5-flash.jsonl")
+    dummy.check_tuning_job_status("test-tuned-model-3oiys9watw0x")
