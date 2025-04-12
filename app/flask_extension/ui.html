@@ -3,17 +3,49 @@
     <meta charset="utf-8">
     <script src="process.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
         body {
-            width: 400px;
-            height: 600px;
+            width: 250px;
+            height: 200px;
             margin: 0;
             padding: 10px;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            background-color: #7c7777;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;  /* vertical center */
+            align-items: center;      /* horizontal center */
+            text-align: center;       /* center the text inside elements */
         }
+
+        button {
+            background-color: #9e0303;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .container {
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+    }
+
     </style>
     <body>
-        <h1>This is a test</h1>
+        <div class="container">
+        <h1>Alt-Text Admiral</h1>
         <button id="scrapeBtn">Click to start Scraping</button>
         <p id="message"></p>
+        </div>
     </body>
 </html>

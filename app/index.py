@@ -7,7 +7,7 @@ This file runs the webscraper, then before running main_captioner.py on the resu
 it asks the user to mark whether images are decorative, links, or infographics. It then
 modifies the CSV file passed to the main_captioner.py 
 '''
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from flask_cors import CORS
 from sys import prefix, base_prefix, executable
 from subprocess import run, CalledProcessError
@@ -22,6 +22,7 @@ from re import sub
 
 app = Flask(__name__)
 CORS(app)
+app.secret_key="secret"
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
 def get_python_path():
@@ -71,13 +72,10 @@ def test():
     data = request.get_json()
     global url
     url = data["url"]
+    
     run([python_path, "app/app_code/web_scraper.py", url, "True"], check=True,text=True)
-    
+    return jsonify({"redirect_url": url_for("annotate")})
 
-    return redirect(url_for('annotate'))
-
-
-    
 
 '''Page to allow for user annotations of images'''
 @app.route('/annotate', methods=['GET', 'POST'])
@@ -92,9 +90,7 @@ def annotate():
         
         # Read a header row
         next(csv_reader)
-        
         for row in csv_reader:  # NOT WORKING HERE. CHECK BACK LATER
-            print("RUNNING!!!\n")
             if row[0] == 'true':
                 image_tag = 3
             else:
