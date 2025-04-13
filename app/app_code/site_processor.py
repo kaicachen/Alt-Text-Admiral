@@ -1,6 +1,6 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from csv import reader, writer, QUOTE_ALL
-import google.generativeai as genai
+import google.generativeai as genal
 from dotenv import load_dotenv
 from data_processor import *
 from os import path, getenv
@@ -20,8 +20,8 @@ class SiteProcessor:
         load_dotenv()
         
         # Loads Gemini model
-        self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        genai.configure(api_key=getenv('GEMINI_API_KEY'))
+        self._gemini_model = genal.GenerativeModel("gemini-1.5-flash")
+        genal.configure(api_key=getenv('GEMINI_API_KEY'))
         sleep(1)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU

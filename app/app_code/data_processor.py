@@ -5,12 +5,15 @@ from time import sleep
 from io import BytesIO
 from PIL import Image
 
+#testing
+from google import genai
+from os import getenv
 
 from training import Trainer
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = True):
+    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = False):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -19,8 +22,14 @@ class DataProcessor:
         self.text = text
         self.href = href
 
+        self._dummy_client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
+
         # Store models and processor
+        #temporarily hard code model to be the tuned one
+        # self._client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
+        # self._client.get
         self._gemini_model = gemini_model
+        # self._gemini_model = gemini_model
         self._detr_model = detr_model
         self._detr_processor = detr_processor
         self._device = device
@@ -133,7 +142,9 @@ class DataProcessor:
         # Keeps attempting until completion or manual time out
         while(not_generated):
             try:
-                response = self._gemini_model.generate_content(
+                response = self._dummy_client.models.generate_content(
+                    model="tunedModels/test-tuned-model-icran2mmdiyb",
+                    contents=(
                     f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
                     f"### **Input Data:**\n"
                     f"{caption_input}"
@@ -156,6 +167,30 @@ class DataProcessor:
                     
                     f"Now, generate **one** alt text description following these rules."
                     )
+                )
+                # response = self._gemini_model.generate_content(
+                #     f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
+                #     f"### **Input Data:**\n"
+                #     f"{caption_input}"
+                #     f"{text_input}"
+                #     f"{objects_input}"
+
+                #     f"\n"
+                    
+                #     f"### **Guidelines for Alt Text:**\n"
+                #     f"1. **Be concise:** Keep the alt text under **150 characters**.\n"
+                #     f"2. **Be descriptive and meaningful:** Focus on the **essential content** of the image, rather than just its appearance.\n"
+                #     f"3. **Avoid redundancy:** Do **not** repeat details already provided in the surrounding text.\n"
+                #     f"4. **Use natural language:** Write in a **clear, fluent, and grammatically correct** way.\n"
+                #     f"5. **Maintain relevance:** Your response **must** include details from the caption, text, and tags.\n"
+                #     f"6. **Do NOT** generate generic alt text. The description should be unique to the image.\n\n"
+                    
+                #     f"### **Examples:**\n"
+                #     f"**Good Alt Text:** 'A person in a wheelchair crossing the street on a sunny day.' (Concise, relevant, and informative)\n"
+                #     f"**Bad Alt Text:** 'An image of a person outside.' (Too vague, lacks key details)\n\n"
+                    
+                #     f"Now, generate **one** alt text description following these rules."
+                #     )
                 if self._training:
                     self._trainer.add_to_dataset(self.loc, (
                     f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"

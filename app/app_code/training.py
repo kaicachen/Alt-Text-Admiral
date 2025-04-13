@@ -151,12 +151,13 @@ class Trainer:
         data = json_load(open(join("app", "app_code", "outputs", "training_json","processed", dataset_filename), 'r')) # Load the training data from the JSON file
         training_data = TuningDataset(
             examples=[TuningExample(
-                text_input=i,  # Use the 'input' field from the JSON data
-                output=o  # Use the 'output' field from the JSON data
-            ) for i,o in data
+                text_input=entry.get("text_input"),  # Use the 'input' field from the JSON data
+                output=entry.get("output")  # Use the 'output' field from the JSON data
+            ) for entry in data
             ]
         )
 
+        print(f"Training data: {training_data}")  # Print the training data for debugging
         tuning_job = self._client.tunings.tune(
             base_model='models/gemini-1.5-flash-001-tuning',
             training_dataset=training_data,
@@ -171,7 +172,7 @@ class Trainer:
     
     def check_tuning_job_status(self, job_id:str):
         #check the status of the tuning job
-        tuning_job = self._client.tunings.get(name='tunedModels/test-tuned-model-3oiys9watw0x')
+        tuning_job = self._client.tunings.get(name=job_id)
         print(tuning_job)
 
 
@@ -189,7 +190,44 @@ if __name__ == "__main__":  # Used for testing purposes
     print("Starting Trainer...")
     dummy = Trainer("models/gemini-1.5-flash")
     dummy._client.models.list() #list all models
-    for model_info in dummy._client.models.list():
+    # for model_info in dummy._client.models.list():
+    #     print(model_info.name)
+    for model_info in dummy._client.tunings.list():
         print(model_info.name)
-    #dummy.create_gemini_model("processed_informativegemini-1.5-flash.jsonl")
-    dummy.check_tuning_job_status("test-tuned-model-3oiys9watw0x")
+    # dummy.create_gemini_model("processed_informativegemini-1.5-flash.jsonl")
+
+    dummy._client.tunings
+
+
+    # data = json_load(open(join("app", "app_code", "outputs", "training_json","processed", "processed_informativegemini-1.5-flash.jsonl"), 'r')) # Load the training data from the JSON file
+    # training_data = TuningDataset(
+    #         examples=[TuningExample(
+    #             text_input=entry.get("text_input"),  # Use the 'input' field from the JSON data
+    #             output=entry.get("output")  # Use the 'output' field from the JSON data
+    #         ) for entry in data
+    #         ]
+    #     )
+    # dummy_dict = {
+    #     "text_input": "test",
+    #     "output": "test"
+    # }
+    # dummy_dict.get("text_input")
+    # for entry in data:
+
+    #     print(entry.get("text_input"),entry.get("output"))
+    # for entry in training_data.examples:
+    #     print(entry.text_input)
+    #     print(entry.output)
+
+    
+
+    # dummy.check_tuning_job_status("tunedModels/test-tuned-model-icran2mmdiyb")
+
+    # response = dummy._client.models.generate_content(
+    #     model="tunedModels/test-tuned-model-icran2mmdiyb",
+    #     contents="You are generating **ADA-compliant** alt text based on the given **caption, , and **.\n\n### **Input Data:**\n- **Caption:** Here is a description of the image:\n\nClose-up view of a logo for a company named \"Natural Breeze Professional Remodelers\".\u00c2\u00a0\n\n\nHere's a breakdown of the logo's elements:\n\n* **Text:** The primary text is \"natural breeze,\" styled in a bold, slightly stylized font with some overlapping and layering of the letters.  The words \"PROFESSIONAL REMODELERS\" appear below in a simpler, sans-serif font.\n\n* **Graphic:**\u00c2\u00a0A stylized leaf or maple leaf-like shape is integrated into the design, partially overlapping and behind the text \"Natural Breeze.\" The leaf has a striped pattern.\n\n* **Color:** The entire logo is rendered in shades of gray, appearing monochromatic.\n\n* **Style:** The overall style is clean but somewhat playful, suggesting a blend of natural elements (the leaf) and professionalism (the clear text and layout).\n\n\nThe logo is well-designed and clearly communicates the company name and its business focus.\n\n\n### **Guidelines for Alt Text:**\n1. **Be concise:** Keep the alt text under **150 characters**.\n2. **Be descriptive and meaningful:** Focus on the **essential content** of the image, rather than just its appearance.\n3. **Avoid redundancy:** Do **not** repeat details already provided in the surrounding text.\n4. **Use natural language:** Write in a **clear, fluent, and grammatically correct** way.\n5. **Maintain relevance:** Your response **must** include details from the caption, text, and tags.\n6. **Do NOT** generate generic alt text. The description should be unique to the image.\n\n### **Examples:**\n**Good Alt Text:** 'A person in a wheelchair crossing the street on a sunny day.' (Concise, relevant, and informative)\n**Bad Alt Text:** 'An image of a person outside.' (Too vague, lacks key details)\n\nNow, generate **one** alt text description following these rules.",
+
+    #     )
+    
+    # print(response.text)
+    # print("Pause")
