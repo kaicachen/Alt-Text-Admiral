@@ -251,7 +251,7 @@ class DataProcessor:
         # Prompt Gemini to describe the site
         while(not_generated):
             try:
-                if self._tuned:
+                if False: #self._tuned: #Block off the branch as no tuned model yet #TODO: make link datset, make tuned model, use tuned model
                     response = self._dummy_client.models.generate_content(
                         model="tunedModels/test-tuned-model-icran2mmdiyb",#TODO: change tuned model to be the one trained for links
                         contents= prompt
