@@ -1,18 +1,22 @@
 '''
 Author: John
 Created: 3/10/2025
-Last modified: 3/10/2025
+Last modified: 4/13/2025
 
 Description:
-Code to train the model. test line
+Code to train the model. specifically gemini
 '''
 
-import requests
+from requests import get as requests_get
+from requests.exceptions import RequestException
 from io import BytesIO
-import tkinter as tk
-from PIL import Image, ImageTk, ImageOps
 
-from tkinter import scrolledtext
+from PIL.ImageOps import contain
+from PIL.Image import LANCZOS,open as pil_open
+from PIL.ImageTk import PhotoImage
+
+from tkinter.scrolledtext import ScrolledText
+from tkinter import Tk, WORD,INSERT,Label,Text, Event, END
 
 from os.path import join
 from os import getenv
@@ -20,7 +24,6 @@ from json import load as json_load, dump as json_dump, JSONDecodeError
 
 
 from google import genai
-from google.genai import types
 from google.genai.types import CreateTuningJobConfig, TuningDataset, TuningExample
 
 
@@ -29,11 +32,10 @@ class Trainer:
         self._model_name = model_name[7:] #reomove the "model\" because it is not a vlid file name
         self._full_model_name = model_name #save the full model name for later use  
         self._client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
-        print(f"Trainer initialized with model name: {self._model_name}")  # Print the model name for debugging
+        #print(f"Trainer initialized with model name: {self._model_name}")  # Print the model name for debugging
     
-    ### this is such a nightmare of a function.
     #complete the dataset by creating the proper output given a prompt and image.
-    def complete_dataset(dataset_filename:str): #where dataset is the name of the json file
+    def complete_dataset(self, dataset_filename:str): #where dataset is the name of the json file
 
         updated_data = []  # Create an empty list to store the updated data
         
@@ -59,36 +61,33 @@ class Trainer:
 
             #now i need to show user the prompt and image and get output. Now that i think about it, the json doesnt need out, im just gonna make a new file.
             try:
-                response = requests.get(url)
-            except requests.exceptions.RequestException as e:
+                response = requests_get(url)
+            except RequestException as e:
                 print(f"Error fetching image from {url}: {e}")
                 continue  # Skip to the next entry if there's an error fetching the image
 
-            img = Image.open(BytesIO(response.content))
+            
 
-            root = tk.Tk()  # Create a Tkinter window 
+            root = Tk()  # Create a Tkinter window 
             root.geometry("1000x800")  # Set the window size
             root.title("Alt-Text dataset")  # Set the window title
-
-            outie = tk.StringVar()  # Create a StringVar to hold the user input
-            outie.set("Enter the alt text for the image: ")  # Set the initial text for the entry field
             
-            prompt_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=50, height=10)  # Create a scrolled text area for the prompt
-            prompt_area.insert(tk.INSERT, prompt)  # Insert the prompt text into the scrolled text area
+            prompt_area = ScrolledText(root, wrap=WORD, width=50, height=10)  # Create a scrolled text area for the prompt
+            prompt_area.insert(INSERT, prompt)  # Insert the prompt text into the scrolled text area
             prompt_area.pack()  # Pack the label into the window
-
-            #img = img.thumbnail((400, 400), Image.LANCZOS)  # Resize the image to fit the window
-            img = ImageOps.contain(img, (600, 800), Image.LANCZOS)  # Resize the image to fit the window
-            tkimg = ImageTk.PhotoImage(img)  # Convert the image to a Tkinter-compatible format
-            image_label = tk.Label(root, image=tkimg)  # Create a label to display the image
+            
+            img = pil_open(BytesIO(response.content)) #open the image from the url
+            img = contain(img, (600, 800), LANCZOS)  # Resize the image to fit the window
+            tkimg = PhotoImage(img)  # Convert the image to a Tkinter-compatible format
+            image_label = Label(root, image=tkimg)  # Create a label to display the image
             image_label.pack()  # Pack the label into the window
 
-            getter = tk.Text(root, width=50, height=10)  # Create a label to display the prompt
-            getter.insert(tk.INSERT, "Enter Alt-Text for the image above:")  # Insert the prompt text into the label
+            getter = Text(root, width=50, height=10)  # Create a label to display the prompt
+            getter.insert(INSERT, "Enter Alt-Text for the image above:")  # Insert the prompt text into the label
             getter.pack()  # Pack the label into the window
 
-            def delete_default_text(event:tk.Event):
-                event.widget.delete("1.0", tk.END)
+            def delete_default_text(event:Event): ## This function auto deletes the default text when the user clicks on the text area
+                event.widget.delete("1.0", END)
                 # Unbind so that the default text is not deleted on subsequent focus
                 event.widget.unbind("<FocusIn>", on_focus_in) 
 
@@ -96,10 +95,9 @@ class Trainer:
             root.bind("<Return>", lambda event: root.quit())  # Bind the Enter key to close the window
             root.mainloop()  # Start the Tkinter event loop to display the image
 
-            print(getter.get("1.0", tk.END))  # Print the user input
-            #now i just need to display the image and prompt and get the output from the user.
-            #output = input(f"Prompt: {prompt}\n\nEnter the alt text for the image: ")  # Get user input for alt text
-            output = getter.get("1.0", tk.END)  # Get user input for alt text
+            print(getter.get("1.0", END))  # Print the user input
+
+            output = getter.get("1.0", END)  # Get user input for alt text
             
             #add output to training data
             updated_data.append({"text_input":prompt, "output": output})  # Add the prompt and user input to the updated data list
@@ -121,7 +119,7 @@ class Trainer:
                 "input": f"{prompt}"
             }]
         
-        # appedn.jsonl to the filename
+        # append.jsonl to the filename
         jsonl_filename = f"{image_type}{self._model_name}.jsonl"
         
         # open the json, convert to list, append new data, resave
@@ -145,7 +143,7 @@ class Trainer:
         except Exception as e: # on failure to save, print error message
             print(f"Error saving dataset: {e}")
     
-
+    #function to create a tuned model using a dataset
     def create_gemini_model(self, dataset_filename:str): #where dataset is the name of the json file
         #call the google create model thing to do the thing
         data = json_load(open(join("app", "app_code", "outputs", "training_json","processed", dataset_filename), 'r')) # Load the training data from the JSON file
@@ -157,8 +155,7 @@ class Trainer:
             ]
         )
 
-        print(f"Training data: {training_data}")  # Print the training data for debugging
-        tuning_job = self._client.tunings.tune(
+        tuning_job = self._client.tunings.tune(#dummy hyperparameters, can do more testing when we have a bigger dataset
             base_model='models/gemini-1.5-flash-001-tuning',
             training_dataset=training_data,
             config=CreateTuningJobConfig(
@@ -168,10 +165,9 @@ class Trainer:
                 tuned_model_display_name="test tuned model"
             )
         )
-        print(tuning_job)
+        print(tuning_job.name)#for debugging purposes
     
-    def check_tuning_job_status(self, job_id:str):
-        #check the status of the tuning job
+    def check_tuning_job_status(self, job_id:str):#check the status of the tuning job
         tuning_job = self._client.tunings.get(name=job_id)
         print(tuning_job)
 
@@ -182,52 +178,10 @@ class Trainer:
 
 
 if __name__ == "__main__":  # Used for testing purposes
-    
-    # for model_info in genai.models.list():  # List all available models
-    #     print(model_info.name)
-
-    #Trainer.complete_dataset("informativegemini-1.5-flash.jsonl")
-    print("Starting Trainer...")
+    #create client with dummy name
     dummy = Trainer("models/gemini-1.5-flash")
-    dummy._client.models.list() #list all models
-    # for model_info in dummy._client.models.list():
-    #     print(model_info.name)
+    #list all the tuned models
     for model_info in dummy._client.tunings.list():
         print(model_info.name)
+    
     # dummy.create_gemini_model("processed_informativegemini-1.5-flash.jsonl")
-
-    dummy._client.tunings
-
-
-    # data = json_load(open(join("app", "app_code", "outputs", "training_json","processed", "processed_informativegemini-1.5-flash.jsonl"), 'r')) # Load the training data from the JSON file
-    # training_data = TuningDataset(
-    #         examples=[TuningExample(
-    #             text_input=entry.get("text_input"),  # Use the 'input' field from the JSON data
-    #             output=entry.get("output")  # Use the 'output' field from the JSON data
-    #         ) for entry in data
-    #         ]
-    #     )
-    # dummy_dict = {
-    #     "text_input": "test",
-    #     "output": "test"
-    # }
-    # dummy_dict.get("text_input")
-    # for entry in data:
-
-    #     print(entry.get("text_input"),entry.get("output"))
-    # for entry in training_data.examples:
-    #     print(entry.text_input)
-    #     print(entry.output)
-
-    
-
-    # dummy.check_tuning_job_status("tunedModels/test-tuned-model-icran2mmdiyb")
-
-    # response = dummy._client.models.generate_content(
-    #     model="tunedModels/test-tuned-model-icran2mmdiyb",
-    #     contents="You are generating **ADA-compliant** alt text based on the given **caption, , and **.\n\n### **Input Data:**\n- **Caption:** Here is a description of the image:\n\nClose-up view of a logo for a company named \"Natural Breeze Professional Remodelers\".\u00c2\u00a0\n\n\nHere's a breakdown of the logo's elements:\n\n* **Text:** The primary text is \"natural breeze,\" styled in a bold, slightly stylized font with some overlapping and layering of the letters.  The words \"PROFESSIONAL REMODELERS\" appear below in a simpler, sans-serif font.\n\n* **Graphic:**\u00c2\u00a0A stylized leaf or maple leaf-like shape is integrated into the design, partially overlapping and behind the text \"Natural Breeze.\" The leaf has a striped pattern.\n\n* **Color:** The entire logo is rendered in shades of gray, appearing monochromatic.\n\n* **Style:** The overall style is clean but somewhat playful, suggesting a blend of natural elements (the leaf) and professionalism (the clear text and layout).\n\n\nThe logo is well-designed and clearly communicates the company name and its business focus.\n\n\n### **Guidelines for Alt Text:**\n1. **Be concise:** Keep the alt text under **150 characters**.\n2. **Be descriptive and meaningful:** Focus on the **essential content** of the image, rather than just its appearance.\n3. **Avoid redundancy:** Do **not** repeat details already provided in the surrounding text.\n4. **Use natural language:** Write in a **clear, fluent, and grammatically correct** way.\n5. **Maintain relevance:** Your response **must** include details from the caption, text, and tags.\n6. **Do NOT** generate generic alt text. The description should be unique to the image.\n\n### **Examples:**\n**Good Alt Text:** 'A person in a wheelchair crossing the street on a sunny day.' (Concise, relevant, and informative)\n**Bad Alt Text:** 'An image of a person outside.' (Too vague, lacks key details)\n\nNow, generate **one** alt text description following these rules.",
-
-    #     )
-    
-    # print(response.text)
-    # print("Pause")
