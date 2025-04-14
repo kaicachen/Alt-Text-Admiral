@@ -5,10 +5,16 @@ from time import sleep
 from io import BytesIO
 from PIL import Image
 
+#testing
+from google import genai
+from os import getenv
+
+from training import Trainer
+
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True):
+    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = False, tuned = True):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -17,11 +23,26 @@ class DataProcessor:
         self.text = text
         self.href = href
 
+        #Used to access client to use all models (TODO, move this to site processor)
+        self._dummy_client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
+
+        #determine if the tuned model should be used
+        self._tuned = tuned
+
         # Store models and processor
         self._gemini_model = gemini_model
         self._detr_model = detr_model
         self._detr_processor = detr_processor
         self._device = device
+        
+
+        #true if data is saved for training, false otherwise
+        if training:
+            self._trainer = Trainer(gemini_model.model_name)
+            self._training = True
+        else:
+            self._trainer = None
+            self._training = False
 
         # Location is a URL
         if URL:
@@ -119,10 +140,7 @@ class DataProcessor:
         if image_objects:
             objects_input = f"- **Tags:** {image_objects}\n"
 
-        # Keeps attempting until completion or manual time out
-        while(not_generated):
-            try:
-                response = self._gemini_model.generate_content(
+        prompt = (
                     f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
                     f"### **Input Data:**\n"
                     f"{caption_input}"
@@ -145,6 +163,21 @@ class DataProcessor:
                     
                     f"Now, generate **one** alt text description following these rules."
                     )
+
+        # Keeps attempting until completion or manual time out
+        while(not_generated):
+            try:
+                if self._tuned:
+                    response = self._dummy_client.models.generate_content(
+                        model="tunedModels/test-tuned-model-icran2mmdiyb",
+                        contents= prompt
+                    )
+                else:
+                    response = self._gemini_model.generate_content(
+                        prompt
+                        )
+                if self._training:
+                    self._trainer.add_to_dataset(self.loc, prompt, image_type="informative")
                 not_generated = False
 
             except Exception as e:
@@ -178,7 +211,6 @@ class DataProcessor:
         except exceptions.RequestException as e:
             print(f"Error fetching URL: {e}")
             return None
-        
 
     '''Generates a description of the destination link attached to the image'''
     def _generate_link_description(self):
@@ -195,10 +227,7 @@ class DataProcessor:
         not_generated = True
         sleep_length = 1
 
-        # Prompt Gemini to describe the site
-        while(not_generated):
-            try:
-                response = self._gemini_model.generate_content(
+        prompt = (
                     f"You are generating **ADA-compliant** alt text describing the destination of the following link**.\n\n"
                     f"### **Input Data:**\n"
                     f"{self.href}"
@@ -218,6 +247,20 @@ class DataProcessor:
                     
                     f"Now, generate **one** alt text description following these rules."
                     )
+
+        # Prompt Gemini to describe the site
+        while(not_generated):
+            try:
+                if False: #self._tuned: #Block off the branch as no tuned model yet #TODO: make link datset, make tuned model, use tuned model
+                    response = self._dummy_client.models.generate_content(
+                        model="tunedModels/test-tuned-model-icran2mmdiyb",#TODO: change tuned model to be the one trained for links
+                        contents= prompt
+                    )
+                else:
+                    response = self._gemini_model.generate_content(prompt)
+                if self._training:
+                    self._trainer.add_to_dataset(self.loc, prompt, image_type="link")
+
                 not_generated = False
 
             except Exception as e:
