@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EECS 582 Capstone Project</title>
+
+    <style>
+        .back {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="title"></h1>
+    <button class="back"><a href="{{ url_for('history') }}">Back</a></button>
+
+    
+    <div id="scrapedResults"></div>
+    <script>
+        const raw = localStorage.getItem("selectedHistory");
+        const historyItem = JSON.parse(raw);
+
+        const h1El = document.getElementById("title");
+        const resultsDiv = document.getElementById("scrapedResults");
+
+        h1El.textContent = "Previous results of " + historyItem.name + " from " + historyItem.date + ":";
+
+    </script>
+</body>
+</html>

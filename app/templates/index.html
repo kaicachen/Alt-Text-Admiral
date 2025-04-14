@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EECS 582 Capstone Project</title>
     <style>
+
+        .history {
+            position: fixed;
+            right: 10px;
+            top: 10px;
+        }
         /* The Modal (background) */
         .modal {
         position: fixed; /* Stay in place */
@@ -51,9 +57,12 @@
             margin-top: 10px;
         }
 
+
     </style>
 </head>
 <body>
+    <button class="history"><a href="{{ url_for('history') }}" class="btn">History</a></button>
+
     <h1>Image Alt-Text Generation Tool</h1>
     <p>Enter a URL to begin the web scraping process.</p>
     

@@ -129,6 +129,14 @@ def checkURL():
     except:
         return jsonify({'valid':False})
     
+@app.route('/history')
+def history():
+    return render_template('history.html')
+
+@app.route('/prevResults')
+def prevResults():
+    return render_template('prevResults.html')
+    
 # @app.route("/proxy")
 # def proxy():
 #     try:
