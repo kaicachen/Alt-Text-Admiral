@@ -1,6 +1,6 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from csv import reader, writer, QUOTE_ALL
-import google.generativeai as genai
+import google.generativeai as genal
 from dotenv import load_dotenv
 from data_processor import *
 from os import path, getenv
@@ -16,10 +16,12 @@ from re import sub
 
 class SiteProcessor:
     def __init__(self, url, annotations):
+        # Load environmental variables
         load_dotenv()
+        
         # Loads Gemini model
-        self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        genai.configure(api_key=getenv('GEMINI_API_KEY'))
+        self._gemini_model = genal.GenerativeModel("gemini-1.5-flash")
+        genal.configure(api_key=getenv('GEMINI_API_KEY'))
         sleep(1)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU
@@ -42,7 +44,8 @@ class SiteProcessor:
         self.annotations = annotations
 
 
-    def _generate_alt_text(self, image_type, image_url, text, fetch_db=True):
+    '''Generate alt-text from the given data or fetch from the database if possible'''
+    def _generate_alt_text(self, image_type, image_url, text, href, fetch_db=True):
         # Open cache database
         cache_db = connect(path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
@@ -57,7 +60,7 @@ class SiteProcessor:
                                 """)
         
         # Compute hash to see if alt text has already been generated
-        hash = sha256(str((type, image_url, text)).encode())
+        hash = sha256(str((image_type, image_url, text, href)).encode())
         cache_db_cursor.execute("SELECT alt_text FROM cached_results WHERE hash=?", (hash.hexdigest(),))
         db_fetch = cache_db_cursor.fetchone()
 
@@ -72,14 +75,14 @@ class SiteProcessor:
             return db_fetch[0]
 
         # Create data processor object
-        image_processor = DataProcessor(image_url, image_type, text, self._gemini_model, self._detr_model, self._detr_processor, self._device)
+        image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_model, self._detr_model, self._detr_processor, self._device)
 
         # Generate alt-text
         alt_text = image_processor.process_data()
 
         # Update database with newest alt-text
         if db_fetch:
-            cache_db_cursor.execute("UPDATE cached_results SET alt_text=? WHERE hash=?", (hash.hexdigest(), alt_text))
+            cache_db_cursor.execute("UPDATE cached_results SET alt_text=? WHERE hash=?", (alt_text, hash.hexdigest()))
 
         # Add to database
         else:
@@ -99,51 +102,10 @@ class SiteProcessor:
         cache_db.close()
 
         return alt_text
-    
-
-    '''Takes in a list of indices to remove given images from a CSV found with the given URL'''
-    def _exclude_images(self):
-        # Early exit for no changes
-        if len(self.annotations) == 0:
-            return
-
-        # Creates list to store image, text tuples from the site CSV
-        site_data = []
-
-        # Reads all image, text tuples scraped from the URL
-        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
-            csv_reader = reader(file)
-            
-            # Read a header row
-            next(csv_reader)
-            
-            # Stores the image, text tuple
-            for row in csv_reader:
-                site_data.append(tuple(row))
-
-        # Reopens the same CSV to write the updated list with exclusions
-        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            csv_writer = writer(file, quoting=QUOTE_ALL)
-            
-            # Write a header row
-            csv_writer.writerow(["image_type", "image_link", "surrounding_text"])
-            
-            # Iterate through image, text tuples
-            for i in range(len(site_data)):
-                # Skip over exclusions
-                if self.annotations[i] == 3:
-                    continue
-
-                # Rewrite tuples
-                csv_writer.writerow([
-                    self.annotations[i],
-                    site_data[i][0],
-                    site_data[i][1]
-                ])
 
 
-    '''Generates alt-text for each image, text tuple in a given CSV'''
-    def _process_csv(self):
+    '''Generates the needed alt-text for all images'''
+    def process_site(self):
         # Creates list to store image, text tuples from the site CSV
         site_data = []
 
@@ -170,16 +132,19 @@ class SiteProcessor:
             csv_writer.writerow(["image_link", "generated_output"])
 
             # Writes the image URL and alt-text to the CSV
-            for type, image, text in site_data:
-                csv_writer.writerow([
-                    image,
-                    self._generate_alt_text(type, image, text)
-                ])
-    
+            for i in range(len(site_data)):
+                # Pass if the image shall be excluded
+                if self.annotations[i] == 3:
+                    continue
 
-    def process_site(self):
-        self._exclude_images()
-        self._process_csv()
+                csv_writer.writerow([
+                    site_data[i][0],
+                    self._generate_alt_text(
+                        image_type = self.annotations[i],
+                        image_url  = site_data[i][0],
+                        text       = site_data[i][1], 
+                        href       = site_data[i][2])
+                ])
 
 
 if __name__ == "__main__":
