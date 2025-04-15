@@ -7,7 +7,7 @@ This file runs the webscraper, then before running main_captioner.py on the resu
 it asks the user to mark whether images are decorative, links, or infographics. It then
 modifies the CSV file passed to the main_captioner.py 
 '''
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from sys import prefix, base_prefix, executable
 from subprocess import run, CalledProcessError
 from shutil import which as shutil_which
@@ -15,12 +15,13 @@ from json import dumps as json_dumps
 from os import name as os_name
 from pandas import read_csv
 from csv import reader
-from os import path
+from os import path, environ, urandom
 from re import sub
 import main
 
 
 app = Flask(__name__)
+app.secret_key = environ.get("SECRET_KEY", urandom(24))
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
 def get_python_path():
@@ -54,7 +55,12 @@ def index():
         if url:
             try:
                 # Runs the web scraper on the given site
-                main.web_scraper(url)
+                validated_url, site_data = main.web_scraper(url)
+
+                # Store the validated url and list of data tuples in the session
+                session["url"] = validated_url
+                session["site_data"] = site_data
+
                 return redirect(url_for('annotate'))
                 
             except CalledProcessError as e:
@@ -69,24 +75,17 @@ def index():
 '''Page to allow for user annotations of images'''
 @app.route('/annotate', methods=['GET', 'POST'])
 def annotate():
-    # Reads scraped data from CSV output
-    image_links = []
+    # Reads scraped data from session values
+    image_links = [data[0] for data in session.get("site_data", "none")]
+
     image_tags = []
-    filename = sub(r'[\/:*?"<>|]', '-', url)[:20]
-    with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{filename}.csv"), mode="r", newline="", encoding="utf-8") as file:
-        csv_reader = reader(file)
-        
-        # Read a header row
-        next(csv_reader)
-        
-        for row in csv_reader:
-            if row[0] == 'true':
-                image_tag = 3
-            else:
-                image_tag = 0
-            
-            image_links.append(row[0])
-            image_tags.append(image_tag)
+
+    # Default to "don't include" tag if invalid URL
+    for image in image_links:
+        if image == "true":
+            image_tags.append(3)
+        else:
+            image_tags.append(0)
 
     return render_template("annotate.html", image_links=image_links, image_tags=image_tags)
 

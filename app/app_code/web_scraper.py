@@ -1,7 +1,6 @@
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from csv import writer, QUOTE_ALL
 from selenium import webdriver
 from re import sub, search
 from requests import get
@@ -173,27 +172,12 @@ class WebScraper:
         
         driver.quit()
 
-        # Create CSV output of image, text tuples
-        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            csv_writer = writer(file, quoting=QUOTE_ALL)
-            
-            # Write a header row
-            csv_writer.writerow(["image_link", "surrounding_text", "href"])
-            
-            # Writes image, text tuple
-            for image, text, href in image_text_data:
-                csv_writer.writerow([
-                    image,
-                    text,
-                    href
-                ])
-
-        # Returns image, text tuple list for easy access
-        return image_text_data
+        # Returns validated URL and image, text tuple list
+        return validated_url, image_text_data
 
 
 if __name__ == "__main__":
     # URL is passed to script through argv
     url = argv[1]
     web_scraper = WebScraper(url)
-    site_data = web_scraper.scrape_site()
+    validated_url, site_data = web_scraper.scrape_site()
