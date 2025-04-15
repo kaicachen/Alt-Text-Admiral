@@ -113,7 +113,7 @@ class DataProcessor:
                 obj_name = self._detr_model.config.id2label[label.item()]
                 detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
 
-        # Convert detected objects to list format for CSV
+        # Convert detected objects to list format
         tags_list = [f"{tag} ({count})" for tag, count in detected_objects.items()]
 
         return detected_objects

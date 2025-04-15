@@ -9,14 +9,10 @@ modifies the CSV file passed to the main_captioner.py
 '''
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from sys import prefix, base_prefix, executable
-from subprocess import run, CalledProcessError
+from subprocess import CalledProcessError
 from shutil import which as shutil_which
-from json import dumps as json_dumps
 from os import name as os_name
-from pandas import read_csv
-from csv import reader
 from os import path, environ, urandom
-from re import sub
 import main
 
 
@@ -112,7 +108,7 @@ def process_images():
 def displayed_images():
     # Reads data from session value
     generated_data = session.get("generated_data", "none")
-    
+
     return render_template("displayed_images.html", data=generated_data)
 
 

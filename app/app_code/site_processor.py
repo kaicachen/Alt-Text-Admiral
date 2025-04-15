@@ -107,7 +107,7 @@ class SiteProcessor:
         
         generated_data = []
 
-        # Writes the image URL and alt-text to the CSV
+        # Adds the image URL and alt-text to the list
         for i in range(len(self.site_data)):
             # Pass if the image shall be excluded
             if self.annotations[i] == 3:
