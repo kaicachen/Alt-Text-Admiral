@@ -12,3 +12,4 @@ pandas
 google-generativeai
 bs4
 supabase
+google-genai
