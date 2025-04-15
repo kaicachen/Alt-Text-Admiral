@@ -1,21 +1,16 @@
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from csv import writer, QUOTE_ALL
 from selenium import webdriver
-from re import sub, search
+from re import search
 from requests import get
 from time import sleep
 from sys import argv
-from os import path
 
 '''Class to perform webscraping of image and text tuples'''
 class WebScraper:
     def __init__(self, url):
         self.site_url = url
-
-        # Replaces characters in the URL to make it a valid file name
-        self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
 
     '''Tests connection to URL'''
     def _test_url(self, url):
@@ -31,11 +26,11 @@ class WebScraper:
     def _validate_url(self):
         # Ensure reachable URL and early exit if not
         if self._test_url(self.site_url):
-            return url
+            return self.site_url
         
         # Case of 'www.example.com'
         if self.site_url[:4] == "www.":
-            cleaned_url = "https://" + url
+            cleaned_url = "https://" + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
@@ -48,11 +43,11 @@ class WebScraper:
         
         # Case of 'example.com'
         else:
-            cleaned_url = "https://www." + url
+            cleaned_url = "https://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
-            cleaned_url = "http://www." + url
+            cleaned_url = "http://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
@@ -173,27 +168,12 @@ class WebScraper:
         
         driver.quit()
 
-        # Create CSV output of image, text tuples
-        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            csv_writer = writer(file, quoting=QUOTE_ALL)
-            
-            # Write a header row
-            csv_writer.writerow(["image_link", "surrounding_text", "href"])
-            
-            # Writes image, text tuple
-            for image, text, href in image_text_data:
-                csv_writer.writerow([
-                    image,
-                    text,
-                    href
-                ])
-
-        # Returns image, text tuple list for easy access
-        return image_text_data
+        # Returns validated URL and image, text tuple list
+        return validated_url, image_text_data
 
 
 if __name__ == "__main__":
     # URL is passed to script through argv
     url = argv[1]
     web_scraper = WebScraper(url)
-    site_data = web_scraper.scrape_site()
+    validated_url, site_data = web_scraper.scrape_site()
