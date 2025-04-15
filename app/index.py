@@ -103,6 +103,7 @@ def process_images():
     # Generates alt-text for images and stores in session
     generated_data = main.process_site(site_data, tagged_list)
     session["generated_data"] = generated_data
+
     return redirect(url_for('displayed_images'))
 
 
@@ -111,6 +112,7 @@ def process_images():
 def displayed_images():
     # Reads data from session value
     generated_data = session.get("generated_data", "none")
+    
     return render_template("displayed_images.html", data=generated_data)
 
 

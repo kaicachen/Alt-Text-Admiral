@@ -15,13 +15,13 @@ def process_site(site_data, annotations):
 
 '''Regenerate alt-text for an image'''
 def regenerate(image_type, image_url, text, href):
-    # URL and annotation list not needed
+    # site data and annotation list not needed
     site_processor = SiteProcessor(None, None)
     return site_processor.generate_alt_text(image_type, image_url, text, href, fetch_db=False)
 
 
 '''Add image to generation'''
 def add_image(image_type, image_url, href):
-    # URL and annotation list not needed
+    # site data and annotation list not needed
     site_processor = SiteProcessor(None, None)
     return site_processor.generate_alt_text(image_type, image_url, "", href)
