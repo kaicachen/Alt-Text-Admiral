@@ -9,7 +9,7 @@ from training import Trainer
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_client, detr_model, detr_processor, device, URL=True, training = False, tuned = False):
+    def __init__(self, image_loc, image_type, text, href, gemini_client, detr_model, detr_processor, device, URL=True, training = False, tuned = True):
         # Saves image path for future output
         self.loc = image_loc
 
