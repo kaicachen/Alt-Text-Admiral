@@ -9,7 +9,6 @@ webdriver-manager
 reportlab
 flask
 pandas
-google-generativeai
 bs4
 supabase
 google-genai
