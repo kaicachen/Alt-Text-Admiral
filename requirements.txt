@@ -10,7 +10,8 @@ webdriver-manager
 reportlab
 flask
 pandas
-google-generativeai
+bs4
+google-genai
 Authlib
 requests
 dotenv
