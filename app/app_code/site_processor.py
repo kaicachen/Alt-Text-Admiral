@@ -2,7 +2,7 @@ from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from supabase import create_client, Client
 from csv import reader, writer, QUOTE_ALL
 from datetime import datetime, timezone
-import google.generativeai as genai
+import google.generativeai as generativeai
 from dotenv import load_dotenv
 from data_processor import *
 from os import path, getenv
@@ -26,8 +26,8 @@ class SiteProcessor:
         supabase_key: str = getenv("SUPABASE_API_KEY")
 
         # Loads Gemini model
-        self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        genai.configure(api_key=gemini_key)
+        self._gemini_model = generativeai.GenerativeModel("gemini-1.5-flash")
+        generativeai.configure(api_key=gemini_key)
         sleep(1)
 
         # Initializes Supabase Connection
