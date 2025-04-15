@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import google.generativeai as generativeai
 from dotenv import load_dotenv
 from data_processor import *
-from os import path, getenv
+from os import path, environ
 from hashlib import sha256
 from web_scraper import *
 from json import loads
@@ -18,12 +18,12 @@ from re import sub
 class SiteProcessor:
     def __init__(self, url, annotations):
         # Load environmental variables
-        load_dotenv()
+        load_dotenv(".env")
 
         # Get environmental variables
-        gemini_key  : str = getenv("GEMINI_API_KEY")
-        supabase_url: str = getenv("SUPABASE_URL")
-        supabase_key: str = getenv("SUPABASE_API_KEY")
+        gemini_key  : str = environ.get("GEMINI_API_KEY")
+        supabase_url: str = environ.get("SUPABASE_URL")
+        supabase_key: str = environ.get("SUPABASE_API_KEY")
 
         # Loads Gemini model
         self._gemini_model = generativeai.GenerativeModel("gemini-1.5-flash")
