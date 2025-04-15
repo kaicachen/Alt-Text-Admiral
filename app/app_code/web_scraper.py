@@ -31,11 +31,11 @@ class WebScraper:
     def _validate_url(self):
         # Ensure reachable URL and early exit if not
         if self._test_url(self.site_url):
-            return url
+            return self.site_url
         
         # Case of 'www.example.com'
         if self.site_url[:4] == "www.":
-            cleaned_url = "https://" + url
+            cleaned_url = "https://" + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
@@ -48,11 +48,11 @@ class WebScraper:
         
         # Case of 'example.com'
         else:
-            cleaned_url = "https://www." + url
+            cleaned_url = "https://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
-            cleaned_url = "http://www." + url
+            cleaned_url = "http://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             

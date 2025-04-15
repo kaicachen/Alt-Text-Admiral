@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from time import sleep
 from io import BytesIO
 from PIL import Image
-from training import Trainer
+from app_code.training import Trainer
 
 
 '''Class to handle all processing of a image, text tuple passed in'''

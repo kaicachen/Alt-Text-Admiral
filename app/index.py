@@ -17,6 +17,7 @@ from pandas import read_csv
 from csv import reader
 from os import path
 from re import sub
+import main
 
 
 app = Flask(__name__)
@@ -53,7 +54,7 @@ def index():
         if url:
             try:
                 # Runs the web scraper on the given site
-                run([python_path, "app/app_code/web_scraper.py", url], check=True,text=True)
+                main.web_scraper(url)
                 return redirect(url_for('annotate'))
                 
             except CalledProcessError as e:
@@ -98,7 +99,7 @@ def process_images():
     tagged_list = data.get("taggedList", [])
 
     # Generates alt-text for images
-    run([python_path, "app/app_code/site_processor.py", url, json_dumps(tagged_list)], check=True, text=True)  # this line is causing app to crash
+    main.process_site(url, tagged_list)
     return redirect(url_for('displayed_images'))
 
 

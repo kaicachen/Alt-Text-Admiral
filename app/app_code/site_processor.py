@@ -4,11 +4,11 @@ from csv import reader, writer, QUOTE_ALL
 from google import genai
 
 from dotenv import load_dotenv
-from data_processor import *
+from app_code.data_processor import *
 from os import path, getenv
 from sqlite3 import connect
 from hashlib import sha256
-from web_scraper import *
+from app_code.web_scraper import *
 from json import loads
 from time import sleep
 from torch import cuda
@@ -47,7 +47,7 @@ class SiteProcessor:
 
 
     '''Generate alt-text from the given data or fetch from the database if possible'''
-    def _generate_alt_text(self, image_type, image_url, text, href, fetch_db=True):
+    def generate_alt_text(self, image_type, image_url, text, href, fetch_db=True):
         # Open cache database
         cache_db = connect(path.join("app", "app_code", "cached_results.db"))
         cache_db_cursor = cache_db.cursor()
@@ -141,7 +141,7 @@ class SiteProcessor:
 
                 csv_writer.writerow([
                     site_data[i][0],
-                    self._generate_alt_text(
+                    self.generate_alt_text(
                         image_type = self.annotations[i],
                         image_url  = site_data[i][0],
                         text       = site_data[i][1], 
