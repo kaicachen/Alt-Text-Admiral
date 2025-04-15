@@ -9,18 +9,18 @@ modifies the CSV file passed to the main_captioner.py
 '''
 
 from pandas import read_csv
-from subprocess import run, CalledProcessError
-from os import getenv, path, name
+from os import getenv, path, name as os_name
 from re import sub
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from sys import prefix, base_prefix, executable
-from csv import reader as csv_reader
-from json import dumps
-from shutil import which
+from subprocess import run, CalledProcessError
+from shutil import which as shutil_which
+from json import dumps as json_dumps
+from csv import reader
 from string import ascii_letters, digits
 from random import choices
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 
 app = Flask(__name__)
 load_dotenv()
