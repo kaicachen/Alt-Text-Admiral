@@ -14,7 +14,7 @@ from training import Trainer
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = False, tuned = True):
+    def __init__(self, image_loc, image_type, text, href, gemini_model_name, detr_model, detr_processor, device, URL=True, training = False, tuned = False):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -30,7 +30,7 @@ class DataProcessor:
         self._tuned = tuned
 
         # Store models and processor
-        self._gemini_model = gemini_model
+        self._gemini_model_name = gemini_model_name
         self._detr_model = detr_model
         self._detr_processor = detr_processor
         self._device = device
@@ -38,7 +38,7 @@ class DataProcessor:
 
         #true if data is saved for training, false otherwise
         if training:
-            self._trainer = Trainer(gemini_model.model_name)
+            self._trainer = Trainer(gemini_model_name)
             self._training = True
         else:
             self._trainer = None
@@ -72,7 +72,11 @@ class DataProcessor:
         # Keeps attempting until completion or manual time out
         while(not_generated):
             try:
-                caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
+                caption = self._dummy_client.models.generate_content(
+                    model=self._gemini_model_name,
+                    contents=[self.image,"Describe this image in a detailed caption. "]
+                )
+                #caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
                 not_generated = False
                 return caption
             
@@ -173,9 +177,10 @@ class DataProcessor:
                         contents= prompt
                     )
                 else:
-                    response = self._gemini_model.generate_content(
-                        prompt
-                        )
+                    response = self._dummy_client.models.generate_content(
+                        model=self._gemini_model_name,
+                        contents= prompt
+                    )
                 if self._training:
                     self._trainer.add_to_dataset(self.loc, prompt, image_type="informative")
                 not_generated = False
@@ -257,7 +262,10 @@ class DataProcessor:
                         contents= prompt
                     )
                 else:
-                    response = self._gemini_model.generate_content(prompt)
+                    response = self._dummy_client.models.generate_content(
+                        model=self._gemini_model_name,
+                        contents= prompt
+                    )
                 if self._training:
                     self._trainer.add_to_dataset(self.loc, prompt, image_type="link")
 

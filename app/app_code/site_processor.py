@@ -1,6 +1,8 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from csv import reader, writer, QUOTE_ALL
-import google.generativeai as genal
+
+from google import genai
+
 from dotenv import load_dotenv
 from data_processor import *
 from os import path, getenv
@@ -20,8 +22,11 @@ class SiteProcessor:
         load_dotenv()
         
         # Loads Gemini model
-        self._gemini_model = genal.GenerativeModel("gemini-1.5-flash")
-        genal.configure(api_key=getenv('GEMINI_API_KEY'))
+        # genai.Client(api_key=getenv('GEMINI_API_KEY')).models.get("gemini-1.5-flash")
+        self._gemini_client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
+        self._gemini_model_name = "gemini-1.5-flash" #self._gemini_client.models.get(model="gemini-1.5-flash")
+        # self._gemini_model = genal.GenerativeModel("gemini-1.5-flash")
+        # genal.configure(api_key=getenv('GEMINI_API_KEY'))
         sleep(1)
 
         # Sets active device as GPU if available, otherwise it runs on the CPU
@@ -75,7 +80,7 @@ class SiteProcessor:
             return db_fetch[0]
 
         # Create data processor object
-        image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_model, self._detr_model, self._detr_processor, self._device)
+        image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_model_name, self._detr_model, self._detr_processor, self._device)
 
         # Generate alt-text
         alt_text = image_processor.process_data()
