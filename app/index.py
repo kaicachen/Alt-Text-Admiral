@@ -97,19 +97,21 @@ def process_images():
     data = request.get_json()
     tagged_list = data.get("taggedList", [])
 
-    # Generates alt-text for images
-    main.process_site(url, tagged_list)
+    # Reads data from session values
+    site_data = session.get("site_data", "none")
+
+    # Generates alt-text for images and stores in session
+    generated_data = main.process_site(site_data, tagged_list)
+    session["generated_data"] = generated_data
     return redirect(url_for('displayed_images'))
 
 
 # Page to show images with their alt-text
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
-    # Reads images and corresponding generated alt-text from CSV output
-    output_csv = sub(r'[\/:*?"<>|]', '-', url)[:20] + ".csv"
-    output_dict = read_csv(path.join("app", "app_code", "outputs", "CSVs", output_csv)).to_dict(orient="records")
-
-    return render_template("displayed_images.html", data=output_dict)
+    # Reads data from session value
+    generated_data = session.get("generated_data", "none")
+    return render_template("displayed_images.html", data=generated_data)
 
 
 @app.route('/api/data', methods=['GET'])

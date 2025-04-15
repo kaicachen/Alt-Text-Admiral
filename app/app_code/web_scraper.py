@@ -2,19 +2,15 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium import webdriver
-from re import sub, search
+from re import search
 from requests import get
 from time import sleep
 from sys import argv
-from os import path
 
 '''Class to perform webscraping of image and text tuples'''
 class WebScraper:
     def __init__(self, url):
         self.site_url = url
-
-        # Replaces characters in the URL to make it a valid file name
-        self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
 
     '''Tests connection to URL'''
     def _test_url(self, url):

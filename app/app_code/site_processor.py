@@ -1,8 +1,5 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
-from csv import reader, writer, QUOTE_ALL
-
 from google import genai
-
 from dotenv import load_dotenv
 from app_code.data_processor import *
 from os import path, getenv
@@ -13,11 +10,10 @@ from json import loads
 from time import sleep
 from torch import cuda
 from sys import argv
-from re import sub
 
 
 class SiteProcessor:
-    def __init__(self, url, annotations):
+    def __init__(self, site_data, annotations):
         # Load environmental variables
         load_dotenv()
         
@@ -36,11 +32,8 @@ class SiteProcessor:
         # Reduce console output
         logging.set_verbosity_error()
 
-        # Save site URL for future use
-        self.site_url = url
-
-        # Replaces characters in the URL to make it a valid file name
-        self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
+        # Saves site data
+        self.site_data = site_data
 
         # Saves image annotations
         self.annotations = annotations
@@ -108,49 +101,33 @@ class SiteProcessor:
 
     '''Generates the needed alt-text for all images'''
     def process_site(self):
-        # Creates list to store image, text tuples from the site CSV
-        site_data = []
-
-        # Reads all image, text tuples scraped from the URL
-        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="r", newline="", encoding="utf-8") as file:
-            csv_reader = reader(file)
-            
-            # Read a header row
-            next(csv_reader)
-            
-            # Stores the image, text tuple
-            for row in csv_reader:
-                site_data.append(tuple(row))
-
         # Early exit if there are no images to process
-        if site_data is None:
+        if self.site_data is None:
             return
+        
+        generated_data = []
 
-        # Opens a file to store the output of images and alt-text
-        with open(path.join("app", "app_code", "outputs", "CSVs", f"{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            csv_writer = writer(file, quoting=QUOTE_ALL)
-            
-            # Write a header row
-            csv_writer.writerow(["image_link", "generated_output"])
+        # Writes the image URL and alt-text to the CSV
+        for i in range(len(self.site_data)):
+            # Pass if the image shall be excluded
+            if self.annotations[i] == 3:
+                continue
 
-            # Writes the image URL and alt-text to the CSV
-            for i in range(len(site_data)):
-                # Pass if the image shall be excluded
-                if self.annotations[i] == 3:
-                    continue
+            # Add image, alt-text tuple to list
+            generated_data.append((
+                self.site_data[i][0],
+                self.generate_alt_text(
+                    image_type = self.annotations[i],
+                    image_url  = self.site_data[i][0],
+                    text       = self.site_data[i][1], 
+                    href       = self.site_data[i][2])
+            ))
 
-                csv_writer.writerow([
-                    site_data[i][0],
-                    self.generate_alt_text(
-                        image_type = self.annotations[i],
-                        image_url  = site_data[i][0],
-                        text       = site_data[i][1], 
-                        href       = site_data[i][2])
-                ])
+        return generated_data
 
 
 if __name__ == "__main__":
-    url = argv[1]
+    url = loads(argv[1])
     annotations = loads(argv[2])
-    site_processor = SiteProcessor(url, annotations)
+    site_processor = SiteProcessor(site_data, annotations)
     site_processor.process_site()

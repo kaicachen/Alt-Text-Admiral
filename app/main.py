@@ -8,9 +8,9 @@ def web_scraper(url):
 
 
 '''Generate alt-text for all data tuples'''
-def process_site(url, annotations):
-    site_processor = SiteProcessor(url, annotations)
-    site_processor.process_site()
+def process_site(site_data, annotations):
+    site_processor = SiteProcessor(site_data, annotations)
+    return site_processor.process_site()
 
 
 '''Regenerate alt-text for an image'''
