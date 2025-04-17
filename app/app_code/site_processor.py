@@ -6,6 +6,7 @@ from os import path, environ
 from google import genai
 from dotenv import load_dotenv
 from app_code.data_processor import *
+from warnings import filterwarnings
 from hashlib import sha256
 from app_code.web_scraper import *
 from json import loads
@@ -16,6 +17,12 @@ from sys import argv
 
 class SiteProcessor:
     def __init__(self, site_data, annotations):
+        # Don't show non-meta parameter warning
+        filterwarnings("ignore", message=".*copying from a non-meta parameter.*")
+
+        # Reduce console output
+        logging.set_verbosity_error()
+
         # Load environmental variables
         load_dotenv(".env")
 
@@ -37,9 +44,6 @@ class SiteProcessor:
         # Load the DETR model and processor
         self._detr_processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
         self._detr_model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50").to(self._device)
-
-        # Reduce console output
-        logging.set_verbosity_error()
 
         # Saves site data
         self.site_data = site_data
@@ -116,6 +120,8 @@ class SiteProcessor:
 
         # Adds the image URL and alt-text to the list
         for i in range(len(self.site_data)):
+            print(f"Processing image {i + 1} of {len(self.site_data)}")
+
             # Pass if the image shall be excluded
             if self.annotations[i] == 3:
                 continue
