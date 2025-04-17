@@ -58,24 +58,32 @@ class SiteProcessor:
         hash = sha256(str((image_type, image_url, text, href)).encode())
 
         # Attempt to read from database
-        response = (
-            self._supabase.table("Cached Results")
-            .select("alt_text")
-            .eq("hash", hash.hexdigest())
-            .execute()
-            )
-
-        # Updates the timestamp of the value if found in database
-        if len(response.data):
+        try:
             response = (
                 self._supabase.table("Cached Results")
-                .update({"last_access" : datetime.now(timezone.utc).isoformat()})
+                .select("alt_text")
                 .eq("hash", hash.hexdigest())
                 .execute()
-            )
+                )
+        except Exception as e:
+            print(f"Error reading tuple from the database: hash: {hash.hexdigest()}, ERROR: {e}")
+            response = None
+
+        # Updates the timestamp of the value if found in database
+        if response and len(response.data):
+            try:
+                response = (
+                    self._supabase.table("Cached Results")
+                    .update({"last_access" : datetime.now(timezone.utc).isoformat()})
+                    .eq("hash", hash.hexdigest())
+                    .execute()
+                )
+            except Exception as e:
+                print(f"Error updating tuple time in the database: hash: {hash.hexdigest()} ERROR: {e}")
+                response = None
 
         # Returns database value if enabled
-        if fetch_db and len(response.data):
+        if fetch_db and response and len(response.data):
             return response.data[0]["alt_text"]
 
         # Create data processor object
@@ -85,13 +93,17 @@ class SiteProcessor:
         alt_text = image_processor.process_data()
 
         # Update database with newest alt-text
-        if len(response.data):
-            response = (
-                self._supabase.table("Cached Results")
-                .update({"alt_text" : alt_text})
-                .eq("hash", hash.hexdigest())
-                .execute()
-            )
+        if response and len(response.data):
+            try:
+                response = (
+                    self._supabase.table("Cached Results")
+                    .update({"alt_text" : alt_text})
+                    .eq("hash", hash.hexdigest())
+                    .execute()
+                )
+            except Exception as e:
+                print(f"Error updating tuple alt-text in the database: hash: {hash.hexdigest()}, alt-text: {alt_text} ERROR: {e}")
+                response = None
 
         # Add to database
         else:

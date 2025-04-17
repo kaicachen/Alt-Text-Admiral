@@ -27,15 +27,21 @@ class UserInfo:
     '''Checks if User exists in the database and adds them if not'''
     def _get_user_id(self, username, email):
         # Attempt to read from database
-        response = (
-            self._supabase.table("Users")
-            .select("*")
-            .eq("email", email)
-            .execute()
-            )
+        try:
+            response = (
+                self._supabase.table("Users")
+                .select("*")
+                .eq("email", email)
+                .execute()
+                )
+            
+        except Exception as e:
+            print(f"Error reading user from the database: username: {username}, email: {email}, ERROR: {e}")
+            response = None
+            
 
         # Returns the user ID if found in the database
-        if len(response.data):
+        if response and len(response.data):
             return int(response.data[0]["user_id"])
         
         # Add to database
@@ -54,17 +60,23 @@ class UserInfo:
                 
             except Exception as e:
                 print(f"Error adding tuple to the database: username: {username}, email: {email}, ERROR: {e}")
+                return None
 
 
     '''Display past generation options for a user'''
     def previous_generations(self):
         # Read from database
-        response = (
-            self._supabase.table("Site Generations")
-            .select("*")
-            .eq("user_id", self.user_id)
-            .execute()
-            )
+        try:
+            response = (
+                self._supabase.table("Site Generations")
+                .select("*")
+                .eq("user_id", self.user_id)
+                .execute()
+                )
+            
+        except Exception as e:
+            print(f"Error reading generations from the database: user_id: {self.user_id} ERROR: {e}")
+            return []
         
         # Initialize list to store past generations
         generation_list = []
@@ -83,13 +95,18 @@ class UserInfo:
     '''Loads images and alt-text from previous generation'''
     def load_generation(self, generation_id):
         # Read from database
-        response = (
-            self._supabase.table("Generation Data")
-            .select("*")
-            .eq("generation_id", generation_id)
-            .order("data_id")
-            .execute()
-            )
+        try:
+            response = (
+                self._supabase.table("Generation Data")
+                .select("*")
+                .eq("generation_id", generation_id)
+                .order("data_id")
+                .execute()
+                )
+            
+        except Exception as e:
+            print(f"Error reading generation data from the database: generation_id: {generation_id} ERROR: {e}")
+            return []
         
         # Initialize list to store data from the generation
         generation_data = []
@@ -118,7 +135,8 @@ class UserInfo:
                 )
             
         except Exception as e:
-            print(f"Error adding tuple to the database: website: {website}, username: {self.user_id}, ERROR: {e}")
+            print(f"Error adding generation to the database: website: {website}, user_id: {self.user_id}, ERROR: {e}")
+            return None, ([None] * len(generation_data))
 
         # Store ID for the generation
         generation_id = response[0]["generation_id"]
