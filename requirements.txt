@@ -12,3 +12,4 @@ flask
 pandas
 bs4
 google-genai
+gunicorn
