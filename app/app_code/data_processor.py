@@ -140,7 +140,7 @@ class DataProcessor:
             objects_input = f"- **Tags:** {image_objects}\n"
 
         prompt = (
-                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
+                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and 'caption')}, {(text_input and 'surrounding text')}, and {(objects_input and 'tags')}**.\n\n"
                     f"### **Input Data:**\n"
                     f"{caption_input}"
                     f"{text_input}"
