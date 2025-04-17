@@ -4,7 +4,7 @@ from os import environ
 
 
 class UserInfo:
-    def __init__(self, user_id=None, username=None, email=None):
+    def __init__(self, user_id=None, email=None):
         # Load environmental variables
         load_dotenv(".env")
 
@@ -21,11 +21,11 @@ class UserInfo:
         # Get user ID from database if not passed in
         if self.user_id is None:
             # Adds user to the database if they do not exist
-            self.user_id = self._get_user_id(username, email)
+            self.user_id = self._get_user_id(email)
 
 
     '''Checks if User exists in the database and adds them if not'''
-    def _get_user_id(self, username, email):
+    def _get_user_id(self, email):
         # Attempt to read from database
         try:
             response = (
@@ -36,7 +36,7 @@ class UserInfo:
                 )
             
         except Exception as e:
-            print(f"Error reading user from the database: username: {username}, email: {email}, ERROR: {e}")
+            print(f"Error reading user from the database: email: {email}, ERROR: {e}")
             response = None
             
 
@@ -49,9 +49,7 @@ class UserInfo:
             try:
                 response = (
                     self._supabase.table("Users")
-                    .insert({"username": username,
-                            "email": email
-                            })
+                    .insert({"email": email})
                     .execute()
                     )
                 
@@ -59,7 +57,7 @@ class UserInfo:
                 return int(response.data[0]["user_id"])
                 
             except Exception as e:
-                print(f"Error adding tuple to the database: username: {username}, email: {email}, ERROR: {e}")
+                print(f"Error adding tuple to the database: email: {email}, ERROR: {e}")
                 return None
 
 

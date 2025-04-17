@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from os import environ
 
 '''Login or create new user and then login'''
-def login_user(username, email):
-    user_info = UserInfo(username=username, email=email)
+def login_user(email):
+    user_info = UserInfo(email=email)
     return user_info.user_id
 
 
