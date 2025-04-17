@@ -1,6 +1,5 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from supabase import create_client, Client
-from csv import reader, writer, QUOTE_ALL
 from datetime import datetime, timezone
 from os import path, environ
 from google import genai
