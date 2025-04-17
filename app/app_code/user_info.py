@@ -15,41 +15,40 @@ class UserInfo:
         # Initializes Supabase Connection
         self._supabase: Client = create_client(supabase_url, supabase_key)
 
-        # Store user information
-        self.username = username
-        self.email = email
-
         # Adds user to the database if they do not exist
-        self._verify_user()
+        self._user_id = self._get_user_id(username, email)
 
 
     '''Checks if User exists in the database and adds them if not'''
-    def _verify_user(self):
+    def _get_user_id(self, username, email):
         # Attempt to read from database
         response = (
             self._supabase.table("Users")
             .select("*")
-            .eq("username", self.username)
+            .eq("email", email)
             .execute()
             )
 
-        # Updates the timestamp of the value if found in database
+        # Returns the user ID if found in the database
         if len(response.data):
-            return
+            return int(response.data[0]["user_id"])
         
         # Add to database
         else:
             try:
                 response = (
                     self._supabase.table("Users")
-                    .insert({"username": self.username,
-                            "email": self.email
+                    .insert({"username": username,
+                            "email": email
                             })
                     .execute()
                     )
                 
+                # Returns the user ID
+                return int(response.data[0]["user_id"])
+                
             except Exception as e:
-                print(f"Error adding tuple to the database: username: {self.username}, email: {self.email}, ERROR: {e}")
+                print(f"Error adding tuple to the database: username: {username}, email: {email}, ERROR: {e}")
 
 
     '''Display past generation options for a user'''
@@ -58,7 +57,7 @@ class UserInfo:
         response = (
             self._supabase.table("Site Generations")
             .select("*")
-            .eq("username", self.username)
+            .eq("user_id", self._user_id)
             .execute()
             )
         
@@ -83,6 +82,7 @@ class UserInfo:
             self._supabase.table("Generation Data")
             .select("*")
             .eq("generation_id", generation_id)
+            .order("data_id")
             .execute()
             )
         
@@ -94,6 +94,7 @@ class UserInfo:
             generation_data.append((
                 data["image_url"],
                 data["alt_text"],
+                data["data_id"]
             ))
 
         return generation_data
@@ -106,15 +107,15 @@ class UserInfo:
             response = (
                 self._supabase.table("Site Generations")
                 .insert({"website": website,
-                        "username": self.username
+                        "user_id": self._user_id
                         })
                 .execute()
                 )
             
         except Exception as e:
-            print(f"Error adding tuple to the database: website: {website}, username: {self.username}, ERROR: {e}")
+            print(f"Error adding tuple to the database: website: {website}, username: {self._user_id}, ERROR: {e}")
 
-        # Store UUID for the generation
+        # Store ID for the generation
         generation_id = response[0]["generation_id"]
 
         # Add each data tuple to the Generation Data table
