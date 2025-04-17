@@ -4,7 +4,7 @@ from os import environ
 
 
 class UserInfo:
-    def __init__(self, username, email):
+    def __init__(self, user_id=None, username=None, email=None):
         # Load environmental variables
         load_dotenv(".env")
 
@@ -15,8 +15,13 @@ class UserInfo:
         # Initializes Supabase Connection
         self._supabase: Client = create_client(supabase_url, supabase_key)
 
-        # Adds user to the database if they do not exist
-        self._user_id = self._get_user_id(username, email)
+        # Store user ID
+        self.user_id = user_id
+
+        # Get user ID from database if not passed in
+        if self.user_id is None:
+            # Adds user to the database if they do not exist
+            self.user_id = self._get_user_id(username, email)
 
 
     '''Checks if User exists in the database and adds them if not'''
@@ -57,7 +62,7 @@ class UserInfo:
         response = (
             self._supabase.table("Site Generations")
             .select("*")
-            .eq("user_id", self._user_id)
+            .eq("user_id", self.user_id)
             .execute()
             )
         
@@ -107,16 +112,19 @@ class UserInfo:
             response = (
                 self._supabase.table("Site Generations")
                 .insert({"website": website,
-                        "user_id": self._user_id
+                        "user_id": self.user_id
                         })
                 .execute()
                 )
             
         except Exception as e:
-            print(f"Error adding tuple to the database: website: {website}, username: {self._user_id}, ERROR: {e}")
+            print(f"Error adding tuple to the database: website: {website}, username: {self.user_id}, ERROR: {e}")
 
         # Store ID for the generation
         generation_id = response[0]["generation_id"]
+
+        # Create list to store data IDs
+        data_ids = []
 
         # Add each data tuple to the Generation Data table
         for data in generation_data:
@@ -130,6 +138,13 @@ class UserInfo:
                     .execute()
                     )
                 
+                # Save the data ID
+                data_ids.append(response[0]["data_id"])
+                
             except Exception as e:
                 print(f"Error adding tuple to the database: generation_id: {generation_id}, image_url: {data[0]}, alt_text: {data[1]}, ERROR: {e}")
+                # Add None as place holder for failed data
+                data_ids.append(None)
+
+        return generation_id, data_ids
 
