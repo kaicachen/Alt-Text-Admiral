@@ -5,6 +5,12 @@ from app_code.user_info import UserInfo
 from dotenv import load_dotenv
 from os import environ
 
+'''Login or create new user and then login'''
+def login_user(username, email):
+    user_info = UserInfo(username=username, email=email)
+    return user_info.user_id
+
+
 '''Scrape website'''
 def web_scraper(url):
     web_scraper = WebScraper(url)
