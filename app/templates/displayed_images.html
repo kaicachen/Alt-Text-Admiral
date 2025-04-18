@@ -34,6 +34,7 @@
         <div class="image-card">
             <img src="{{ item[0] }}" alt="Image">
             <p>{{ item[1] }}</p>
+            <button onclick="regenText('{{loop.index}}')">Regenerate Alt-Text</button>
         </div>
         {% endfor %}
     </div>

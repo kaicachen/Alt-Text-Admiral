@@ -23,18 +23,23 @@
 
         /* Modal Content */
         .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 50px;
-        border: 1px solid #888;
-        width: 50%;
-        box-sizing: border-box;
+            background-color: #fefefe;
+            padding: 50px;
+            border: 1px solid #888;
+            width: 50%;
+            box-sizing: border-box;
+            width: 58vw;
+            overflow-y: auto;
+            transform: translateX(0);
+        }
+
+        .modal-content.shift-left {
+            transform: translateX(20vw);
         }
 
         .combinedPages {
             display: flex;
-            justify-content: space-between;
-            gap: 10px;
+            justify-content: center;
         }
 
         .outerDiv {
@@ -61,57 +66,118 @@
         }
 
         .websiteDiv {
-            width: 40%;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 40vw;
+            height: 100vh;
             background-color: black;
-            display: flex;
+            overflow: hidden;
             justify-content: center;
             align-items: center;
         }
 
         .websiteDiv iframe {
-            position: fixed;
-            top: 10px;
-            width: auto;
-            height: ;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
             border: none;
         }
         
         .addImages {
             padding: 5px;
-
+            left: 20px;
         }
+
+        .popOutButton {
+            position: fixed;
+            top: 15%;
+            left: 0px;
+            transform: rotate(90deg) translateY(-100%);
+            transform-origin: left top;
+            padding: 5px 10px;
+            font-size: 12px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 9999;
+            transition: margin-left 0.3s ease;
+        }
+
+        #drop_zone {
+            border: 2px dashed #888;
+            border-radius: 10px;
+            background-color: #fafafa;
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            width: 80%;
+            height: 120px;
+            margin: 20px auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        #drop_zone.dragover {
+            background-color: #e0e0e0;
+        }
+
+        #innerDragBox {
+            position:relative;
+            left: 10px;
+        }
+
+ 
 
     </style>
 </head>
 <body>
-    <h1>Generating alt-text...</h1>
-    <p>This process may take several minutes.</p>
-    <div class="loader-container">
-        <div class="loader"></div>
+    <div class="loaderDiv">
+        <h1>Generating alt-text...</h1>
+        <p>This process may take several minutes.</p>
+        <div class="loader-container">
+            <div class="loader"></div>
+        </div>
     </div>
+
     
 
     <!-- The Modal -->
-    <span>
-        <div id="myModal" class="modal">
-            <!-- Modal content -->
-            <div class="combinedPages">
-                <div class="modal-content">
-                    <h1>Tag Images As:</h1>
-                    <div class="imgTagging"></div>
-                    <div>
-                        <a>Don't See your Images?</a>
-                        <button id="addImages">Add Images</button>
-                    </div>
-                    <button class="finishedTagging">Finish Tagging</button>
-
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="combinedPages">
+            <div class="modal-content">
+                <h1>Tag Images As:</h1>
+                <div class="imgTagging"></div>
+                <div>
+                    
+                    
+                    <div id="drop_zone" ondragover="dragOverHandler(event);">
+                        <div id="innerDragBox">
+                            <span><a>Don't See your Images?</a></span>
+                            <span><button id="addImages">Add Images</button></span>
+                        </div>
+                        
+                      </div>
+                    
                 </div>
+                <button class="finishedTagging">Finish Tagging</button>
 
-                <div class="websiteDiv">
-                    <iframe id="website"></iframe> 
-                </div>
+            </div>
+
+            
+            <button onclick="popOutWebsite()" class="popOutButton">Show Website</button>
+            <div class="websiteDiv">
+                <iframe id="website"></iframe> 
             </div>
         </div>
+    </div>
   
 
     <script>
@@ -121,6 +187,13 @@
         var modal = document.getElementById("myModal");
         var close = document.getElementsByClassName("close")[0];
         var taggingInsert = document.getElementsByClassName("imgTagging")[0];
+        
+        var websiteDiv = document.getElementsByClassName("websiteDiv")[0];
+        var popOutButton = document.getElementsByClassName("popOutButton")[0];
+        var modalContent = document.getElementsByClassName("modal-content")[0];
+
+        const dropZone = document.getElementById("drop_zone");
+        
         var imageList = JSON.parse('{{ image_links | tojson | safe }}');//var csv = "{{ url_for('static', filename='img1.jpg') }},{{ url_for('static', filename='img2.jpg') }}";
         var imageTags = JSON.parse('{{ image_tags | tojson | safe }}');
 
@@ -133,6 +206,21 @@
 
         })();
 
+        function popOutWebsite() {
+            if (websiteDiv.style.display == "none") {
+                websiteDiv.style.display = "flex";
+
+                //i hard coded these positions teehee
+                popOutButton.style.left = `40vw`;
+                modalContent.classList.add("shift-left");
+            }
+            else
+            {
+                websiteDiv.style.display = "none";
+                popOutButton.style.left = `0px`;
+                modalContent.classList.remove("shift-left");
+            }
+        }
 
         function populateModal(imageList){
             //imageList = csv.split(",");
@@ -303,6 +391,41 @@
                 return null;
             }
         }
+
+        function dragOverHandler(ev) {
+        ev.preventDefault();
+        dropZone.classList.add("dragover");
+    }
+
+    function dropHandler(ev) {
+        ev.preventDefault();
+
+        let files = ev.dataTransfer.files;
+        if (files.length > 0) {
+        handleFiles(files);  // this should read + display images once
+    }
+    }
+
+    dropZone.addEventListener("dragover", dragOverHandler);
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", dropHandler);
+
+    function handleFiles(files) {
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const imageSrc = e.target.result;
+                imageList.push(imageSrc);
+                taggedList.push(0);
+                createImageBox(currentIndex, imageSrc, 0);
+                currentIndex++;
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
 
 
         window.onclick = function(event) {
