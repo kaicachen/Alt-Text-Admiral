@@ -12,3 +12,4 @@ pandas
 bs4
 supabase
 google-genai
+gunicorn
