@@ -57,6 +57,20 @@
             window.open("/google/", "Login", "width=500,height=600");
         }
     </script>
+    <script>
+        function openLoginPopup() {
+            const loginWindow = window.open("/google/", "Login", "width=500,height=600");
+    
+            // Listen for message from popup
+            window.addEventListener("message", function(event) {
+                if (event.data.type === "oauth_success") {
+                    // Redirect the main window to the protected page
+                    window.location.href = "/";
+                }
+            }, false);
+        }
+    </script>
+    
 </head>
 <body>
     <h1>Image Alt-Text Generation Tool</h1>

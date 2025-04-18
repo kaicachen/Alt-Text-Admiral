@@ -12,7 +12,7 @@ from flask_session import Session
 from sys import prefix, base_prefix, executable
 from subprocess import CalledProcessError
 from shutil import which as shutil_which
-from os import name as os_name, urandom, environ
+from os import name as os_name, urandom, environ, path
 # from json import dumps as json_dumps
 from flask_sqlalchemy import SQLAlchemy
 # from csv import reader
@@ -21,6 +21,7 @@ from random import choices
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 from . import main
+from .app_code.user_info import UserInfo
 
 app = Flask(__name__)
 app.secret_key = environ.get("SECRET_KEY", urandom(24))
@@ -171,20 +172,40 @@ def google():
     # Redirect to google_auth function
     redirect_uri = url_for('google_auth', _external=True)
     return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
- 
+
 @app.route('/google/auth/')
 def google_auth():
     token = oauth.google.authorize_access_token()
     nonce = session.pop('nonce', None)
     if not nonce:
         return "Error: No nonce found, possible session timeout", 400
+
     try:
-        user = oauth.google.parse_id_token(token, nonce=nonce)
-        print("Google User:", user)
-        return redirect('/')
+        user_info = oauth.google.parse_id_token(token, nonce=nonce)
+        print("Google User:", user_info)
+
+        email = user_info.get("email")
+        if not email:
+            return "Email not found in user info", 400
+        # Database stuff should go around here
+        user = UserInfo(email=email)
+        session['user_id'] = user.user_id
+        session['user_email'] = email
+
+        return """
+        <html><body>
+        <script>
+            window.opener.postMessage({ type: 'oauth_success' }, '*');
+            window.close();
+        </script>
+        <p>Login successful. You can close this window.</p>
+        </body></html>
+        """
+
     except Exception as e:
         return f"Error while parsing ID token: {str(e)}", 400
-    return redirect('/')
+
+
     
 ''' Oauth Google '''
 
