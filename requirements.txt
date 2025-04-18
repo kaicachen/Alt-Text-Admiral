@@ -13,3 +13,6 @@ pandas
 bs4
 google-genai
 gunicorn
+Flask-Session
+Flask-SQLAlchemy
+psycopg2-binary
