@@ -17,7 +17,7 @@ from flask_session import Session
 from os import environ, urandom
 from os import name as os_name
 from dotenv import load_dotenv
-import app.main as main
+import main
 
 
 # Load environmental variables
