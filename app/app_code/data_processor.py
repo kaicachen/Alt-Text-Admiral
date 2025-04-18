@@ -4,17 +4,12 @@ from bs4 import BeautifulSoup
 from time import sleep
 from io import BytesIO
 from PIL import Image
-
-#testing
-from google import genai
-from os import getenv
-
-from training import Trainer
+from .training import Trainer
 
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = False, tuned = True):
+    def __init__(self, image_loc, image_type, text, href, gemini_client, detr_model, detr_processor, device, URL=True, training = False, tuned = True):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -24,13 +19,13 @@ class DataProcessor:
         self.href = href
 
         #Used to access client to use all models (TODO, move this to site processor)
-        self._dummy_client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
+        self._gemini_client = gemini_client
 
         #determine if the tuned model should be used
         self._tuned = tuned
 
         # Store models and processor
-        self._gemini_model = gemini_model
+        self._gemini_model_name = "gemini-1.5-flash"
         self._detr_model = detr_model
         self._detr_processor = detr_processor
         self._device = device
@@ -38,7 +33,7 @@ class DataProcessor:
 
         #true if data is saved for training, false otherwise
         if training:
-            self._trainer = Trainer(gemini_model.model_name)
+            self._trainer = Trainer("gemini-1.5-flash")
             self._training = True
         else:
             self._trainer = None
@@ -72,7 +67,11 @@ class DataProcessor:
         # Keeps attempting until completion or manual time out
         while(not_generated):
             try:
-                caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
+                caption = self._gemini_client.models.generate_content(
+                    model=self._gemini_model_name,
+                    contents=[self.image,"Describe this image in a detailed caption. "]
+                )
+                #caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
                 not_generated = False
                 return caption
             
@@ -114,7 +113,7 @@ class DataProcessor:
                 obj_name = self._detr_model.config.id2label[label.item()]
                 detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
 
-        # Convert detected objects to list format for CSV
+        # Convert detected objects to list format
         tags_list = [f"{tag} ({count})" for tag, count in detected_objects.items()]
 
         return detected_objects
@@ -141,7 +140,7 @@ class DataProcessor:
             objects_input = f"- **Tags:** {image_objects}\n"
 
         prompt = (
-                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
+                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and 'caption')}, {(text_input and 'surrounding text')}, and {(objects_input and 'tags')}**.\n\n"
                     f"### **Input Data:**\n"
                     f"{caption_input}"
                     f"{text_input}"
@@ -168,14 +167,15 @@ class DataProcessor:
         while(not_generated):
             try:
                 if self._tuned:
-                    response = self._dummy_client.models.generate_content(
+                    response = self._gemini_client.models.generate_content(
                         model="tunedModels/test-tuned-model-icran2mmdiyb",
                         contents= prompt
                     )
                 else:
-                    response = self._gemini_model.generate_content(
-                        prompt
-                        )
+                    response = self._gemini_client.models.generate_content(
+                        model=self._gemini_model_name,
+                        contents= prompt
+                    )
                 if self._training:
                     self._trainer.add_to_dataset(self.loc, prompt, image_type="informative")
                 not_generated = False
@@ -252,12 +252,15 @@ class DataProcessor:
         while(not_generated):
             try:
                 if False: #self._tuned: #Block off the branch as no tuned model yet #TODO: make link datset, make tuned model, use tuned model
-                    response = self._dummy_client.models.generate_content(
+                    response = self._gemini_client.models.generate_content(
                         model="tunedModels/test-tuned-model-icran2mmdiyb",#TODO: change tuned model to be the one trained for links
                         contents= prompt
                     )
                 else:
-                    response = self._gemini_model.generate_content(prompt)
+                    response = self._gemini_client.models.generate_content(
+                        model=self._gemini_model_name,
+                        contents= prompt
+                    )
                 if self._training:
                     self._trainer.add_to_dataset(self.loc, prompt, image_type="link")
 
