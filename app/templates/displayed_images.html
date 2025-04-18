@@ -34,8 +34,15 @@
         <div class="image-card">
             <img src="{{ item.image_link }}" alt="Image">
             <p>{{ item.generated_output }}</p>
+            <button onclick="regenText('{{ loop.index }}')">Regenerate Alt-Text</button>
         </div>
         {% endfor %}
     </div>
+    
+    <script>
+        function regenText(imgToRegen) {
+            console.log(imgToRegen);
+        }
+    </script>
 </body>
 </html>

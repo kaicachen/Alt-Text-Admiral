@@ -7,6 +7,7 @@ This file runs the webscraper, then before running main_captioner.py on the resu
 it asks the user to mark whether images are decorative, links, or infographics. It then
 modifies the CSV file passed to the main_captioner.py 
 '''
+import requests
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sys import prefix, base_prefix, executable
 from subprocess import run, CalledProcessError
