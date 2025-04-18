@@ -124,13 +124,14 @@ def process_images():
     # Reads data from session values
     site_data = session.get("site_data", None)
     url       = session.get("url", None)
-    user_id  = session.get("user_id", None)
+    user_id   = session.get("user_id", None)
 
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
     session["generated_data"] = generated_data
     session["generation_id"]  = generation_id
     session["data_ids"]       = data_ids
+    session["tagged_list"]    = tagged_list
 
     return redirect(url_for('displayed_images'))
 
@@ -145,13 +146,8 @@ def displayed_images():
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
 
 
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    return jsonify({"message": "Hello from Flask!", "status": "success"})
-
-
-@app.route('/checkURL')
-def checkURL():
+@app.route('/check_url')
+def check_url():
     newURL = request.args.get('url') 
     try:
         response = requests.head(newURL, timeout=3)
@@ -159,14 +155,63 @@ def checkURL():
     except:
         return jsonify({'valid':False})
     
+
+@app.route('/regenerate_image', methods=['GET', 'POST'])
+def regenerate_image():
+    # Gets the JSON storing the index of the data
+    data = request.get_json()
+    data_index = int(data.get("data_index", None)) - 1
+
+    generated_data = session.get("generated_data", None)
+    site_data      = session.get("site_data", None)
+    data_ids       = session.get("data_ids", None)
+    tagged_list    = session.get("tagged_list", None)
+
+    # Generate new alt text with the stored data
+    alt_text = main.regenerate(data_ids[data_index],
+                               tagged_list[data_index],
+                               site_data[data_index][0],
+                               site_data[data_index][1],
+                               site_data[data_index][2])
+    
+    # Updates the data tuple
+    generated_data[data_index] = (site_data[data_index][0],
+                                  alt_text)
+
+    # Update stored data
+    session["generated_data"] = generated_data
+
+    # Reload images
+    return redirect(url_for('displayed_images'))
+    
+
 @app.route('/history')
 def history():
-    return render_template('history.html')
+    user_id = session.get("user_id", None)
+    history = main.load_history(user_id)
+    return render_template('history.html', history=history)
+
 
 @app.route('/prevResults')
 def prevResults():
-    return render_template('prevResults.html')
+    # Gets the JSON storing the generation ID
+    data = request.get_json()
+    generation_id = data.get("generation_id", None)
+
+    generated_data, data_ids = main.load_generation(generation_id)
+
+    session["generated_data"] = generated_data
+    session["generation_id"]  = generation_id
+    session["data_ids"]       = data_ids
+
+    return render_template('prevResults.html', data=generated_data)
     
+
+@app.route('/api/data', methods=['GET'])
+def get_data():
+    return jsonify({"message": "Hello from Flask!", "status": "success"})
+
+
 # @app.route("/proxy")
 # def proxy():
 #     try:

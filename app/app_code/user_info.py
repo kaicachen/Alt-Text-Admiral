@@ -1,5 +1,6 @@
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from datetime import datetime
 from os import environ
 
 
@@ -19,7 +20,7 @@ class UserInfo:
         self.user_id = user_id
 
         # Get user ID from database if not passed in
-        if self.user_id is None:
+        if self.user_id is None and email is not None:
             # Adds user to the database if they do not exist
             self.user_id = self._get_user_id(email)
 
@@ -69,6 +70,7 @@ class UserInfo:
                 self._supabase.table("Site Generations")
                 .select("*")
                 .eq("user_id", self.user_id)
+                .order("generation_time")
                 .execute()
                 )
             
@@ -81,10 +83,16 @@ class UserInfo:
 
         # Convert data to list of tuples
         for generation in response.data:
+            # Convert string to datetime object
+            dt = datetime.strptime(generation["generation_time"], "%Y-%m-%d %H:%M:%S.%f")
+
+            # Format to M/D/Y format
+            formatted_time = dt.strftime("%m/%d/%y")
+
             generation_list.append((
                 generation["generation_id"],
                 generation["website"],
-                generation["generation_time"]
+                formatted_time
             ))
 
         return generation_list
@@ -104,20 +112,22 @@ class UserInfo:
             
         except Exception as e:
             print(f"Error reading generation data from the database: generation_id: {generation_id} ERROR: {e}")
-            return []
+            return [], []
         
         # Initialize list to store data from the generation
         generation_data = []
+        data_ids = []
 
         # Convert data to list of tuples
         for data in response.data:
             generation_data.append((
                 data["image_url"],
-                data["alt_text"],
-                data["data_id"]
+                data["alt_text"]
             ))
 
-        return generation_data
+            data_ids.append(data["data_id"])
+
+        return generation_data, data_ids
     
 
     '''Stores data from a generation'''

@@ -36,6 +36,18 @@ def process_site(site_data, annotations, url, user_id):
     return generated_data, generation_id, data_ids
 
 
+'''Shows previous site generation information'''
+def load_history(user_id):
+    user_info = UserInfo(user_id=user_id)
+    return user_info.previous_generations()
+
+
+'''Loads previous site generation'''
+def load_generation(generation_id):
+    user_info = UserInfo()
+    return user_info.load_generation(generation_id)
+
+
 '''Regenerate alt-text for an image'''
 def regenerate(data_id, image_type, image_url, text, href):
     # Site data and annotation list not needed

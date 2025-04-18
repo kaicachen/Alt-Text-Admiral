@@ -374,14 +374,14 @@
                 let https = "https://" + url;
                 let http = "http://" + url;
 
-                let res = await fetch(`/checkURL?url=${encodeURIComponent(https)}`);
+                let res = await fetch(`/check_url?url=${encodeURIComponent(https)}`);
                 let data = await res.json();
   
                 if (data.valid) {    
                     return https;
                 } 
 
-                res = await fetch(`/checkURL?url=${encodeURIComponent(http)}`);
+                res = await fetch(`/check_url?url=${encodeURIComponent(http)}`);
                 data = await res.json();
 
                 if (data.valid) {    

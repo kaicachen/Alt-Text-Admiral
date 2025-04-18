@@ -42,6 +42,23 @@
     <script>
         function regenText(imgToRegen) {
             console.log(imgToRegen);
+
+            // Send the image index to regenerate
+            fetch("/regenerate_image", {
+                    method: "POST",
+                    body: JSON.stringify({ data_index: imgToRegen }),
+                    headers: { "Content-Type": "application/json" }
+                })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to process regeneration');
+                }
+                // If successful, the server will handle the redirect
+                window.location.href = "/displayed_images";  // Redirect to the displayed images page
+            })
+            .catch(error => {
+                console.error("Error:", error);  // Handle any errors
+            });
         }
     </script>
 </body>
