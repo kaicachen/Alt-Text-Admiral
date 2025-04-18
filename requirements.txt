@@ -13,6 +13,8 @@ bs4
 supabase
 google-genai
 gunicorn
+requests
 Flask-Session
 Flask-SQLAlchemy
 psycopg2-binary
+dotenv

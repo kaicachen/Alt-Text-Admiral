@@ -8,17 +8,17 @@ it asks the user to mark whether images are decorative, links, or infographics. 
 modifies the CSV file passed to the main_captioner.py 
 '''
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from os import name as os_name, urandom, environ, path
+from authlib.integrations.flask_client import OAuth
 from sys import prefix, base_prefix, executable
 from subprocess import CalledProcessError
 from shutil import which as shutil_which
+from string import ascii_letters, digits
 from flask_sqlalchemy import SQLAlchemy
-from os import path, environ, urandom
 from flask_session import Session
-from os import environ, urandom
-from os import name as os_name
 from dotenv import load_dotenv
+from random import choices
 from . import main
-
 
 # Load environmental variables
 load_dotenv()
@@ -40,6 +40,11 @@ db = SQLAlchemy(app)
 app.config["SESSION_SQLALCHEMY"] = db
 
 Session(app)
+
+# Oauth Setup
+app.config["SERVER_NAME"] = environ.get("SERVER_NAME")
+app.config["PREFERRED_URL_SCHEME"] = environ.get("URL_SCHEME")
+oauth = OAuth(app)
 
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
@@ -144,5 +149,65 @@ def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
 
 
+''' Oauth Google '''
+def generate_nonce():
+    return ''.join(choices(ascii_letters + digits, k=16))
+
+
+@app.route('/google/')
+def google():
+    nonce = generate_nonce()
+    session['nonce'] = nonce
+    GOOGLE_CLIENT_ID = environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET_WEB = environ.get('GOOGLE_CLIENT_SECRET')
+    CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+    oauth.register(
+        name='google',
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET_WEB,
+        server_metadata_url=CONF_URL,
+        client_kwargs={
+            'scope': 'openid email profile'
+        }
+    )
+     
+    # Redirect to google_auth function
+    redirect_uri = url_for('google_auth', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
+
+
+@app.route('/google/auth/')
+def google_auth():
+    token = oauth.google.authorize_access_token()
+    nonce = session.pop('nonce', None)
+    if not nonce:
+        return "Error: No nonce found, possible session timeout", 400
+
+    try:
+        user_info = oauth.google.parse_id_token(token, nonce=nonce)
+        print("Google User:", user_info)
+
+        email = user_info.get("email")
+        if not email:
+            return "Email not found in user info", 400
+        # Database stuff should go around here
+        user_id = main.login_user(email=email)
+        session['user_id'] = user_id
+        session['user_email'] = email
+
+        return """
+        <html><body>
+        <script>
+            window.opener.postMessage({ type: 'oauth_success' }, '*');
+            window.close();
+        </script>
+        <p>Login successful. You can close this window.</p>
+        </body></html>
+        """
+
+    except Exception as e:
+        return f"Error while parsing ID token: {str(e)}", 400
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=5000)
