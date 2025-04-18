@@ -1,13 +1,11 @@
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from csv import writer, QUOTE_ALL
 from selenium import webdriver
-from re import sub, search
+from re import search
 from requests import get
 from time import sleep
 from sys import argv
-from os import path
 
 '''Class to perform webscraping of image and text tuples'''
 class WebScraper:
@@ -35,11 +33,11 @@ class WebScraper:
     def _validate_url(self):
         # Ensure reachable URL and early exit if not
         if self._test_url(self.site_url):
-            return url
+            return self.site_url
         
         # Case of 'www.example.com'
         if self.site_url[:4] == "www.":
-            cleaned_url = "https://" + url
+            cleaned_url = "https://" + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
@@ -52,11 +50,11 @@ class WebScraper:
         
         # Case of 'example.com'
         else:
-            cleaned_url = "https://www." + url
+            cleaned_url = "https://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
-            cleaned_url = "http://www." + url
+            cleaned_url = "http://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
@@ -94,10 +92,23 @@ class WebScraper:
                 # Extract alt-text
                 alt_text = img.get_attribute("alt") or ""
 
+                # Try to find a parent anchor tag and get its href
+                href = ""
+                try:
+                    anchor = img.find_element(By.XPATH, "ancestor::a[1]")
+                    href = anchor.get_attribute("href") or ""
+                except:
+                    pass
+
                 # Clean img_url
                 if img_url[:2] == '//':
                     print(f"Changing {img_url}")
                     img_url = 'https:' + img_url
+
+                # Clean href
+                if href[:2] == '//':
+                    print(f"Changing {href}")
+                    href = 'https:' + href
 
                 # Get text from the closest paragraph (<p>), div, or span before & after the image
                 prev_text = ""
@@ -130,11 +141,12 @@ class WebScraper:
 
                 # Combine all text sources
                 surrounding_text = " ".join(filter(None, [alt_text, prev_text, parent_text, next_text]))
-                image_text_data.append((img_url, surrounding_text))
+                image_text_data.append((img_url, surrounding_text, href))
 
             except Exception as e:
                 print(f"Error processing image: {e}")
         
+        # NEED TO ADD HREF CHECKING HERE
         # Find Revolution Slider images (which use divs with background images)
         rev_slider_divs = driver.find_elements(By.XPATH, "//div[contains(@class, 'rev_slider') or contains(@class, 'tp-bgimg')]")
         for div in rev_slider_divs:
@@ -156,29 +168,15 @@ class WebScraper:
                         except:
                             break
                     
-                    image_text_data.append((img_url, parent_text))
+                    image_text_data.append((img_url, parent_text, ""))
             
             except Exception as e:
                 print(f"Error processing Revolution Slider image: {e}")
         
         driver.quit()
 
-        # Create CSV output of image, text tuples
-        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            csv_writer = writer(file, quoting=QUOTE_ALL)
-            
-            # Write a header row
-            csv_writer.writerow(["image_link", "surrounding_text"])
-            
-            # Writes image, text tuple
-            for image, text in image_text_data:
-                csv_writer.writerow([
-                    image,
-                    text
-                ])
-
-        # Returns image, text tuple list for easy access
-        return image_text_data
+        # Returns validated URL and image, text tuple list
+        return validated_url, image_text_data
 
 
 if __name__ == "__main__":
