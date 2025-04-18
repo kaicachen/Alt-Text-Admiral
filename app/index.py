@@ -11,13 +11,15 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 from sys import prefix, base_prefix, executable
 from subprocess import CalledProcessError
 from shutil import which as shutil_which
-from os import name as os_name
-from json import dumps as json_dumps
-from csv import reader
+from os import name as os_name, urandom, environ
+# from json import dumps as json_dumps
+from flask_sqlalchemy import SQLAlchemy
+# from csv import reader
 from string import ascii_letters, digits
 from random import choices
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
+from main import *
 
 app = Flask(__name__)
 app.secret_key = environ.get("SECRET_KEY", urandom(24))
@@ -152,8 +154,8 @@ def generate_nonce():
 def google():
     nonce = generate_nonce()
     session['nonce'] = nonce
-    GOOGLE_CLIENT_ID = getenv('GOOGLE_CLIENT_ID')
-    GOOGLE_CLIENT_SECRET_WEB = getenv('GOOGLE_CLIENT_SECRET')
+    GOOGLE_CLIENT_ID = environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET_WEB = environ.get('GOOGLE_CLIENT_SECRET')
     CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
     oauth.register(
         name='google',
