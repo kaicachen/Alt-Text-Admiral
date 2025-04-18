@@ -8,6 +8,7 @@ it asks the user to mark whether images are decorative, links, or infographics. 
 modifies the CSV file passed to the main_captioner.py 
 '''
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask_session import Session
 from sys import prefix, base_prefix, executable
 from subprocess import CalledProcessError
 from shutil import which as shutil_which
@@ -19,7 +20,7 @@ from string import ascii_letters, digits
 from random import choices
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
-from main import *
+from . import main
 
 app = Flask(__name__)
 app.secret_key = environ.get("SECRET_KEY", urandom(24))
@@ -189,4 +190,4 @@ def google_auth():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=5000)
