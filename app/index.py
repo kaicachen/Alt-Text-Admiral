@@ -136,7 +136,7 @@ def process_images():
     return redirect(url_for('displayed_images'))
 
 
-# Page to show images with their alt-text
+'''Page to show images with their alt-text'''
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
     # Reads data from session value
@@ -146,6 +146,7 @@ def displayed_images():
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
 
 
+'''End point to check for valid URL'''
 @app.route('/check_url')
 def check_url():
     newURL = request.args.get('url') 
@@ -156,6 +157,7 @@ def check_url():
         return jsonify({'valid':False})
     
 
+'''End point to regenerate an image's alt-text'''
 @app.route('/regenerate_image', methods=['GET', 'POST'])
 def regenerate_image():
     # Gets the JSON storing the index of the data
@@ -185,6 +187,7 @@ def regenerate_image():
     return redirect(url_for('displayed_images'))
     
 
+'''Page to display previous generation history'''
 @app.route('/history')
 def history():
     user_id = session.get("user_id", None)
@@ -192,6 +195,7 @@ def history():
     return render_template('history.html', history=history)
 
 
+'''Page to load previous generation'''
 @app.route('/prevResults')
 def prevResults():
     # Gets the JSON storing the generation ID
