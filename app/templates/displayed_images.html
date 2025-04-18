@@ -32,8 +32,8 @@
     <div class="gallery">
         {% for item in data %}
         <div class="image-card">
-            <img src="{{ item.image_link }}" alt="Image">
-            <p>{{ item.generated_output }}</p>
+            <img src="{{ item[0] }}" alt="Image">
+            <p>{{ item[1] }}</p>
         </div>
         {% endfor %}
     </div>

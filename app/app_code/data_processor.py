@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from time import sleep
 from io import BytesIO
 from PIL import Image
-from training import Trainer
+from .training import Trainer
 
 
 '''Class to handle all processing of a image, text tuple passed in'''
@@ -113,7 +113,7 @@ class DataProcessor:
                 obj_name = self._detr_model.config.id2label[label.item()]
                 detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
 
-        # Convert detected objects to list format for CSV
+        # Convert detected objects to list format
         tags_list = [f"{tag} ({count})" for tag, count in detected_objects.items()]
 
         return detected_objects
@@ -140,7 +140,7 @@ class DataProcessor:
             objects_input = f"- **Tags:** {image_objects}\n"
 
         prompt = (
-                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
+                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and 'caption')}, {(text_input and 'surrounding text')}, and {(objects_input and 'tags')}**.\n\n"
                     f"### **Input Data:**\n"
                     f"{caption_input}"
                     f"{text_input}"

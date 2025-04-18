@@ -1,4 +1,3 @@
-matplotlib
 transformers
 Pillow
 timm
@@ -11,8 +10,11 @@ reportlab
 flask
 pandas
 bs4
+supabase
 google-genai
-Authlib
-requests
-dotenv
 gunicorn
+requests
+Flask-Session
+Flask-SQLAlchemy
+psycopg2-binary
+dotenv
