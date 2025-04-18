@@ -53,12 +53,14 @@
     <button class="back"><a href="{{ url_for('index') }}">Back</a></button>
 
     <script>
-        var userHistoryEx = [["www.google", "03/12/25"], ["yahoo.com", "04/10/25"], ["lied.ku.edu", "03/15/25"]];
+        var userHistoryEx = JSON.parse('{{ history_data | tojson | safe }}');
+        console.log(userHistoryEx)
         var bigDiv = document.getElementById("historyBox");
 
         userHistoryEx.forEach(function(website) {
-            let name = website[0];
-            let date = website[1];
+            let generation_id = website[0]
+            let name = website[1];
+            let date = website[2];
             
             let histDiv = document.createElement("button");
             let histText = document.createElement("a");
@@ -71,8 +73,8 @@
             
             histDiv.style.cursor = "pointer";
             histDiv.onclick = function () {
-                localStorage.setItem("selectedHistory", JSON.stringify({ name, date }));
-                window.location.href = "{{ url_for('prevResults') }}";
+                localStorage.setItem("generation_id", JSON.stringify({generation_id}));
+                window.location.href = "{{ url_for('previous_results') }}";
             }
 
             histDiv.append(histText);

@@ -70,7 +70,7 @@ class UserInfo:
                 self._supabase.table("Site Generations")
                 .select("*")
                 .eq("user_id", self.user_id)
-                .order("generation_time")
+                .order("generation_time", desc=True)
                 .execute()
                 )
             
@@ -84,7 +84,7 @@ class UserInfo:
         # Convert data to list of tuples
         for generation in response.data:
             # Convert string to datetime object
-            dt = datetime.strptime(generation["generation_time"], "%Y-%m-%d %H:%M:%S.%f")
+            dt = datetime.strptime(generation["generation_time"], "%Y-%m-%dT%H:%M:%S.%f")
 
             # Format to M/D/Y format
             formatted_time = dt.strftime("%m/%d/%y")
@@ -106,7 +106,7 @@ class UserInfo:
                 self._supabase.table("Generation Data")
                 .select("*")
                 .eq("generation_id", generation_id)
-                .order("data_id")
+                .order("data_id", desc=True)
                 .execute()
                 )
             
@@ -147,7 +147,6 @@ class UserInfo:
             return None, ([None] * len(generation_data))
 
         # Store ID for the generation
-        print(response.data)
         generation_id = response.data[0]["generation_id"]
 
         # Create list to store data IDs

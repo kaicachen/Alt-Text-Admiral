@@ -192,15 +192,15 @@ def regenerate_image():
 def history():
     user_id = session.get("user_id", None)
     history = main.load_history(user_id)
-    return render_template('history.html', history=history)
+    return render_template('history.html', history_data=history)
 
 
 '''Page to load previous generation'''
-@app.route('/prevResults')
-def prevResults():
+@app.route('/previous_results')
+def previous_results():
     # Gets the JSON storing the generation ID
     data = request.get_json()
-    generation_id = data.get("generation_id", None)
+    generation_id = int(data.get("generation_id", None))
 
     generated_data, data_ids = main.load_generation(generation_id)
 
@@ -208,7 +208,7 @@ def prevResults():
     session["generation_id"]  = generation_id
     session["data_ids"]       = data_ids
 
-    return render_template('prevResults.html', data=generated_data)
+    return render_template('previous_results.html', data=generated_data)
     
 
 @app.route('/api/data', methods=['GET'])
@@ -263,7 +263,6 @@ def google_auth():
 
     try:
         user_info = oauth.google.parse_id_token(token, nonce=nonce)
-        print("Google User:", user_info)
 
         email = user_info.get("email")
         if not email:
