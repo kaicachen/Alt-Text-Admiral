@@ -11,13 +11,36 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 from sys import prefix, base_prefix, executable
 from subprocess import CalledProcessError
 from shutil import which as shutil_which
-from os import name as os_name
+from flask_sqlalchemy import SQLAlchemy
 from os import path, environ, urandom
+from flask_session import Session
+from os import environ, urandom
+from os import name as os_name
+from dotenv import load_dotenv
 import main
 
 
+# Load environmental variables
+load_dotenv()
+
+# Create Flask app
 app = Flask(__name__)
 app.secret_key = environ.get("SECRET_KEY", urandom(24))
+
+# Use Supabase PostgreSQL for session storage
+app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("SUPABASE_DB_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Use SQLAlchemy session backend
+app.config["SESSION_TYPE"] = "sqlalchemy"
+app.config["SESSION_SQLALCHEMY_TABLE"] = "flask_sessions"
+
+# Initialize SQLAlchemy and Flask-Session
+db = SQLAlchemy(app)
+app.config["SESSION_SQLALCHEMY"] = db
+
+Session(app)
+
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
 def get_python_path():

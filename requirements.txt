@@ -13,3 +13,6 @@ bs4
 supabase
 google-genai
 gunicorn
+Flask-Session
+Flask-SQLAlchemy
+psycopg2-binary
