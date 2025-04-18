@@ -8,21 +8,22 @@ it asks the user to mark whether images are decorative, links, or infographics. 
 modifies the CSV file passed to the main_captioner.py 
 '''
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
-from flask_session import Session
+from os import name as os_name, urandom, environ, path
+from authlib.integrations.flask_client import OAuth
 from sys import prefix, base_prefix, executable
 from subprocess import CalledProcessError
 from shutil import which as shutil_which
-from os import name as os_name, urandom, environ, path
-# from json import dumps as json_dumps
-from flask_sqlalchemy import SQLAlchemy
-# from csv import reader
 from string import ascii_letters, digits
-from random import choices
+from flask_sqlalchemy import SQLAlchemy
+from flask_session import Session
 from dotenv import load_dotenv
-from authlib.integrations.flask_client import OAuth
+from random import choices
 from . import main
-from .app_code.user_info import UserInfo
 
+# Load environmental variables
+load_dotenv()
+
+# Create Flask app
 app = Flask(__name__)
 app.secret_key = environ.get("SECRET_KEY", urandom(24))
 
@@ -40,12 +41,11 @@ app.config["SESSION_SQLALCHEMY"] = db
 
 Session(app)
 
-load_dotenv()
-
-''' Oauth Setup'''
-app.config['SERVER_NAME'] = 'localhost:5000'
+# Oauth Setup
+app.config["SERVER_NAME"] = environ.get("SERVER_NAME")
+app.config["PREFERRED_URL_SCHEME"] = environ.get("URL_SCHEME")
 oauth = OAuth(app)
-''' Oauth Setup '''
+
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
 def get_python_path():
@@ -148,9 +148,11 @@ def displayed_images():
 def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
 
+
 ''' Oauth Google '''
 def generate_nonce():
     return ''.join(choices(ascii_letters + digits, k=16))
+
 
 @app.route('/google/')
 def google():
@@ -173,6 +175,7 @@ def google():
     redirect_uri = url_for('google_auth', _external=True)
     return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
 
+
 @app.route('/google/auth/')
 def google_auth():
     token = oauth.google.authorize_access_token()
@@ -188,8 +191,8 @@ def google_auth():
         if not email:
             return "Email not found in user info", 400
         # Database stuff should go around here
-        user = UserInfo(email=email)
-        session['user_id'] = user.user_id
+        user_id = main.login_user(email=email)
+        session['user_id'] = user_id
         session['user_email'] = email
 
         return """
@@ -204,10 +207,6 @@ def google_auth():
 
     except Exception as e:
         return f"Error while parsing ID token: {str(e)}", 400
-
-
-    
-''' Oauth Google '''
 
 
 if __name__ == '__main__':

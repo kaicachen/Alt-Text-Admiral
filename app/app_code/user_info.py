@@ -137,7 +137,8 @@ class UserInfo:
             return None, ([None] * len(generation_data))
 
         # Store ID for the generation
-        generation_id = response[0]["generation_id"]
+        print(response.data)
+        generation_id = response.data[0]["generation_id"]
 
         # Create list to store data IDs
         data_ids = []
@@ -155,7 +156,7 @@ class UserInfo:
                     )
                 
                 # Save the data ID
-                data_ids.append(response[0]["data_id"])
+                data_ids.append(response.data[0]["data_id"])
                 
             except Exception as e:
                 print(f"Error adding tuple to the database: generation_id: {generation_id}, image_url: {data[0]}, alt_text: {data[1]}, ERROR: {e}")
