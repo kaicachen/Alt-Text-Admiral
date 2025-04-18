@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 from os import path, environ
 from google import genai
 from dotenv import load_dotenv
-from app_code.data_processor import *
+from .data_processor import *
 from warnings import filterwarnings
 from hashlib import sha256
-from app_code.web_scraper import *
+from .web_scraper import *
 from json import loads
 from time import sleep
 from torch import cuda
