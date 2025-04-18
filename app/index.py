@@ -8,6 +8,7 @@ it asks the user to mark whether images are decorative, links, or infographics. 
 modifies the CSV file passed to the main_captioner.py 
 '''
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask_cors import CORS
 from sys import prefix, base_prefix, executable
 from subprocess import CalledProcessError
 from shutil import which as shutil_which
@@ -86,8 +87,17 @@ def index():
                 print(f"Standard Output: {e.stdout}")
                 print(f"Standard Error: {e.stderr}")
                 return render_template('error.html')
-
+    
     return render_template('index.html')
+
+@app.route('/extension',methods=['POST','GET'])
+def test():
+    data = request.get_json()
+    global url
+    url = data["url"]
+    
+    run([python_path, "app/app_code/web_scraper.py", url, "True"], check=True,text=True)
+    return jsonify({"redirect_url": url_for("annotate")})
 
 
 '''Page to allow for user annotations of images'''

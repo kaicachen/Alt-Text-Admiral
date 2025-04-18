@@ -8,6 +8,7 @@ selenium
 webdriver-manager
 reportlab
 flask
+flask-cors
 pandas
 bs4
 supabase
