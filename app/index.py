@@ -68,7 +68,6 @@ python_path = get_python_path()
 def index():
     if request.method == 'POST':
         # Gets URL entered by the user
-        global url
         url = request.form.get('url')
 
         if url:
@@ -95,7 +94,7 @@ def index():
 @app.route('/annotate', methods=['GET', 'POST'])
 def annotate():
     # Reads scraped data from session values
-    image_links = [data[0] for data in session.get("site_data", "none")]
+    image_links = [data[0] for data in session.get("site_data", None)]
 
     image_tags = []
 
@@ -117,11 +116,15 @@ def process_images():
     tagged_list = data.get("taggedList", [])
 
     # Reads data from session values
-    site_data = session.get("site_data", "none")
+    site_data = session.get("site_data", None)
+    url       = session.get("url", None)
+    user_id  = session.get("user_id", None)
 
     # Generates alt-text for images and stores in session
-    generated_data = main.process_site(site_data, tagged_list)
+    generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
     session["generated_data"] = generated_data
+    session["generation_id"]  = generation_id
+    session["data_ids"]       = data_ids
 
     return redirect(url_for('displayed_images'))
 
@@ -130,9 +133,10 @@ def process_images():
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
     # Reads data from session value
-    generated_data = session.get("generated_data", "none")
+    generated_data = session.get("generated_data", None)
+    data_ids       = session.get("data_ids", None)
 
-    return render_template("displayed_images.html", data=generated_data)
+    return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
 
 
 @app.route('/api/data', methods=['GET'])
