@@ -181,6 +181,7 @@
   
 
     <script>
+        var addedImageList = []
         var taggedList = []; //0 = keep, 1 = link, 2 = decorative, 3 = discard
 
         var buttonList = [];
@@ -256,6 +257,7 @@
                         // Add to imageList and taggedList
                         imageList.push(imageSrc);
                         taggedList.push(0); // default to informative
+                        addedImageList.push(imageSrc)
                         createImageBox(currentIndex, imageSrc, 0); // Use 0 for default tag
                         currentIndex++;
                     };
@@ -432,7 +434,7 @@
             if (event.target.className == "finishedTagging") { 
                 fetch("/process_images", {
                     method: "POST",
-                    body: JSON.stringify({ taggedList: taggedList }),  // Send the full object
+                    body: JSON.stringify({ taggedList: taggedList, addedImageList: addedImageList }),  // Send the full object
                     headers: { "Content-Type": "application/json" }
                 })
                 .then(response => {

@@ -120,6 +120,9 @@ def process_images():
     # Gets the JSON storing the user's image annotations
     data = request.get_json()
     tagged_list = data.get("taggedList", [])
+    added_image_list = data.get("addedImageList", [])
+
+    print(f"added: {added_image_list}")
 
     # Reads data from session values
     site_data = session.get("site_data", None)
