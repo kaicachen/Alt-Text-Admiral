@@ -106,7 +106,7 @@ class UserInfo:
                 self._supabase.table("Generation Data")
                 .select("*")
                 .eq("generation_id", generation_id)
-                .order("data_id", desc=True)
+                .order("data_id")
                 .execute()
                 )
             

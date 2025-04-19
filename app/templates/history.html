@@ -74,7 +74,7 @@
             histDiv.style.cursor = "pointer";
             histDiv.onclick = function () {
                 // Send the generation ID to load
-                fetch("/previous_results", {
+                fetch("/process_previous_results", {
                         method: "POST",
                         body: JSON.stringify({ generation_id: generation_id }),
                         headers: { "Content-Type": "application/json" }

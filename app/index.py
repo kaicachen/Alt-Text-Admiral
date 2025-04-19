@@ -195,14 +195,12 @@ def history():
     return render_template('history.html', history_data=history)
 
 
-'''Page to load previous generation'''
-@app.route('/previous_results', methods=['GET', 'POST'])
-def previous_results():
+'''Endpoint to process previous generation'''
+@app.route('/process_previous_results', methods=['GET', 'POST'])
+def process_previous_results():
     # Gets the JSON storing the generation ID
     data = request.get_json()
     generation_id = int(data.get("generation_id", None))
-
-    print(f"gen id: {generation_id}")
 
     generated_data, data_ids = main.load_generation(generation_id)
 
@@ -210,7 +208,17 @@ def previous_results():
     session["generation_id"]  = generation_id
     session["data_ids"]       = data_ids
 
-    return render_template('previous_results.html', data=generated_data)
+    return redirect(url_for('previous_results'))
+
+
+'''Page to display previous generation'''
+@app.route('/previous_results', methods=['GET', 'POST'])
+def previous_results():
+    # Reads data from session value
+    generated_data = session.get("generated_data", None)
+    data_ids       = session.get("data_ids", None)
+
+    return render_template("previous_results.html", data=generated_data, data_ids=data_ids)
     
 
 @app.route('/api/data', methods=['GET'])
