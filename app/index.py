@@ -126,14 +126,20 @@ def process_images():
 
     # Reads data from session values
     site_data = session.get("site_data", None)
+    print(f"Site data: {site_data}")
     url       = session.get("url", None)
+    print(f"URL: {url}")
     user_id  = session.get("user_id", None)
+    print(f"User id: {user_id}")
 
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
     session["generated_data"] = generated_data
+    print(f"Generated data: {generated_data}")
     session["generation_id"]  = generation_id
+    print(f"Generation id: {generation_id}")
     session["data_ids"]       = data_ids
+    print(f"Data ids: {data_ids}")
 
     return redirect(url_for('displayed_images'))
 
