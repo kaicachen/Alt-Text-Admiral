@@ -73,8 +73,22 @@
             
             histDiv.style.cursor = "pointer";
             histDiv.onclick = function () {
-                localStorage.setItem("generation_id", JSON.stringify({generation_id}));
-                window.location.href = "{{ url_for('previous_results') }}";
+                // Send the generation ID to load
+                fetch("/previous_results", {
+                        method: "POST",
+                        body: JSON.stringify({ generation_id: generation_id }),
+                        headers: { "Content-Type": "application/json" }
+                    })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to process regeneration');
+                    }
+                    // If successful, the server will handle the redirect
+                    window.location.href = "/previous_results";  // Redirect to the previous results page
+                })
+                .catch(error => {
+                    console.error("Error:", error);  // Handle any errors
+                });
             }
 
             histDiv.append(histText);

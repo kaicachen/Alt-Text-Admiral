@@ -41,8 +41,6 @@
     
     <script>
         function regenText(imgToRegen) {
-            console.log(imgToRegen);
-
             // Send the image index to regenerate
             fetch("/regenerate_image", {
                     method: "POST",

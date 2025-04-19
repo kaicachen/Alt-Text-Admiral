@@ -196,11 +196,13 @@ def history():
 
 
 '''Page to load previous generation'''
-@app.route('/previous_results')
+@app.route('/previous_results', methods=['GET', 'POST'])
 def previous_results():
     # Gets the JSON storing the generation ID
     data = request.get_json()
     generation_id = int(data.get("generation_id", None))
+
+    print(f"gen id: {generation_id}")
 
     generated_data, data_ids = main.load_generation(generation_id)
 
