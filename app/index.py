@@ -100,7 +100,11 @@ def index():
 def annotate():
     # Reads scraped data from session values
     image_links = [data[0] for data in session.get("site_data", None)]
-
+    
+    # If no images scraped, skip generation
+    if (len(image_links) == 0):
+        return render_template("empty.html")
+    
     image_tags = []
 
     # Default to "don't include" tag if invalid URL
