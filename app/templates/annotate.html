@@ -418,6 +418,7 @@
 
             reader.onload = function (e) {
                 const imageSrc = e.target.result;
+                addedImageList.push(imageSrc)
                 imageList.push(imageSrc);
                 taggedList.push(0);
                 createImageBox(currentIndex, imageSrc, 0);

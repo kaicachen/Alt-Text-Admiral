@@ -122,12 +122,13 @@ def process_images():
     tagged_list = data.get("taggedList", [])
     added_image_list = data.get("addedImageList", [])
 
-    print(f"added: {added_image_list}")
-
     # Reads data from session values
     site_data = session.get("site_data", None)
     url       = session.get("url", None)
     user_id   = session.get("user_id", None)
+
+    # Add images extra images to site data
+    site_data.extend([(None, "", "", image) for image in added_image_list])
 
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
@@ -135,6 +136,7 @@ def process_images():
     session["generation_id"]  = generation_id
     session["data_ids"]       = data_ids
     session["tagged_list"]    = tagged_list
+    session["site_data"]      = site_data
 
     return redirect(url_for('displayed_images'))
 
