@@ -121,7 +121,6 @@ class UserInfo:
         # Convert data to list of tuples
         for data in response.data:
             # Uploaded image
-            print(data["image_url"])
             if data["image_url"] is None:
                 # Read from database
                 try:
