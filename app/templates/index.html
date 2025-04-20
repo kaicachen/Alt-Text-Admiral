@@ -98,8 +98,20 @@
     
 </head>
 <body>
+<<<<<<< Updated upstream
+=======
+    
+
+>>>>>>> Stashed changes
     <h1>Image Alt-Text Generation Tool</h1>
+    {% if session.get('user_id') %}
+    <!-- User is logged in: show History button -->
+    <button class="history"><a href="{{ url_for('history') }}" class="btn">History</a></button>
+    {% else %}
+    <!-- User is not logged in: show Login button -->
     <button onclick="openLoginPopup()">Login with Google</button>
+    {% endif %}
+
     <p>Enter a URL to begin the web scraping process.</p>
     
     <form action="/" method="post" onsubmit="showLoader()">
