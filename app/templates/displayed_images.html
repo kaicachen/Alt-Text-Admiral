@@ -34,8 +34,30 @@
         <div class="image-card">
             <img src="{{ item[0] }}" alt="Image">
             <p>{{ item[1] }}</p>
+            <button onclick="regenText('{{loop.index}}')">Regenerate Alt-Text</button>
         </div>
         {% endfor %}
     </div>
+    
+    <script>
+        function regenText(imgToRegen) {
+            // Send the image index to regenerate
+            fetch("/regenerate_image", {
+                    method: "POST",
+                    body: JSON.stringify({ data_index: imgToRegen }),
+                    headers: { "Content-Type": "application/json" }
+                })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to process regeneration');
+                }
+                // If successful, the server will handle the redirect
+                window.location.href = "/displayed_images";  // Redirect to the displayed images page
+            })
+            .catch(error => {
+                console.error("Error:", error);  // Handle any errors
+            });
+        }
+    </script>
 </body>
 </html>

@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EECS 582 Capstone Project</title>
     <style>
+
+        .history {
+            position: fixed;
+            right: 10px;
+            top: 10px;
+        }
         /* The Modal (background) */
         .modal {
         position: fixed; /* Stay in place */
@@ -51,6 +57,7 @@
             margin-top: 10px;
         }
 
+
     </style>
     <script>
         function openLoginPopup() {
@@ -73,14 +80,23 @@
     
 </head>
 <body>
+    <button class="history"><a href="{{ url_for('history') }}" class="btn">History</a></button>
+    
+
     <h1>Image Alt-Text Generation Tool</h1>
     <button onclick="openLoginPopup()">Login with Google</button>
     <p>Enter a URL to begin the web scraping process.</p>
     
     <form action="/" method="post">
-        <input type="text" name="url" placeholder="Enter URL here" required>
-        <button type="submit">Start Scraping</button>
+        <input id="URLbox" type="text" name="url" placeholder="Enter URL here" required>
+        <button onclick="sumbitURL()" type="submit">Start Scraping</button>
     </form>
 
+    <script>
+        function sumbitURL() {
+            let inputURL = document.getElementById("URLbox").value;
+            localStorage.setItem("url", inputURL);
+        }
+    </script>
 </body>
 </html>
