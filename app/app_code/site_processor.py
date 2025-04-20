@@ -66,6 +66,7 @@ class SiteProcessor:
                 .eq("hash", hash.hexdigest())
                 .execute()
                 )
+            
         except Exception as e:
             print(f"Error reading tuple from the database: hash: {hash.hexdigest()}, ERROR: {e}")
             response = None
@@ -79,6 +80,7 @@ class SiteProcessor:
                     .eq("hash", hash.hexdigest())
                     .execute()
                 )
+
             except Exception as e:
                 print(f"Error updating tuple time in the database: hash: {hash.hexdigest()} ERROR: {e}")
                 response = None
@@ -106,6 +108,7 @@ class SiteProcessor:
                     .eq("hash", hash.hexdigest())
                     .execute()
                 )
+
             except Exception as e:
                 print(f"Error updating tuple alt-text in the database: hash: {hash.hexdigest()}, alt-text: {alt_text} ERROR: {e}")
                 response = None
@@ -146,10 +149,7 @@ class SiteProcessor:
             # User added image
             if self.site_data[i][0] is None:
                 # Split the header from the actual base64 data
-                header, base64_data = self.site_data[i][3].split("base64,", 1)
-
-                # Optional: Extract MIME type from the header
-                mime_type = header.split(":")[1].split(";")[0]
+                _, base64_data = self.site_data[i][3].split("base64,", 1)
 
                 # Decode base64 to bytes
                 image_bytes = b64decode(base64_data)
@@ -161,7 +161,8 @@ class SiteProcessor:
                         image_type = self.annotations[i],
                         image_url  = BytesIO(image_bytes),
                         text       = self.site_data[i][1], 
-                        href       = self.site_data[i][2])
+                        href       = self.site_data[i][2],
+                        fetch_db   = False)
                 ))
 
             # Standard scraped URL image

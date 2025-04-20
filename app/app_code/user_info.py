@@ -120,10 +120,36 @@ class UserInfo:
 
         # Convert data to list of tuples
         for data in response.data:
-            generation_data.append((
-                data["image_url"],
-                data["alt_text"]
-            ))
+            # Uploaded image
+            print(data["image_url"])
+            if data["image_url"] is None:
+                # Read from database
+                try:
+                    uploaded_image_response = (
+                        self._supabase.table("Uploaded Images")
+                        .select("*")
+                        .eq("image_id", data["image_id"])
+                        .execute()
+                        )
+                    
+                except Exception as e:
+                    print(f"Error reading uploaded image from the database: image_id: {data["image_id"]} ERROR: {e}")
+                    # Add None as place holder for failed data
+                    data_ids.append(None)
+                    continue
+
+                # Add image source and alt-text tuple
+                generation_data.append((
+                    uploaded_image_response.data[0]["image_src"],
+                    data["alt_text"]
+                ))
+
+            # Standard scraped image
+            else:
+                generation_data.append((
+                    data["image_url"],
+                    data["alt_text"]
+                ))
 
             data_ids.append(data["data_id"])
 
@@ -154,23 +180,64 @@ class UserInfo:
 
         # Add each data tuple to the Generation Data table
         for data in generation_data:
-            try:
-                response = (
-                    self._supabase.table("Generation Data")
-                    .insert({"generation_id": generation_id,
-                            "image_url": data[0],
-                            "alt_text": data[1]
-                            })
-                    .execute()
-                    )
-                
-                # Save the data ID
-                data_ids.append(response.data[0]["data_id"])
-                
-            except Exception as e:
-                print(f"Error adding tuple to the database: generation_id: {generation_id}, image_url: {data[0]}, alt_text: {data[1]}, ERROR: {e}")
-                # Add None as place holder for failed data
-                data_ids.append(None)
+            if data[0][:23] == "data:image/jpeg;base64,":
+                # Add the uploaded image
+                try:
+                    response = (
+                        self._supabase.table("Uploaded Images")
+                        .insert({"generation_id": generation_id,
+                                "image_src": data[0],
+                                })
+                        .execute()
+                        )
+                    
+                    # Save the image ID to add to Generation Data
+                    image_id = response.data[0]["image_id"]
+
+                except Exception as e:
+                    print(f"Error adding tuple to the database: generation_id: {generation_id}, image_src: {data[0]} ERROR: {e}")
+                    # Add None as place holder for failed data
+                    data_ids.append(None)
+                    continue
+
+                # Add the alt-text
+                try:
+                    response = (
+                        self._supabase.table("Generation Data")
+                        .insert({"generation_id": generation_id,
+                                "image_id": image_id,
+                                "alt_text": data[1]
+                                })
+                        .execute()
+                        )
+                    
+                    # Save the data ID
+                    data_ids.append(response.data[0]["data_id"])
+                    
+                except Exception as e:
+                    print(f"Error adding tuple to the database: generation_id: {generation_id}, image_id: {image_id}, alt_text: {data[1]}, ERROR: {e}")
+                    # Add None as place holder for failed data
+                    data_ids.append(None)
+
+            # Add the image, alt-text data
+            else:
+                try:
+                    response = (
+                        self._supabase.table("Generation Data")
+                        .insert({"generation_id": generation_id,
+                                "image_url": data[0],
+                                "alt_text": data[1]
+                                })
+                        .execute()
+                        )
+                    
+                    # Save the data ID
+                    data_ids.append(response.data[0]["data_id"])
+                    
+                except Exception as e:
+                    print(f"Error adding tuple to the database: generation_id: {generation_id}, image_url: {data[0]}, alt_text: {data[1]}, ERROR: {e}")
+                    # Add None as place holder for failed data
+                    data_ids.append(None)
 
         return generation_id, data_ids
 

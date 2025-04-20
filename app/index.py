@@ -128,7 +128,7 @@ def process_images():
     user_id   = session.get("user_id", None)
 
     # Add images extra images to site data
-    site_data.extend([(None, "", "", image) for image in added_image_list])
+    site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
 
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
@@ -169,21 +169,38 @@ def regenerate_image():
     data = request.get_json()
     data_index = int(data.get("data_index", None)) - 1
 
+    print(f"Regenerating image {data_index}")
+
     generated_data = session.get("generated_data", None)
     site_data      = session.get("site_data", None)
     data_ids       = session.get("data_ids", None)
     tagged_list    = session.get("tagged_list", None)
 
-    # Generate new alt text with the stored data
-    alt_text = main.regenerate(data_ids[data_index],
-                               tagged_list[data_index],
-                               site_data[data_index][0],
-                               site_data[data_index][1],
-                               site_data[data_index][2])
+    # User uploaded image
+    if site_data[data_index][0] is None:
+        # Generate new alt text with the stored data
+        alt_text = main.regenerate(data_ids[data_index],
+                                tagged_list[data_index],
+                                site_data[data_index][3],
+                                site_data[data_index][1],
+                                site_data[data_index][2])
+        
+        # Updates the data tuple
+        generated_data[data_index] = (site_data[data_index][3],
+                                    alt_text)
+        
+    # Standard scraped image
+    else:
+        # Generate new alt text with the stored data
+        alt_text = main.regenerate(data_ids[data_index],
+                                tagged_list[data_index],
+                                site_data[data_index][0],
+                                site_data[data_index][1],
+                                site_data[data_index][2])
     
-    # Updates the data tuple
-    generated_data[data_index] = (site_data[data_index][0],
-                                  alt_text)
+        # Updates the data tuple
+        generated_data[data_index] = (site_data[data_index][0],
+                                    alt_text)
 
     # Update stored data
     session["generated_data"] = generated_data
