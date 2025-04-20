@@ -101,12 +101,7 @@ def annotate():
     # Reads scraped data from session values
     image_links = [data[0] for data in session.get("site_data", None)]
     image_tags = []
-
-    # If no images scraped, skip generation
-    if (len(image_links) == 0):
-        return render_template("empty.html", image_links=image_links, image_tags=image_tags)
     
-
     # Default to "don't include" tag if invalid URL
     for image in image_links:
         if image == "true":
@@ -114,7 +109,10 @@ def annotate():
         else:
             image_tags.append(0)
 
-    return render_template("annotate.html", image_links=image_links, image_tags=image_tags)
+    # Pass 'no_images_found' flag to template
+    no_images_found = len(image_links) == 0
+
+    return render_template("annotate.html", image_links=image_links, image_tags=image_tags, no_images_found=no_images_found)
 
 
 '''JSON to process annotations from user'''
@@ -157,6 +155,13 @@ def displayed_images():
 @app.route('/api/data', methods=['GET'])
 def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
+
+'''Page to display previous generation history'''
+@app.route('/history')
+def history():
+    user_id = session.get("user_id", None)
+    history = main.load_history(user_id)
+    return render_template('history.html', history_data=history)
 
 ''' Oauth Google '''
 def generate_nonce():
