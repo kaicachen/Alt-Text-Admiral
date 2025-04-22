@@ -1,7 +1,7 @@
-from app_code.site_processor import SiteProcessor
-from app_code.web_scraper import WebScraper
+from .app_code.site_processor import SiteProcessor
+from .app_code.web_scraper import WebScraper
 from supabase import create_client, Client
-from app_code.user_info import UserInfo
+from .app_code.user_info import UserInfo
 from dotenv import load_dotenv
 from os import environ
 
