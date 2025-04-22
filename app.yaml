@@ -1,0 +1,8 @@
+runtime: python39  # Or python310 / python311
+entrypoint: gunicorn -b :$PORT main:app
+
+instance_class: F1  # optional - controls cost/performance
+
+handlers:
+  - url: /.*
+    script: auto
