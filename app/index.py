@@ -72,6 +72,11 @@ python_path = get_python_path()
 '''Main home page'''
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Clear all session data besides user ID
+    user_id = session.get("user_id", None)
+    session.clear()
+    session["user_id"] = user_id
+
     if request.method == 'POST':
         # Gets URL entered by the user
         url = request.form.get('url')
