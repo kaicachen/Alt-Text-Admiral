@@ -19,3 +19,4 @@ Flask-Session
 Flask-SQLAlchemy
 psycopg2-binary
 dotenv
+authlib

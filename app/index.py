@@ -7,6 +7,7 @@ This file runs the webscraper, then before running main_captioner.py on the resu
 it asks the user to mark whether images are decorative, links, or infographics. It then
 modifies the CSV file passed to the main_captioner.py 
 '''
+import requests
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from flask_cors import CORS
 from os import name as os_name, urandom, environ, path
@@ -72,6 +73,11 @@ python_path = get_python_path()
 '''Main home page'''
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Clear all session data besides user ID
+    user_id = session.get("user_id", None)
+    session.clear()
+    session["user_id"] = user_id
+
     if request.method == 'POST':
         # Gets URL entered by the user
         url = request.form.get('url')
@@ -132,22 +138,28 @@ def process_images():
     # Gets the JSON storing the user's image annotations
     data = request.get_json()
     tagged_list = data.get("taggedList", [])
+    added_image_list = data.get("addedImageList", [])
 
     # Reads data from session values
     site_data = session.get("site_data", None)
     url       = session.get("url", None)
-    user_id  = session.get("user_id", None)
+    user_id   = session.get("user_id", None)
+
+    # Add images extra images to site data
+    site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
 
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
     session["generated_data"] = generated_data
     session["generation_id"]  = generation_id
     session["data_ids"]       = data_ids
+    session["tagged_list"]    = tagged_list
+    session["site_data"]      = site_data
 
     return redirect(url_for('displayed_images'))
 
 
-# Page to show images with their alt-text
+'''Page to show images with their alt-text'''
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
     # Reads data from session value
@@ -157,9 +169,112 @@ def displayed_images():
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
 
 
+'''End point to check for valid URL'''
+@app.route('/check_url')
+def check_url():
+    newURL = request.args.get('url') 
+    try:
+        response = requests.head(newURL, timeout=3)
+        return jsonify({'valid': response.status_code < 400})
+    except:
+        return jsonify({'valid':False})
+    
+
+'''End point to regenerate an image's alt-text'''
+@app.route('/regenerate_image', methods=['GET', 'POST'])
+def regenerate_image():
+    # Gets the JSON storing the index of the data
+    data = request.get_json()
+    data_index = int(data.get("data_index", None)) - 1
+
+    print(f"Regenerating image {data_index}")
+
+    generated_data = session.get("generated_data", None)
+    site_data      = session.get("site_data", None)
+    data_ids       = session.get("data_ids", None)
+    tagged_list    = session.get("tagged_list", None)
+
+    # User uploaded image
+    if site_data[data_index][0] is None:
+        # Generate new alt text with the stored data
+        alt_text = main.regenerate(data_ids[data_index],
+                                tagged_list[data_index],
+                                site_data[data_index][3],
+                                site_data[data_index][1],
+                                site_data[data_index][2])
+        
+        # Updates the data tuple
+        generated_data[data_index] = (site_data[data_index][3],
+                                    alt_text)
+        
+    # Standard scraped image
+    else:
+        # Generate new alt text with the stored data
+        alt_text = main.regenerate(data_ids[data_index],
+                                tagged_list[data_index],
+                                site_data[data_index][0],
+                                site_data[data_index][1],
+                                site_data[data_index][2])
+    
+        # Updates the data tuple
+        generated_data[data_index] = (site_data[data_index][0],
+                                    alt_text)
+
+    # Update stored data
+    session["generated_data"] = generated_data
+
+    # Reload images
+    return redirect(url_for('displayed_images'))
+    
+
+'''Page to display previous generation history'''
+@app.route('/history')
+def history():
+    user_id = session.get("user_id", None)
+    history = main.load_history(user_id)
+    return render_template('history.html', history_data=history)
+
+
+'''Endpoint to process previous generation'''
+@app.route('/process_previous_results', methods=['GET', 'POST'])
+def process_previous_results():
+    # Gets the JSON storing the generation ID
+    data = request.get_json()
+    generation_id = int(data.get("generation_id", None))
+
+    generated_data, data_ids = main.load_generation(generation_id)
+
+    session["generated_data"] = generated_data
+    session["generation_id"]  = generation_id
+    session["data_ids"]       = data_ids
+
+    return redirect(url_for('previous_results'))
+
+
+'''Page to display previous generation'''
+@app.route('/previous_results', methods=['GET', 'POST'])
+def previous_results():
+    # Reads data from session value
+    generated_data = session.get("generated_data", None)
+    data_ids       = session.get("data_ids", None)
+
+    return render_template("previous_results.html", data=generated_data, data_ids=data_ids)
+    
+
 @app.route('/api/data', methods=['GET'])
 def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
+
+
+# @app.route("/proxy")
+# def proxy():
+#     try:
+#         response = requests.get(url, timeout=5)
+#         content_type = response.headers.get('Content-Type', 'text/html')
+#         return Response(response.content, content_type=content_type)
+#     except Exception as e:
+#         print(f"Proxy error: {e}")
+#         return Response(f"Error fetching URL: {e}", status=500)
 
 
 ''' Oauth Google '''
@@ -198,7 +313,6 @@ def google_auth():
 
     try:
         user_info = oauth.google.parse_id_token(token, nonce=nonce)
-        print("Google User:", user_info)
 
         email = user_info.get("email")
         if not email:

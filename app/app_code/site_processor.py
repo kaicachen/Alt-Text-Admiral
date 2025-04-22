@@ -1,16 +1,18 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection, logging
 from supabase import create_client, Client
 from datetime import datetime, timezone
-from os import path, environ
-from google import genai
+from warnings import filterwarnings
 from dotenv import load_dotenv
 from .data_processor import *
-from warnings import filterwarnings
+from base64 import b64decode
+from os import path, environ
 from hashlib import sha256
 from .web_scraper import *
+from google import genai
 from json import loads
 from time import sleep
 from torch import cuda
+from io import BytesIO
 from sys import argv
 
 
@@ -64,6 +66,7 @@ class SiteProcessor:
                 .eq("hash", hash.hexdigest())
                 .execute()
                 )
+            
         except Exception as e:
             print(f"Error reading tuple from the database: hash: {hash.hexdigest()}, ERROR: {e}")
             response = None
@@ -77,6 +80,7 @@ class SiteProcessor:
                     .eq("hash", hash.hexdigest())
                     .execute()
                 )
+
             except Exception as e:
                 print(f"Error updating tuple time in the database: hash: {hash.hexdigest()} ERROR: {e}")
                 response = None
@@ -86,7 +90,11 @@ class SiteProcessor:
             return response.data[0]["alt_text"]
 
         # Create data processor object
-        image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_client, self._detr_model, self._detr_processor, self._device)
+        if type(image_url) is BytesIO:
+            image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_client, self._detr_model, self._detr_processor, self._device, URL=False)
+            
+        else:
+            image_processor = DataProcessor(image_url, image_type, text, href, self._gemini_client, self._detr_model, self._detr_processor, self._device)
 
         # Generate alt-text
         alt_text = image_processor.process_data()
@@ -100,6 +108,7 @@ class SiteProcessor:
                     .eq("hash", hash.hexdigest())
                     .execute()
                 )
+
             except Exception as e:
                 print(f"Error updating tuple alt-text in the database: hash: {hash.hexdigest()}, alt-text: {alt_text} ERROR: {e}")
                 response = None
@@ -137,15 +146,36 @@ class SiteProcessor:
             if self.annotations[i] == 3:
                 continue
 
-            # Add image, alt-text tuple to list
-            generated_data.append((
-                self.site_data[i][0],
-                self.generate_alt_text(
-                    image_type = self.annotations[i],
-                    image_url  = self.site_data[i][0],
-                    text       = self.site_data[i][1], 
-                    href       = self.site_data[i][2])
-            ))
+            # User added image
+            if self.site_data[i][0] is None:
+                # Split the header from the actual base64 data
+                _, base64_data = self.site_data[i][3].split("base64,", 1)
+
+                # Decode base64 to bytes
+                image_bytes = b64decode(base64_data)
+
+                # Add image, alt-text tuple to list
+                generated_data.append((
+                    self.site_data[i][3],
+                    self.generate_alt_text(
+                        image_type = self.annotations[i],
+                        image_url  = BytesIO(image_bytes),
+                        text       = self.site_data[i][1], 
+                        href       = self.site_data[i][2],
+                        fetch_db   = False)
+                ))
+
+            # Standard scraped URL image
+            else:
+                # Add image, alt-text tuple to list
+                generated_data.append((
+                    self.site_data[i][0],
+                    self.generate_alt_text(
+                        image_type = self.annotations[i],
+                        image_url  = self.site_data[i][0],
+                        text       = self.site_data[i][1], 
+                        href       = self.site_data[i][2])
+                ))
 
         return generated_data
 
