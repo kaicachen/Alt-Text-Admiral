@@ -1,11 +1,13 @@
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium import webdriver
-from re import search
 from requests import get
 from time import sleep
+from re import search
 from sys import argv
+from os import path
 
 '''Class to perform webscraping of image and text tuples'''
 class WebScraper:
@@ -53,6 +55,25 @@ class WebScraper:
             
             else:
                 raise Exception("Failed to sanitize URL and connect")
+            
+    
+    '''Sets up Selenium Chromium Webdriver'''
+    def _get_driver(self):
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+
+        # Set binary location only if running on Render
+        if path.exists("/usr/bin/google-chrome"):
+            options.binary_location = "/usr/bin/google-chrome"
+
+        # Create Service object
+        service = Service(ChromeDriverManager().install())
+
+        driver = webdriver.Chrome(service=service, options=options)
+        return driver
 
 
     '''Scrapes a given URL to create tuples of images and surrounding text'''
@@ -60,13 +81,8 @@ class WebScraper:
         # Validates URL
         validated_url = self._validate_url()
 
-        # Set up Selenium WebDriver
-        options = webdriver.ChromeOptions()
-
-        # Run without opening a browser
-        options.add_argument("--headless")
-
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        # Set up Selenium Webdriver
+        driver = self._get_driver()
         driver.get(validated_url)
 
         # Allow JavaScript to load content
