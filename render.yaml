@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: flask-app
+    name: Alt-Text-Admiral
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
