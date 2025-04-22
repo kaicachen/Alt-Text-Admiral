@@ -5,10 +5,10 @@ from warnings import filterwarnings
 from dotenv import load_dotenv
 from .data_processor import *
 from base64 import b64decode
-from os import path, environ
 from hashlib import sha256
 from .web_scraper import *
 from google import genai
+from os import environ
 from json import loads
 from time import sleep
 from torch import cuda

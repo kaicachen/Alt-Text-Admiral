@@ -4,12 +4,14 @@ from bs4 import BeautifulSoup
 from time import sleep
 from io import BytesIO
 from PIL import Image
-from .training import Trainer
 
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
     def __init__(self, image_loc, image_type, text, href, gemini_client, detr_model, detr_processor, device, URL=True, training = False, tuned = True):
+        if training:
+            from .training import Trainer
+            
         # Saves image path for future output
         self.loc = image_loc
 
