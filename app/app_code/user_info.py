@@ -132,7 +132,7 @@ class UserInfo:
                         )
                     
                 except Exception as e:
-                    print(f"Error reading uploaded image from the database: image_id: {data["image_id"]} ERROR: {e}")
+                    print(f"Error reading uploaded image from the database: image_id: {data['image_id']} ERROR: {e}")
                     # Add None as place holder for failed data
                     data_ids.append(None)
                     continue
