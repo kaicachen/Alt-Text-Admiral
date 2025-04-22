@@ -93,10 +93,13 @@ def index():
 @app.route('/extension',methods=['POST','GET'])
 def test():
     data = request.get_json()
-    global url
-    url = data["url"]
-    
-    run([python_path, "app/app_code/web_scraper.py", url, "True"], check=True,text=True)
+    url = data["url"]  # it's like this because data is a json that I get the url from
+
+    # This should work now ?
+    validated_url, site_data = main.web_scraper(url)
+    session["url"] = validated_url
+    session["site_data"] = site_data
+
     return jsonify({"redirect_url": url_for("annotate")})
 
 
