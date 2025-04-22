@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EECS 582 Capstone Project</title>
+
+    <style>
+        .back {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .image-card {
+            width: 200px;
+            text-align: center;
+        }
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="title"></h1>
+    <button class="back"><a href="{{ url_for('history') }}">Back</a></button>
+    
+
+    <div class="gallery">
+        {% for item in data %}
+        <div class="image-card">
+            <img src="{{ item[0] }}" alt="Image">
+            <p>{{ item[1] }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- <div class="gallery">
+
+        Make DB call here to get specified generation
+        {% for item in data %}
+
+        
+        <div class="image-card">
+            <img src="{{ item.image_link }}" alt="Image">
+            <p>{{ item.generated_output }}</p>
+            <button onclick="regenText('{{ loop.index }}')">Regenerate Alt-Text</button>
+        </div>
+        {% endfor %}
+     </div> -->
+
+    <script>
+        // const raw = localStorage.getItem("selectedHistory");
+        // const historyItem = JSON.parse(raw);
+
+        // const h1El = document.getElementById("title");
+        // const resultsDiv = document.getElementById("scrapedResults");
+
+        // h1El.textContent = "Previous results of " + historyItem.name + " from " + historyItem.date + ":";
+
+        // function regenText(imgToRegen) {
+        //     console.log(imgToRegen);
+        //     //make call to backend from here to regenerate specific image
+        // }
+
+    </script>
+</body>
+</html>

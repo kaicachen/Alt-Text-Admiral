@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EECS 582 Capstone Project</title>
     <style>
+
+        .history {
+            position: fixed;
+            right: 10px;
+            top: 10px;
+        }
         /* The Modal (background) */
         .modal {
         position: fixed; /* Stay in place */
@@ -78,6 +84,7 @@
         }
         
 
+
     </style>
     <script>
         function openLoginPopup() {
@@ -119,5 +126,11 @@
         </div>
     </form>
 
+    <script>
+        function sumbitURL() {
+            let inputURL = document.getElementById("URLbox").value;
+            localStorage.setItem("url", inputURL);
+        }
+    </script>
 </body>
 </html>

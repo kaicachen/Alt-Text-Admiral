@@ -188,7 +188,7 @@
   
 
     <script>
-        var taggedList = []; //0 = keep, 1 = link, 2 = decorative, 3 = discard
+        var taggedList = []; //1 = keep, 2 = link, 3 = decorative, 4 = discard
 
         var buttonList = [];
         var modal = document.getElementById("myModal");
@@ -235,47 +235,10 @@
             imageList.forEach(function(img) {
                 taggedList.push(imageTags[i]);
                 
-                createImageBox(i, img.trim(), imageTags[i]);
-                i++;
-            });
-            let addImagesBtn = document.getElementById("addImages")
-
-            let fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.accept="image/*";
-            fileInput.style.display = "none";
-
-            document.body.appendChild(fileInput);
-
-            addImagesBtn.addEventListener("click", function (event) {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener("change", function (event) {
-                const files = event.target.files;
-
-                Array.from(files).forEach(file => {
-                    const reader = new FileReader();
-
-                    reader.onload = function (e) {
-                        const imageSrc = e.target.result;
-
-                        // Add to imageList and taggedList
-                        imageList.push(imageSrc);
-                        taggedList.push(0); // default to informative
-                        createImageBox(currentIndex, imageSrc, 0); // Use 0 for default tag
-                        currentIndex++;
-                    };
-
-                    reader.readAsDataURL(file); // Convert image to base64 string
-                });
-            });
-        }
-
-        function createImageBox(i, imgSrc, tagValue) {
-            let outerDiv = document.createElement("div");
-            let btnDiv = document.createElement("div");
-            let numTracker = document.createElement("div");
+                //this looks awful but i need to create separate elements for each item
+                let outerDiv = document.createElement("div");
+                let btnDiv = document.createElement("div");
+                let numTracker = document.createElement("div");
 
             let span1 = document.createElement("span");
             let span2 = document.createElement("span");
@@ -373,73 +336,11 @@
             buttonList[imgIndex][btnIndex].style.color = "white";
         }
 
-        async function cleanURL(url) {
-            if ((url.startsWith("https://")) || (url.startsWith("http://"))) {
-                return url
-            }
-            else {
-                let https = "https://" + url;
-                let http = "http://" + url;
-
-                let res = await fetch(`/check_url?url=${encodeURIComponent(https)}`);
-                let data = await res.json();
-  
-                if (data.valid) {    
-                    return https;
-                } 
-
-                res = await fetch(`/check_url?url=${encodeURIComponent(http)}`);
-                data = await res.json();
-
-                if (data.valid) {    
-                    return http;
-                } 
-                
-                return null;
-            }
-        }
-
-        function dragOverHandler(ev) {
-        ev.preventDefault();
-        dropZone.classList.add("dragover");
-    }
-
-    function dropHandler(ev) {
-        ev.preventDefault();
-
-        let files = ev.dataTransfer.files;
-        if (files.length > 0) {
-        handleFiles(files);  // this should read + display images once
-    }
-    }
-
-    dropZone.addEventListener("dragover", dragOverHandler);
-    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-    dropZone.addEventListener("drop", dropHandler);
-
-    function handleFiles(files) {
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-                const imageSrc = e.target.result;
-                imageList.push(imageSrc);
-                taggedList.push(0);
-                createImageBox(currentIndex, imageSrc, 0);
-                currentIndex++;
-            };
-
-            reader.readAsDataURL(file);
-        });
-    }
-
-
-
         window.onclick = function(event) {
             if (event.target.className == "finishedTagging") { 
                 fetch("/process_images", {
                     method: "POST",
-                    body: JSON.stringify({ taggedList: taggedList }),  // Send the full object
+                    body: JSON.stringify({ taggedList: taggedList, addedImageList: addedImageList }),  // Send the full object
                     headers: { "Content-Type": "application/json" }
                 })
                 .then(response => {

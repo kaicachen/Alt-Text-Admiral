@@ -8,6 +8,7 @@ selenium
 webdriver-manager
 reportlab
 flask
+flask-cors
 pandas
 bs4
 supabase
@@ -18,3 +19,4 @@ Flask-Session
 Flask-SQLAlchemy
 psycopg2-binary
 dotenv
+authlib
