@@ -128,8 +128,10 @@ def annotate():
             image_tags.append(3)
         else:
             image_tags.append(0)
+    # Pass 'no_images_found' flag to template
+    no_images_found = len(image_links) == 0
 
-    return render_template("annotate.html", image_links=image_links, image_tags=image_tags)
+    return render_template("annotate.html", image_links=image_links, image_tags=image_tags, no_images_found=no_images_found)
 
 
 '''JSON to process annotations from user'''
