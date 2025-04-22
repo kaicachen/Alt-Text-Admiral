@@ -9,6 +9,7 @@ modifies the CSV file passed to the main_captioner.py
 '''
 import requests
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask_cors import CORS
 from os import name as os_name, urandom, environ, path
 from authlib.integrations.flask_client import OAuth
 from sys import prefix, base_prefix, executable
@@ -97,8 +98,20 @@ def index():
                 print(f"Standard Output: {e.stdout}")
                 print(f"Standard Error: {e.stderr}")
                 return render_template('error.html')
-
+    
     return render_template('index.html')
+
+@app.route('/extension',methods=['POST','GET'])
+def test():
+    data = request.get_json()
+    url = data["url"]  # it's like this because data is a json that I get the url from
+
+    # This should work now ?
+    validated_url, site_data = main.web_scraper(url)
+    session["url"] = validated_url
+    session["site_data"] = site_data
+
+    return jsonify({"redirect_url": url_for("annotate")})
 
 
 '''Page to allow for user annotations of images'''
