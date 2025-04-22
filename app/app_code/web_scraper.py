@@ -175,5 +175,5 @@ class WebScraper:
 if __name__ == "__main__":
     # URL is passed to script through argv
     url = argv[1]
-    web_scraper = WebScraper(url,"False")
-    site_data = web_scraper.scrape_site()
+    web_scraper = WebScraper(url)
+    validated_url, site_data = web_scraper.scrape_site()
