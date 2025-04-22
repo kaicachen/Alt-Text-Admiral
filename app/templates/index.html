@@ -56,6 +56,32 @@
             padding: 10px;
             margin-top: 10px;
         }
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50vh;
+            position: relative;
+        }
+        
+        .loader {
+            display: none;
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+
+        .show-loader {
+            display: block !important;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
 
     </style>
@@ -76,20 +102,29 @@
                 }
             }, false);
         }
+        function showLoader() {
+            document.getElementById("loader").classList.add("show-loader");
+        }
     </script>
     
 </head>
 <body>
-    <button class="history"><a href="{{ url_for('history') }}" class="btn">History</a></button>
-    
-
     <h1>Image Alt-Text Generation Tool</h1>
+    {% if session.get('user_id') %}
+    <!-- User is logged in: show History button -->
+    <button class="history"><a href="{{ url_for('history') }}" class="btn">History</a></button>
+    {% else %}
+    <!-- User is not logged in: show Login button -->
     <button onclick="openLoginPopup()">Login with Google</button>
+    {% endif %}
     <p>Enter a URL to begin the web scraping process.</p>
     
-    <form action="/" method="post">
-        <input id="URLbox" type="text" name="url" placeholder="Enter URL here" required>
-        <button onclick="sumbitURL()" type="submit">Start Scraping</button>
+    <form action="/" method="post" onsubmit="showLoader()">
+        <input type="text" name="url" placeholder="Enter URL here" required>
+        <button type="submit">Start Scraping</button>
+        <div class="loader-container">
+            <div id="loader" class="loader"></div>
+        </div>
     </form>
 
     <script>
