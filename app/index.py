@@ -336,6 +336,11 @@ def google_auth():
 
     except Exception as e:
         return f"Error while parsing ID token: {str(e)}", 400
+    
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':

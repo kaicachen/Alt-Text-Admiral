@@ -11,6 +11,11 @@
             right: 10px;
             top: 10px;
         }
+        .logout {
+            position: fixed;
+            right: 80px;
+            top: 10px;
+        }
         /* The Modal (background) */
         .modal {
         position: fixed; /* Stay in place */
@@ -113,6 +118,7 @@
     {% if session.get('user_id') %}
     <!-- User is logged in: show History button -->
     <button class="history"><a href="{{ url_for('history') }}" class="btn">History</a></button>
+    <button class="logout"><a href="{{ url_for('logout') }}" class="btn">Logout</a></button>
     {% else %}
     <!-- User is not logged in: show Login button -->
     <button onclick="openLoginPopup()">Login with Google</button>
