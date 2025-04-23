@@ -160,6 +160,13 @@
                     
                     <div id="drop_zone" ondragover="dragOverHandler(event);">
                         <div id="innerDragBox">
+                            <script>
+                                const noImagesFound = {{ no_images_found | tojson }};
+                                
+                                if (noImagesFound) {
+                                    alert("No images were found. Please manually import images using the Add Images button.");
+                                }
+                            </script>
                             <span><a>Don't See your Images?</a></span>
                             <span><button id="addImages">Add Images</button></span>
                         </div>
