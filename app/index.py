@@ -175,6 +175,13 @@ def process_images():
     # Add images extra images to site data
     site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
 
+    # Remove "not included" images from site data
+    for tag_index in range(len(tagged_list)):
+        if tagged_list[tag_index] == 3:
+            site_data.pop(tag_index)
+
+    tagged_list = [tag for tag in tagged_list if tag != 3]
+
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
     session["generated_data"] = generated_data
