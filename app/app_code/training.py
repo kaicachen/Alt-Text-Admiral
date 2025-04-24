@@ -179,8 +179,8 @@ class Trainer:
 if __name__ == "__main__":  # Used for testing purposes
     #create client with dummy name
     dummy = Trainer("models/gemini-1.5-flash")
-    #list all the tuned models
+    # #list all the tuned models
     for model_info in dummy._client.tunings.list():
         print(model_info.name)
-    
+    dummy.complete_dataset("informative1.5-flash.jsonl")
     # dummy.create_gemini_model("processed_informativegemini-1.5-flash.jsonl")
