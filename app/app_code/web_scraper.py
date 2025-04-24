@@ -2,9 +2,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium import webdriver
-from re import search
 from requests import get
 from time import sleep
+from io import BytesIO
+from PIL import Image
+from re import search
 from sys import argv
 
 '''Class to perform webscraping of image and text tuples'''
@@ -53,6 +55,30 @@ class WebScraper:
             
             else:
                 raise ValueError("Failed to sanitize URL and connect")
+
+
+    '''Filter out placeholder images or single color images'''
+    def _filter_images(self, image_text_data):
+        validated_data = []
+        for image_url, text, href, in image_text_data:
+            try:
+                response = get(image_url)
+                image = Image.open(BytesIO(response.content))
+
+            except:
+                print(f"ERROR LOADING IMAGE {image_url}, REMOVING")
+                continue
+
+            # Finds all colors in an image
+            colors = image.getcolors(image.size[0] * image.size[1])
+
+            # Removes single pixel images or single color images
+            if (image.width == 1 and image.height == 1) or len(colors) == 1:
+                continue
+
+            validated_data.append((image_url, text, href))
+
+        return validated_data
 
 
     '''Scrapes a given URL to create tuples of images and surrounding text'''
@@ -139,7 +165,6 @@ class WebScraper:
             except Exception as e:
                 print(f"Error processing image: {e}")
         
-        # NEED TO ADD HREF CHECKING HERE
         # Find Revolution Slider images (which use divs with background images)
         rev_slider_divs = driver.find_elements(By.XPATH, "//div[contains(@class, 'rev_slider') or contains(@class, 'tp-bgimg')]")
         for div in rev_slider_divs:
@@ -168,8 +193,10 @@ class WebScraper:
         
         driver.quit()
 
+        validated_data = self._filter_images(image_text_data)
+
         # Returns validated URL and image, text tuple list
-        return validated_url, image_text_data
+        return validated_url, validated_data
 
 
 if __name__ == "__main__":
