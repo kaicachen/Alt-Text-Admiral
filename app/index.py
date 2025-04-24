@@ -69,6 +69,7 @@ def get_python_path():
 
 python_path = get_python_path()
 
+
 '''Blocks caching for user authenticated pages'''
 def nocache(view):
     @wraps(view)
@@ -79,6 +80,7 @@ def nocache(view):
         response.headers["Expires"] = "0"
         return response
     return no_cache_view
+
 
 '''Main home page'''
 @app.route('/', methods=['GET', 'POST'])
@@ -103,13 +105,12 @@ def index():
 
                 return redirect(url_for('annotate'))
                 
-            except CalledProcessError as e:
+            # Remain on home page if URL is invalid
+            except ValueError as e:
                 print(f"Error: {e}")
-                print(f"Standard Output: {e.stdout}")
-                print(f"Standard Error: {e.stderr}")
-                return render_template('error.html')
     
     return render_template('index.html')
+
 
 '''Route for Chrome extension to connect to'''
 @app.route('/extension',methods=['POST','GET'])
