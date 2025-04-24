@@ -50,7 +50,7 @@ oauth = OAuth(app)
 
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
-def get_python_path():
+def get_python_path()->str|None:
     # 1. Check if running inside a virtual environment
     if prefix != base_prefix:  
         return executable  # Return the venv's Python path
@@ -118,9 +118,9 @@ def test():
 @app.route('/annotate', methods=['GET', 'POST'])
 def annotate():
     # Reads scraped data from session values
-    image_links = [data[0] for data in session.get("site_data", None)]
+    image_links:list[str] = [data[0] for data in session.get("site_data", None)]
 
-    image_tags = []
+    image_tags:list[int] = []
 
     # Default to "don't include" tag if invalid URL
     for image in image_links:
@@ -138,14 +138,14 @@ def annotate():
 @app.route('/process_images', methods=['GET', 'POST'])
 def process_images():
     # Gets the JSON storing the user's image annotations
-    data = request.get_json()
-    tagged_list = data.get("taggedList", [])
-    added_image_list = data.get("addedImageList", [])
+    data:dict = request.get_json()
+    tagged_list:list[int] = data.get("taggedList", [])
+    added_image_list:list[str] = data.get("addedImageList", [])
 
     # Reads data from session values
-    site_data = session.get("site_data", None)
-    url       = session.get("url", None)
-    user_id   = session.get("user_id", None)
+    site_data:list[tuple[str, str, str]] = session.get("site_data", None)
+    url:str       = session.get("url", None)
+    user_id:int   = session.get("user_id", None)
 
     # Add images extra images to site data
     site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
@@ -165,8 +165,8 @@ def process_images():
 @app.route('/displayed_images', methods=['GET', 'POST'])
 def displayed_images():
     # Reads data from session value
-    generated_data = session.get("generated_data", None)
-    data_ids       = session.get("data_ids", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+    data_ids :list[int] = session.get("data_ids", None)
 
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
 
@@ -186,15 +186,15 @@ def check_url():
 @app.route('/regenerate_image', methods=['GET', 'POST'])
 def regenerate_image():
     # Gets the JSON storing the index of the data
-    data = request.get_json()
+    data:dict = request.get_json()
     data_index = int(data.get("data_index", None)) - 1
 
     print(f"Regenerating image {data_index}")
 
-    generated_data = session.get("generated_data", None)
-    site_data      = session.get("site_data", None)
-    data_ids       = session.get("data_ids", None)
-    tagged_list    = session.get("tagged_list", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+    site_data:list[tuple[str, str, str]]= session.get("site_data", None)
+    data_ids :list[int]     = session.get("data_ids", None)
+    tagged_list : list[int]    = session.get("tagged_list", None)
 
     # User uploaded image
     if site_data[data_index][0] is None:
@@ -232,7 +232,7 @@ def regenerate_image():
 '''Page to display previous generation history'''
 @app.route('/history')
 def history():
-    user_id = session.get("user_id", None)
+    user_id:int = session.get("user_id", None)
     history = main.load_history(user_id)
     return render_template('history.html', history_data=history)
 
@@ -241,7 +241,7 @@ def history():
 @app.route('/process_previous_results', methods=['GET', 'POST'])
 def process_previous_results():
     # Gets the JSON storing the generation ID
-    data = request.get_json()
+    data:dict = request.get_json()
     generation_id = int(data.get("generation_id", None))
 
     generated_data, data_ids = main.load_generation(generation_id)
@@ -257,8 +257,8 @@ def process_previous_results():
 @app.route('/previous_results', methods=['GET', 'POST'])
 def previous_results():
     # Reads data from session value
-    generated_data = session.get("generated_data", None)
-    data_ids       = session.get("data_ids", None)
+    generated_data: list[tuple[str, str]] = session.get("generated_data", None)
+    data_ids :list[int]      = session.get("data_ids", None)
 
     return render_template("previous_results.html", data=generated_data, data_ids=data_ids)
     

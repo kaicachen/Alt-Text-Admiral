@@ -17,7 +17,7 @@ from sys import argv
 
 
 class SiteProcessor:
-    def __init__(self, site_data, annotations):
+    def __init__(self, site_data:list[tuple[str, str, str]], annotations:list):
         # Don't show non-meta parameter warning
         filterwarnings("ignore", message=".*copying from a non-meta parameter.*")
 
@@ -54,7 +54,7 @@ class SiteProcessor:
 
 
     '''Generate alt-text from the given data or fetch from the database if possible'''
-    def generate_alt_text(self, image_type, image_url, text, href, fetch_db=True):
+    def generate_alt_text(self, image_type:int, image_url:str|BytesIO, text:str, href:str, fetch_db=True) -> str:
         # Compute hash to see if alt text has already been generated
         hash = sha256(str((image_type, image_url, text, href)).encode())
 
@@ -131,7 +131,7 @@ class SiteProcessor:
 
 
     '''Generates the needed alt-text for all images'''
-    def process_site(self):
+    def process_site(self)-> list[tuple[str, str]]:
         # Early exit if there are no images to process
         if self.site_data is None:
             return
