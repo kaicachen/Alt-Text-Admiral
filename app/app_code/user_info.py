@@ -1,4 +1,6 @@
 from supabase import create_client, Client
+from smtplib import SMTP, SMTPException
+from email.message import EmailMessage
 from dotenv import load_dotenv
 from datetime import datetime
 from os import environ
@@ -19,10 +21,17 @@ class UserInfo:
         # Store user ID
         self.user_id:int|None = user_id
 
+        # Store user email
+        self.email = email
+
         # Get user ID from database if not passed in
         if self.user_id is None and email is not None:
             # Adds user to the database if they do not exist
             self.user_id = self._get_user_id(email)
+
+        # Get email from database if not passed in:
+        if self.email is None and user_id is not None:
+            self.email = self._get_email(user_id)
 
 
     '''Checks if User exists in the database and adds them if not'''
@@ -60,6 +69,28 @@ class UserInfo:
             except Exception as e:
                 print(f"Error adding tuple to the database: email: {email}, ERROR: {e}")
                 return None
+            
+
+    '''Gets the email associated with a user ID'''
+    def _get_email(self, user_id:int) -> str|None:
+        # Attempt to read from database
+        try:
+            response = (
+                self._supabase.table("Users")
+                .select("*")
+                .eq("user_id", user_id)
+                .execute()
+                )
+            
+        except Exception as e:
+            print(f"Error reading user from the database: user_id: {user_id}, ERROR: {e}")
+            response = None
+            
+
+        # Returns the user ID if found in the database and user is opted in
+        if response and len(response.data):
+            if response.data[0]["email_opt_in"]:
+                return response.data[0]["email"]
 
 
     '''Display past generation options for a user'''
@@ -239,4 +270,41 @@ class UserInfo:
                     data_ids.append(None)
 
         return generation_id, data_ids
+    
+    
+    '''Send an email to the user'''
+    def email_user(self, subject:str, message_body:str)->None:
+        # Early exit if no email stored
+        if self.email is None:
+            print("Email is not being sent")
+            return
+        
+        # Load environmental variables
+        load_dotenv()
+        sending_email = environ.get("EMAIL_ADDRESS")
+        password = environ.get("EMAIL_PASSWORD")
 
+        if not sending_email or not password:
+            print("Missing EMAIL_ADDRESS or EMAIL_PASSWORD in environment variables.")
+            return
+
+        try:
+            # Create email message
+            msg = EmailMessage()
+            msg.set_content(message_body)
+            msg["Subject"] = subject
+            msg["From"] = sending_email
+            msg["To"] = self.email
+
+            # Send the email
+            with SMTP("smtp.gmail.com", 587) as smtp:
+                smtp.starttls()
+                smtp.login(sending_email, password)
+                smtp.send_message(msg)
+
+            print("Email sent to user")
+        
+        except SMTPException as e:
+            print(f"Error sending email: {e}")
+
+        

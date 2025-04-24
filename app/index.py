@@ -7,20 +7,21 @@ This file runs the webscraper, then before running main_captioner.py on the resu
 it asks the user to mark whether images are decorative, links, or infographics. It then
 modifies the CSV file passed to the main_captioner.py 
 '''
-import requests
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
-from flask_cors import CORS
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, Response, make_response
 from os import name as os_name, urandom, environ, path
 from authlib.integrations.flask_client import OAuth
 from sys import prefix, base_prefix, executable
-from subprocess import CalledProcessError
 from shutil import which as shutil_which
 from string import ascii_letters, digits
 from flask_sqlalchemy import SQLAlchemy
+from csv import writer as csv_writer
 from flask_session import Session
 from dotenv import load_dotenv
+from functools import wraps
 from random import choices
+from io import StringIO
 from . import main
+import requests
 
 # Load environmental variables
 load_dotenv()
@@ -70,11 +71,23 @@ def get_python_path()->str|None:
 python_path = get_python_path()
 
 
+'''Blocks caching for user authenticated pages'''
+def nocache(view):
+    @wraps(view)
+    def no_cache_view(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+    return no_cache_view
+
+
 '''Main home page'''
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # Clear all session data besides user ID
-    user_id = session.get("user_id", None)
+    user_id:int = session.get("user_id", None)
     session.clear()
     session["user_id"] = user_id
 
@@ -93,18 +106,18 @@ def index():
 
                 return redirect(url_for('annotate'))
                 
-            except CalledProcessError as e:
+            # Remain on home page if URL is invalid
+            except ValueError as e:
                 print(f"Error: {e}")
-                print(f"Standard Output: {e.stdout}")
-                print(f"Standard Error: {e.stderr}")
-                return render_template('error.html')
     
     return render_template('index.html')
 
+
+'''Route for Chrome extension to connect to'''
 @app.route('/extension',methods=['POST','GET'])
 def test():
-    data = request.get_json()
-    url = data["url"]  # it's like this because data is a json that I get the url from
+    data:dict = request.get_json()
+    url:str = data["url"]  # it's like this because data is a json that I get the url from
 
     # This should work now ?
     validated_url, site_data = main.web_scraper(url)
@@ -116,9 +129,17 @@ def test():
 
 '''Page to allow for user annotations of images'''
 @app.route('/annotate', methods=['GET', 'POST'])
+@nocache
 def annotate():
     # Reads scraped data from session values
-    image_links:list[str] = [data[0] for data in session.get("site_data", None)]
+    site_data = session.get("site_data", None)
+
+    if site_data is None:
+        print("Invalid access to /annotate, redirecting home")
+        return redirect(url_for('index'))
+    
+    # Gets image links from site data
+    image_links:list[str] = [data[0] for data in site_data]
 
     image_tags:list[int] = []
 
@@ -139,8 +160,12 @@ def annotate():
 def process_images():
     # Gets the JSON storing the user's image annotations
     data:dict = request.get_json()
-    tagged_list:list[int] = data.get("taggedList", [])
-    added_image_list:list[str] = data.get("addedImageList", [])
+    tagged_list:list[int] = data.get("taggedList", None)
+    added_image_list:list[str] = data.get("addedImageList", None)
+
+    if tagged_list is None:
+        print("Invalid access to /process_images, redirecting home")
+        return redirect(url_for('index'))
 
     # Reads data from session values
     site_data:list[tuple[str, str, str]] = session.get("site_data", None)
@@ -149,6 +174,13 @@ def process_images():
 
     # Add images extra images to site data
     site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
+
+    # Remove "not included" images from site data
+    for tag_index in range(len(tagged_list)):
+        if tagged_list[tag_index] == 3:
+            site_data.pop(tag_index)
+
+    tagged_list = [tag for tag in tagged_list if tag != 3]
 
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
@@ -163,12 +195,95 @@ def process_images():
 
 '''Page to show images with their alt-text'''
 @app.route('/displayed_images', methods=['GET', 'POST'])
+@nocache
 def displayed_images():
     # Reads data from session value
     generated_data : list[tuple[str, str]] = session.get("generated_data", None)
     data_ids :list[int] = session.get("data_ids", None)
 
+    if generated_data is None:
+        print("Invalid access to /displayed_images, redirecting home")
+        return redirect(url_for('index'))
+
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
+
+
+'''Endpoint to generate a CSV for a user to download'''
+@app.route('/download_csv')
+def download_csv():
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_csv, redirecting home")
+        return redirect(url_for('index'))
+    
+    output = StringIO()
+    writer = csv_writer(output)
+    writer.writerow(['image', 'alt_text'])
+
+    added_image_count = 1
+    for item in generated_data:
+        # User added image
+        if item[0][:23] == "data:image/jpeg;base64,":
+            writer.writerow([f'ADDED_IMAGE_{added_image_count}', item[1].strip()])
+            added_image_count += 1
+            continue
+
+        writer.writerow([item[0], item[1].strip()])
+
+    output.seek(0)
+    return Response(output, mimetype='text/csv',
+                    headers={"Content-Disposition": "attachment;filename=alt_text.csv"})
+
+
+'''Endpoint to generate a JSON for a user to download'''
+@app.route('/download_json')
+def download_json():
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_json, redirecting home")
+        return redirect(url_for('index'))
+    
+    cleaned_data : list[dict]= []
+    added_image_count = 1
+    for item in generated_data:
+        # User added image
+        if item[0][:23] == "data:image/jpeg;base64,":
+            cleaned_data.append({"image_url": f'ADDED_IMAGE_{added_image_count}', "alt_text": item[1]})
+            added_image_count += 1
+            continue
+
+        cleaned_data.append({"image_url": item[0], "alt_text": item[1]})
+
+    response = make_response(jsonify(cleaned_data))
+    response.headers["Content-Disposition"] = "attachment; filename=alt_text.json"
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+
+'''Endpoint to generate an HTML file for a user to download'''
+@app.route('/download_html')
+def download_html():
+    generated_data : list[tuple[str, str]]  = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_html, redirecting home")
+        return redirect(url_for('index'))
+    
+    html_content = ""
+    added_image_count = 1
+    for item in generated_data:
+        # User added image
+        if item[0][:23] == "data:image/jpeg;base64,":
+            html_content += f'<img src="ADDED_IMAGE_{added_image_count}" alt="{item[1].strip()}">\n'
+            added_image_count += 1
+            continue
+
+        html_content += f'<img src="{item[0]}" alt="{item[1].strip()}">\n'
+
+    return Response(html_content, mimetype='text/html',
+                    headers={"Content-Disposition": "attachment;filename=alt_text.html"})
 
 
 '''End point to check for valid URL'''
@@ -187,14 +302,22 @@ def check_url():
 def regenerate_image():
     # Gets the JSON storing the index of the data
     data:dict = request.get_json()
-    data_index = int(data.get("data_index", None)) - 1
+    data_index = int(data.get("data_index", 0)) - 1
 
-    print(f"Regenerating image {data_index}")
+    if data_index == -1:
+        print("Invalid access to /regenerate_image, redirecting home")
+        return redirect(url_for('index'))
 
     generated_data : list[tuple[str, str]] = session.get("generated_data", None)
     site_data:list[tuple[str, str, str]]= session.get("site_data", None)
     data_ids :list[int]     = session.get("data_ids", None)
     tagged_list : list[int]    = session.get("tagged_list", None)
+
+    if site_data is None:
+        print("Invalid access to /regenerate_image, redirecting home")
+        return redirect(url_for('index'))
+
+    print(f"Regenerating image {data_index}")
 
     # User uploaded image
     if site_data[data_index][0] is None:
@@ -231,8 +354,14 @@ def regenerate_image():
 
 '''Page to display previous generation history'''
 @app.route('/history')
+@nocache
 def history():
     user_id:int = session.get("user_id", None)
+
+    if user_id is None:
+        print("Invalid access to /history, redirecting home")
+        return redirect(url_for('index'))
+
     history = main.load_history(user_id)
     return render_template('history.html', history_data=history)
 
@@ -242,7 +371,11 @@ def history():
 def process_previous_results():
     # Gets the JSON storing the generation ID
     data:dict = request.get_json()
-    generation_id = int(data.get("generation_id", None))
+    generation_id = int(data.get("generation_id", -1))
+
+    if generation_id == -1:
+        print("Invalid access to /process_previous_results, redirecting home")
+        return redirect(url_for('index'))
 
     generated_data, data_ids = main.load_generation(generation_id)
 
@@ -255,10 +388,15 @@ def process_previous_results():
 
 '''Page to display previous generation'''
 @app.route('/previous_results', methods=['GET', 'POST'])
+@nocache
 def previous_results():
     # Reads data from session value
     generated_data: list[tuple[str, str]] = session.get("generated_data", None)
     data_ids :list[int]      = session.get("data_ids", None)
+
+    if generated_data is None:
+        print("Invalid access to /displayed_images, redirecting home")
+        return redirect(url_for('index'))
 
     return render_template("previous_results.html", data=generated_data, data_ids=data_ids)
     
@@ -267,16 +405,6 @@ def previous_results():
 def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
 
-
-# @app.route("/proxy")
-# def proxy():
-#     try:
-#         response = requests.get(url, timeout=5)
-#         content_type = response.headers.get('Content-Type', 'text/html')
-#         return Response(response.content, content_type=content_type)
-#     except Exception as e:
-#         print(f"Proxy error: {e}")
-#         return Response(f"Error fetching URL: {e}", status=500)
 
 
 ''' Oauth Google '''
@@ -336,6 +464,11 @@ def google_auth():
 
     except Exception as e:
         return f"Error while parsing ID token: {str(e)}", 400
+    
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':

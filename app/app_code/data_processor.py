@@ -28,11 +28,13 @@ from time import sleep
 from io import BytesIO
 from PIL import Image
 from .training import Trainer
+from google import genai
+from transformers import DetrImageProcessor, DetrForObjectDetection
 
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc:str|BytesIO, image_type:int, text:str, href:str, gemini_client, detr_model, detr_processor, device:str, URL=True, training = False, tuned = True):
+    def __init__(self, image_loc:str|BytesIO, image_type:int, text:str, href:str, gemini_client:genai.Client, detr_model:DetrForObjectDetection, detr_processor:DetrImageProcessor, device:str, URL=True, training = True, tuned = True):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -94,9 +96,8 @@ class DataProcessor:
                     model=self._gemini_model_name,
                     contents=[self.image,"Describe this image in a detailed caption. "]
                 )
-                #caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
                 not_generated = False
-                return caption
+                return caption.text
             
             except Exception as e:
                 # Wait before regenerating and increase sleep time incase of repeat error
@@ -135,9 +136,6 @@ class DataProcessor:
             if score >= .7:
                 obj_name = self._detr_model.config.id2label[label.item()]
                 detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
-
-        # Convert detected objects to list format
-        tags_list = [f"{tag} ({count})" for tag, count in detected_objects.items()]
 
         return detected_objects
     

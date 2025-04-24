@@ -32,7 +32,6 @@ class Trainer:
         self._model_name = model_name[7:] #reomove the "model\" because it is not a vlid file name
         self._full_model_name = model_name #save the full model name for later use  
         self._client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
-        #print(f"Trainer initialized with model name: {self._model_name}")  # Print the model name for debugging
     
     '''complete the dataset by creating the proper output given a prompt and image.'''
     def complete_dataset(self, dataset_filename:str)->None: #where dataset is the name of the json file
@@ -180,8 +179,8 @@ class Trainer:
 if __name__ == "__main__":  # Used for testing purposes
     #create client with dummy name
     dummy = Trainer("models/gemini-1.5-flash")
-    #list all the tuned models
+    # #list all the tuned models
     for model_info in dummy._client.tunings.list():
         print(model_info.name)
-    
+    dummy.complete_dataset("informative1.5-flash.jsonl")
     # dummy.create_gemini_model("processed_informativegemini-1.5-flash.jsonl")
