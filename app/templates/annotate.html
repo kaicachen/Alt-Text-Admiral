@@ -186,6 +186,8 @@
                     
                 </div>
                 <button class="finishedTagging">Finish Tagging</button>
+                <!-- <button class="cancel" href="{{ url_for('index') }}">Cancel Tagging</button> -->
+                <a class="cancel" href="{{ url_for('index') }}" class="btn">Cancel Tagging</a>
 
             </div>
 
@@ -469,6 +471,7 @@
 
                 modal.style.display = "none";
             }
+                 
 
             if (event.target.dataset.clicked == 1) {
                 selectTag(event.target);
