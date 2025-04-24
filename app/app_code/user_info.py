@@ -72,7 +72,7 @@ class UserInfo:
             
 
     '''Gets the email associated with a user ID'''
-    def _get_email(self, user_id):
+    def _get_email(self, user_id:int) -> str|None:
         # Attempt to read from database
         try:
             response = (
@@ -273,7 +273,7 @@ class UserInfo:
     
     
     '''Send an email to the user'''
-    def email_user(self, subject, message_body):
+    def email_user(self, subject:str, message_body:str)->None:
         # Early exit if no email stored
         if self.email is None:
             print("Email is not being sent")

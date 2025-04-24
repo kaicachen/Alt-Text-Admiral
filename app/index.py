@@ -87,7 +87,7 @@ def nocache(view):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # Clear all session data besides user ID
-    user_id = session.get("user_id", None)
+    user_id:int = session.get("user_id", None)
     session.clear()
     session["user_id"] = user_id
 
@@ -116,8 +116,8 @@ def index():
 '''Route for Chrome extension to connect to'''
 @app.route('/extension',methods=['POST','GET'])
 def test():
-    data = request.get_json()
-    url = data["url"]  # it's like this because data is a json that I get the url from
+    data:dict = request.get_json()
+    url:str = data["url"]  # it's like this because data is a json that I get the url from
 
     # This should work now ?
     validated_url, site_data = main.web_scraper(url)
@@ -211,7 +211,7 @@ def displayed_images():
 '''Endpoint to generate a CSV for a user to download'''
 @app.route('/download_csv')
 def download_csv():
-    generated_data = session.get("generated_data", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
 
     if generated_data is None:
         print("Invalid access to /download_csv, redirecting home")
@@ -239,13 +239,13 @@ def download_csv():
 '''Endpoint to generate a JSON for a user to download'''
 @app.route('/download_json')
 def download_json():
-    generated_data = session.get("generated_data", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
 
     if generated_data is None:
-        print("Invalid access to /download_csv, redirecting home")
+        print("Invalid access to /download_json, redirecting home")
         return redirect(url_for('index'))
     
-    cleaned_data = []
+    cleaned_data : list[dict]= []
     added_image_count = 1
     for item in generated_data:
         # User added image
@@ -265,10 +265,10 @@ def download_json():
 '''Endpoint to generate an HTML file for a user to download'''
 @app.route('/download_html')
 def download_html():
-    generated_data = session.get("generated_data", None)
+    generated_data : list[tuple[str, str]]  = session.get("generated_data", None)
 
     if generated_data is None:
-        print("Invalid access to /download_csv, redirecting home")
+        print("Invalid access to /download_html, redirecting home")
         return redirect(url_for('index'))
     
     html_content = ""

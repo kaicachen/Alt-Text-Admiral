@@ -58,7 +58,7 @@ class WebScraper:
 
 
     '''Filter out placeholder images or single color images'''
-    def _filter_images(self, image_text_data):
+    def _filter_images(self, image_text_data:list[tuple[str, str, str]]) -> list[tuple[str, str, str]]:
         validated_data = []
         for image_url, text, href, in image_text_data:
             try:
@@ -99,7 +99,7 @@ class WebScraper:
         sleep(3)
 
         # Initializes empty list to store image, text tuples
-        image_text_data = []
+        image_text_data:list[tuple[str, str, str]] = []
         
         # Find all standard images
         images = driver.find_elements(By.XPATH, "//img[not(ancestor::comment())]")
