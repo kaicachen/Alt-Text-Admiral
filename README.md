@@ -38,10 +38,14 @@ Machine generated alt-text for websites
 - Output:
     - Console output containing images and surrounding text found on webpage
 
-## *ONCE FRONT END OPERATIONAL* (ESTIMATED FOR SPRINT THREE):
+## TO RUN WEB SERVER:
+- Run python -m app.index
+
 ### TO USE PROGRAM:
-- Navigate to [SITE_URL]
+- Navigate to [SITE_URL] (Currently localhost:5000)
 - Input URL of webpage you wish to generate alt-text for images on
-- Click "Start Generation" button
+- Click "Start Scraping" button
+- Choose which images to include and as what types
+- Click "Finish Tagging" button
 - Output:
     - 
