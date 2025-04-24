@@ -7,7 +7,7 @@ from os import environ
 
 
 class UserInfo:
-    def __init__(self, user_id=None, email=None):
+    def __init__(self, user_id:int|None=None, email:str|None=None):
         # Load environmental variables
         load_dotenv(".env")
 
@@ -19,7 +19,7 @@ class UserInfo:
         self._supabase: Client = create_client(supabase_url, supabase_key)
 
         # Store user ID
-        self.user_id = user_id
+        self.user_id:int|None = user_id
 
         # Store user email
         self.email = email
@@ -35,7 +35,7 @@ class UserInfo:
 
 
     '''Checks if User exists in the database and adds them if not'''
-    def _get_user_id(self, email):
+    def _get_user_id(self, email:str|None)-> int|None:
         # Attempt to read from database
         try:
             response = (
@@ -94,7 +94,7 @@ class UserInfo:
 
 
     '''Display past generation options for a user'''
-    def previous_generations(self):
+    def previous_generations(self)->list[tuple[int,str,str]]:
         # Read from database
         try:
             response = (
@@ -130,7 +130,7 @@ class UserInfo:
     
 
     '''Loads images and alt-text from previous generation'''
-    def load_generation(self, generation_id):
+    def load_generation(self, generation_id:int)->tuple[list[tuple[str,str]],list[int]]:
         # Read from database
         try:
             response = (
@@ -187,7 +187,7 @@ class UserInfo:
     
 
     '''Stores data from a generation'''
-    def store_generation(self, website, generation_data):
+    def store_generation(self, website:str, generation_data:list[tuple[str,str]])->tuple[int|None, list[int|None]]:
         # Add to Site Generations table
         try:
             response = (

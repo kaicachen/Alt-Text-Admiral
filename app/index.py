@@ -51,7 +51,7 @@ oauth = OAuth(app)
 
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
-def get_python_path():
+def get_python_path()->str|None:
     # 1. Check if running inside a virtual environment
     if prefix != base_prefix:  
         return executable  # Return the venv's Python path
@@ -139,9 +139,9 @@ def annotate():
         return redirect(url_for('index'))
     
     # Gets image links from site data
-    image_links = [data[0] for data in site_data]
+    image_links:list[str] = [data[0] for data in site_data]
 
-    image_tags = []
+    image_tags:list[int] = []
 
     # Default to "don't include" tag if invalid URL
     for image in image_links:
@@ -159,18 +159,18 @@ def annotate():
 @app.route('/process_images', methods=['GET', 'POST'])
 def process_images():
     # Gets the JSON storing the user's image annotations
-    data = request.get_json()
-    tagged_list = data.get("taggedList", None)
-    added_image_list = data.get("addedImageList", None)
+    data:dict = request.get_json()
+    tagged_list:list[int] = data.get("taggedList", None)
+    added_image_list:list[str] = data.get("addedImageList", None)
 
     if tagged_list is None:
         print("Invalid access to /process_images, redirecting home")
         return redirect(url_for('index'))
 
     # Reads data from session values
-    site_data = session.get("site_data", None)
-    url       = session.get("url", None)
-    user_id   = session.get("user_id", None)
+    site_data:list[tuple[str, str, str]] = session.get("site_data", None)
+    url:str       = session.get("url", None)
+    user_id:int   = session.get("user_id", None)
 
     # Add images extra images to site data
     site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
@@ -198,8 +198,8 @@ def process_images():
 @nocache
 def displayed_images():
     # Reads data from session value
-    generated_data = session.get("generated_data", None)
-    data_ids       = session.get("data_ids", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+    data_ids :list[int] = session.get("data_ids", None)
 
     if generated_data is None:
         print("Invalid access to /displayed_images, redirecting home")
@@ -301,17 +301,17 @@ def check_url():
 @app.route('/regenerate_image', methods=['GET', 'POST'])
 def regenerate_image():
     # Gets the JSON storing the index of the data
-    data = request.get_json()
+    data:dict = request.get_json()
     data_index = int(data.get("data_index", 0)) - 1
 
     if data_index == -1:
         print("Invalid access to /regenerate_image, redirecting home")
         return redirect(url_for('index'))
 
-    generated_data = session.get("generated_data", None)
-    site_data      = session.get("site_data", None)
-    data_ids       = session.get("data_ids", None)
-    tagged_list    = session.get("tagged_list", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+    site_data:list[tuple[str, str, str]]= session.get("site_data", None)
+    data_ids :list[int]     = session.get("data_ids", None)
+    tagged_list : list[int]    = session.get("tagged_list", None)
 
     if site_data is None:
         print("Invalid access to /regenerate_image, redirecting home")
@@ -356,7 +356,7 @@ def regenerate_image():
 @app.route('/history')
 @nocache
 def history():
-    user_id = session.get("user_id", None)
+    user_id:int = session.get("user_id", None)
 
     if user_id is None:
         print("Invalid access to /history, redirecting home")
@@ -370,7 +370,7 @@ def history():
 @app.route('/process_previous_results', methods=['GET', 'POST'])
 def process_previous_results():
     # Gets the JSON storing the generation ID
-    data = request.get_json()
+    data:dict = request.get_json()
     generation_id = int(data.get("generation_id", -1))
 
     if generation_id == -1:
@@ -391,8 +391,8 @@ def process_previous_results():
 @nocache
 def previous_results():
     # Reads data from session value
-    generated_data = session.get("generated_data", None)
-    data_ids       = session.get("data_ids", None)
+    generated_data: list[tuple[str, str]] = session.get("generated_data", None)
+    data_ids :list[int]      = session.get("data_ids", None)
 
     if generated_data is None:
         print("Invalid access to /displayed_images, redirecting home")

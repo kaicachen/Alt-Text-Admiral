@@ -11,26 +11,26 @@ from io import BytesIO
 from PIL import Image
 
 '''Login or create new user and then login'''
-def login_user(email):
+def login_user(email)->int|None:
     user_info = UserInfo(email=email)
     return user_info.user_id
 
 
 '''Scrape website'''
-def web_scraper(url):
+def web_scraper(url:str)->tuple[str, list[tuple[str, str, str]]]:
     web_scraper = WebScraper(url)
     return web_scraper.scrape_site()
 
 
 '''Generate alt-text for all data tuples'''
-def process_site(site_data, annotations, url, user_id):
+def process_site(site_data:list[tuple[str, str, str]], annotations:list, url:str, user_id) -> tuple[list[tuple[str, str]], int|None, list[int|None]]:
     # Process data
     site_processor = SiteProcessor(site_data, annotations)
     generated_data = site_processor.process_site()
 
     # Initialize generation ID and data_ids
-    generation_id = None
-    data_ids = [None] * len(generated_data)
+    generation_id:int|None = None
+    data_ids:list[int|None] = [None] * len(generated_data)
 
     # Store the generation
     if url is not None and user_id is not None:
@@ -48,19 +48,19 @@ def process_site(site_data, annotations, url, user_id):
 
 
 '''Shows previous site generation information'''
-def load_history(user_id):
+def load_history(user_id:int) -> list[tuple[int, str, str]]:
     user_info = UserInfo(user_id=user_id)
     return user_info.previous_generations()
 
 
 '''Loads previous site generation'''
-def load_generation(generation_id):
+def load_generation(generation_id:int) -> tuple[list[tuple[str, str]], list[int]]:
     user_info = UserInfo()
     return user_info.load_generation(generation_id)
 
 
 '''Regenerate alt-text for an image'''
-def regenerate(data_id, image_type, image_url, text, href):
+def regenerate(data_id:int|None, image_type:int, image_url:str, text:str, href:str) -> str:
     # Site data and annotation list not needed
     site_processor = SiteProcessor(None, None)
 
@@ -107,7 +107,7 @@ def regenerate(data_id, image_type, image_url, text, href):
 
 
 '''Reduce size of added images'''
-def reduce_image_size(base64_str, max_width=512):
+def reduce_image_size(base64_str:str, max_width=512) -> str:
     # Split metadata header
     _, base64_data = base64_str.split(',', 1)
 
