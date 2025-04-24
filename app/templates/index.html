@@ -14,6 +14,42 @@
         .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
         .fa-anchor,.fa-coffee {font-size:200px}
 
+        input[type="text"] {
+        padding: 12px 20px;
+        margin-top: 20px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        width: 60%;
+        max-width: 500px;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+        border-color: #d32f2f; /* crimson */
+        outline: none;
+        box-shadow: 0 0 8px rgba(211, 47, 47, 0.3);
+        }
+
+        button[type="submit"] {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #000000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #353535;
+            transform: translateY(-2px);
+        }
+
+
         /* The Modal (background) */
         .modal {
         position: fixed; /* Stay in place */
@@ -56,6 +92,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 50vh;
             position: relative;
         }
@@ -68,6 +105,16 @@
             width: 120px;
             height: 120px;
             animation: spin 2s linear infinite;
+        }
+        .loader-text {
+            display: none;
+            margin-top: 16px;
+            font-size: 1.2em;
+            color: #f3f3f3;
+            text-align: center;
+        }
+        .show-text {
+        display: block;
         }
 
         .show-loader {
@@ -116,10 +163,11 @@
         <h1 class="w3-margin w3-jumbo">Alt-Text Admiral</h1>
         <p class="w3-xlarge"></p>
         <form action="/" method="post" onsubmit="showLoader()">
-            <input type="text" name="url" placeholder="Enter URL here" required>
+            <input type="text" name="url" placeholder="Enter URL Here" required>
             <button type="submit">Start Scraping</button>
             <div class="loader-container">
                 <div id="loader" class="loader"></div>
+                <p id="loader-text" class="loader-text">Scraping in progress...</p>
             </div>
         </form>    
     </header>
@@ -158,6 +206,7 @@
         }
         function showLoader() {
             document.getElementById("loader").classList.add("show-loader");
+            document.getElementById("loader-text").classList.add("show-text");
         }
     </script>
 </body>
