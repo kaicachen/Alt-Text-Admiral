@@ -5,7 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>EECS 582 Capstone Project</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
     <style>
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+        .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+        .fa-anchor,.fa-coffee {font-size:200px}
+
         /* The Modal (background) */
         .modal {
         position: fixed; /* Stay in place */
@@ -23,7 +32,6 @@
 
         /* Modal Content */
         .modal-content {
-            background-color: #fefefe;
             padding: 50px;
             border: 1px solid #888;
             width: 50%;
@@ -56,9 +64,9 @@
             width: 100%;
         }
         body {
-            font-family: Arial, sans-serif;
             text-align: center;
             margin: 50px;
+            background-color: w3-red;
         }
         input, button {
             padding: 10px;
@@ -90,6 +98,9 @@
             left: 20px;
         }
 
+        .imgTagging{
+            background-color: lightgray;
+        }
         .popOutButton {
             position: fixed;
             top: 15%;
@@ -152,7 +163,7 @@
     <div id="myModal" class="modal">
         <!-- Modal content -->
         <div class="combinedPages">
-            <div class="modal-content">
+            <div class="modal-content w3-crimson">
                 <h1>Tag Images As:</h1>
                 <div class="imgTagging"></div>
                 <div>
