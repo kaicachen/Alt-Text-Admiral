@@ -8,8 +8,7 @@ it asks the user to mark whether images are decorative, links, or infographics. 
 modifies the CSV file passed to the main_captioner.py 
 '''
 import requests
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
-from flask_cors import CORS
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, make_response
 from os import name as os_name, urandom, environ, path
 from authlib.integrations.flask_client import OAuth
 from sys import prefix, base_prefix, executable
@@ -19,6 +18,7 @@ from string import ascii_letters, digits
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from dotenv import load_dotenv
+from functools import wraps
 from random import choices
 from . import main
 
@@ -70,6 +70,18 @@ def get_python_path():
 python_path = get_python_path()
 
 
+'''Blocks caching for user authenticated pages'''
+def nocache(view):
+    @wraps(view)
+    def no_cache_view(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+    return no_cache_view
+
+
 '''Main home page'''
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -93,14 +105,14 @@ def index():
 
                 return redirect(url_for('annotate'))
                 
-            except CalledProcessError as e:
+            # Remain on home page if URL is invalid
+            except ValueError as e:
                 print(f"Error: {e}")
-                print(f"Standard Output: {e.stdout}")
-                print(f"Standard Error: {e.stderr}")
-                return render_template('error.html')
     
     return render_template('index.html')
 
+
+'''Route for Chrome extension to connect to'''
 @app.route('/extension',methods=['POST','GET'])
 def test():
     data = request.get_json()
@@ -116,9 +128,17 @@ def test():
 
 '''Page to allow for user annotations of images'''
 @app.route('/annotate', methods=['GET', 'POST'])
+@nocache
 def annotate():
     # Reads scraped data from session values
-    image_links = [data[0] for data in session.get("site_data", None)]
+    site_data = session.get("site_data", None)
+
+    if site_data is None:
+        print("Invalid access to /annotate, redirecting home")
+        return redirect(url_for('index'))
+    
+    # Gets image links from site data
+    image_links = [data[0] for data in site_data]
 
     image_tags = []
 
@@ -139,8 +159,12 @@ def annotate():
 def process_images():
     # Gets the JSON storing the user's image annotations
     data = request.get_json()
-    tagged_list = data.get("taggedList", [])
-    added_image_list = data.get("addedImageList", [])
+    tagged_list = data.get("taggedList", None)
+    added_image_list = data.get("addedImageList", None)
+
+    if tagged_list is None:
+        print("Invalid access to /process_images, redirecting home")
+        return redirect(url_for('index'))
 
     # Reads data from session values
     site_data = session.get("site_data", None)
@@ -163,10 +187,15 @@ def process_images():
 
 '''Page to show images with their alt-text'''
 @app.route('/displayed_images', methods=['GET', 'POST'])
+@nocache
 def displayed_images():
     # Reads data from session value
     generated_data = session.get("generated_data", None)
     data_ids       = session.get("data_ids", None)
+
+    if generated_data is None:
+        print("Invalid access to /displayed_images, redirecting home")
+        return redirect(url_for('index'))
 
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
 
@@ -187,14 +216,22 @@ def check_url():
 def regenerate_image():
     # Gets the JSON storing the index of the data
     data = request.get_json()
-    data_index = int(data.get("data_index", None)) - 1
+    data_index = int(data.get("data_index", 0)) - 1
 
-    print(f"Regenerating image {data_index}")
+    if data_index == -1:
+        print("Invalid access to /regenerate_image, redirecting home")
+        return redirect(url_for('index'))
 
     generated_data = session.get("generated_data", None)
     site_data      = session.get("site_data", None)
     data_ids       = session.get("data_ids", None)
     tagged_list    = session.get("tagged_list", None)
+
+    if site_data is None:
+        print("Invalid access to /regenerate_image, redirecting home")
+        return redirect(url_for('index'))
+
+    print(f"Regenerating image {data_index}")
 
     # User uploaded image
     if site_data[data_index][0] is None:
@@ -231,8 +268,14 @@ def regenerate_image():
 
 '''Page to display previous generation history'''
 @app.route('/history')
+@nocache
 def history():
     user_id = session.get("user_id", None)
+
+    if user_id is None:
+        print("Invalid access to /history, redirecting home")
+        return redirect(url_for('index'))
+
     history = main.load_history(user_id)
     return render_template('history.html', history_data=history)
 
@@ -242,7 +285,11 @@ def history():
 def process_previous_results():
     # Gets the JSON storing the generation ID
     data = request.get_json()
-    generation_id = int(data.get("generation_id", None))
+    generation_id = int(data.get("generation_id", -1))
+
+    if generation_id == -1:
+        print("Invalid access to /process_previous_results, redirecting home")
+        return redirect(url_for('index'))
 
     generated_data, data_ids = main.load_generation(generation_id)
 
@@ -255,10 +302,15 @@ def process_previous_results():
 
 '''Page to display previous generation'''
 @app.route('/previous_results', methods=['GET', 'POST'])
+@nocache
 def previous_results():
     # Reads data from session value
     generated_data = session.get("generated_data", None)
     data_ids       = session.get("data_ids", None)
+
+    if generated_data is None:
+        print("Invalid access to /displayed_images, redirecting home")
+        return redirect(url_for('index'))
 
     return render_template("previous_results.html", data=generated_data, data_ids=data_ids)
     
@@ -336,6 +388,11 @@ def google_auth():
 
     except Exception as e:
         return f"Error while parsing ID token: {str(e)}", 400
+    
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 
 # '''Page to display about info'''

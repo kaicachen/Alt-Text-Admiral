@@ -4,6 +4,7 @@ from supabase import create_client, Client
 from .app_code.user_info import UserInfo
 from base64 import b64decode, b64encode
 from dotenv import load_dotenv
+from datetime import datetime
 from sys import getsizeof
 from os import environ
 from io import BytesIO
@@ -35,6 +36,12 @@ def process_site(site_data, annotations, url, user_id):
     if url is not None and user_id is not None:
         user_info = UserInfo(user_id=user_id)
         generation_id, data_ids = user_info.store_generation(url, generated_data)
+
+        # Email the user of the completed generation
+        formatted_date_time = datetime.now().strftime("%H:%M on %m-%d-%Y")
+        subject = "Alt-Text Admiral Generation Completed"
+        message_body = f"Alt-text generation for {len(generated_data)} images has been completed for {url} at {formatted_date_time}."
+        user_info.email_user(subject, message_body)
 
     print(f"Length of generated data: {len(generated_data)}, length of data IDs: {len(data_ids)}, generation ID: {generation_id}")
     return generated_data, generation_id, data_ids
