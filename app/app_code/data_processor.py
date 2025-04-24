@@ -94,7 +94,6 @@ class DataProcessor:
                     model=self._gemini_model_name,
                     contents=[self.image,"Describe this image in a detailed caption. "]
                 )
-                #caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
                 not_generated = False
                 return caption
             

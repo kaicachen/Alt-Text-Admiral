@@ -406,16 +406,6 @@ def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
 
 
-# @app.route("/proxy")
-# def proxy():
-#     try:
-#         response = requests.get(url, timeout=5)
-#         content_type = response.headers.get('Content-Type', 'text/html')
-#         return Response(response.content, content_type=content_type)
-#     except Exception as e:
-#         print(f"Proxy error: {e}")
-#         return Response(f"Error fetching URL: {e}", status=500)
-
 
 ''' Oauth Google '''
 def generate_nonce():
