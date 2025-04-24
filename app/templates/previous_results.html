@@ -34,7 +34,11 @@
 
 <body>
     <h1 id="title"></h1>
-    <button class="back"><a href="{{ url_for('history') }}">Back</a></button>
+    <button><a href="{{ url_for('history') }}">Back</a></button>
+
+    <button><a href="/download_csv" onclick="downloadFile(this.href); return false;" class="btn">Download CSV</a></button>
+    <button><a href="/download_json" onclick="downloadFile(this.href); return false;" class="btn">Download JSON</a></button>
+    <button><a href="/download_html" onclick="downloadFile(this.href); return false;" class="btn">Download HTML</a></button>
     
 
     <div class="gallery">
@@ -60,6 +64,14 @@
      </div> -->
 
     <script>
+        function downloadFile(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '';  // triggers the download attribute
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+    }
         // const raw = localStorage.getItem("selectedHistory");
         // const historyItem = JSON.parse(raw);
 
