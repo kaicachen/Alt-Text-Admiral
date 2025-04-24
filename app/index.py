@@ -15,6 +15,7 @@ from shutil import which as shutil_which
 from string import ascii_letters, digits
 from flask_sqlalchemy import SQLAlchemy
 from csv import writer as csv_writer
+from flask_session import Session
 from dotenv import load_dotenv
 from functools import wraps
 from random import choices
