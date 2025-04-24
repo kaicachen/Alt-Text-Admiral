@@ -39,7 +39,7 @@ class WebScraper:
                 return cleaned_url
             
             else:
-                raise Exception("Failed to sanitize URL and connect")
+                raise ValueError("Failed to sanitize URL and connect")
         
         # Case of 'example.com'
         else:
@@ -52,7 +52,7 @@ class WebScraper:
                 return cleaned_url
             
             else:
-                raise Exception("Failed to sanitize URL and connect")
+                raise ValueError("Failed to sanitize URL and connect")
 
 
     '''Scrapes a given URL to create tuples of images and surrounding text'''
