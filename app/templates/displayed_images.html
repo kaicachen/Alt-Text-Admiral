@@ -65,7 +65,12 @@
         <button style="padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
             Scrape Another Page
         </button>
-    </a> -->
+    </a>
+
+    <button><a href="/download_csv" onclick="downloadFile(this.href); return false;" class="btn">Download CSV</a></button>
+    <button><a href="/download_json" onclick="downloadFile(this.href); return false;" class="btn">Download JSON</a></button>
+    <button><a href="/download_html" onclick="downloadFile(this.href); return false;" class="btn">Download HTML</a></button>
+
     
     <div class="gallery">
         {% for item in data %}
@@ -78,6 +83,15 @@
     </div>
     
     <script>
+        function downloadFile(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '';  // triggers the download attribute
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+    }
+
         function regenText(imgToRegen) {
             // Send the image index to regenerate
             fetch("/regenerate_image", {

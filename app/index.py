@@ -7,20 +7,21 @@ This file runs the webscraper, then before running main_captioner.py on the resu
 it asks the user to mark whether images are decorative, links, or infographics. It then
 modifies the CSV file passed to the main_captioner.py 
 '''
-import requests
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, make_response
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, Response, make_response
 from os import name as os_name, urandom, environ, path
 from authlib.integrations.flask_client import OAuth
 from sys import prefix, base_prefix, executable
-from subprocess import CalledProcessError
 from shutil import which as shutil_which
 from string import ascii_letters, digits
 from flask_sqlalchemy import SQLAlchemy
+from csv import writer as csv_writer
 from flask_session import Session
 from dotenv import load_dotenv
 from functools import wraps
 from random import choices
+from io import StringIO
 from . import main
+import requests
 
 # Load environmental variables
 load_dotenv()
@@ -198,6 +199,84 @@ def displayed_images():
         return redirect(url_for('index'))
 
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
+
+
+'''Endpoint to generate a CSV for a user to download'''
+@app.route('/download_csv')
+def download_csv():
+    generated_data = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_csv, redirecting home")
+        return redirect(url_for('index'))
+    
+    output = StringIO()
+    writer = csv_writer(output)
+    writer.writerow(['image', 'alt_text'])
+
+    added_image_count = 1
+    for item in generated_data:
+        # User added image
+        if item[0][:23] == "data:image/jpeg;base64,":
+            writer.writerow([f'ADDED_IMAGE_{added_image_count}', item[1].strip()])
+            added_image_count += 1
+            continue
+
+        writer.writerow([item[0], item[1].strip()])
+
+    output.seek(0)
+    return Response(output, mimetype='text/csv',
+                    headers={"Content-Disposition": "attachment;filename=alt_text.csv"})
+
+
+'''Endpoint to generate a JSON for a user to download'''
+@app.route('/download_json')
+def download_json():
+    generated_data = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_csv, redirecting home")
+        return redirect(url_for('index'))
+    
+    cleaned_data = []
+    added_image_count = 1
+    for item in generated_data:
+        # User added image
+        if item[0][:23] == "data:image/jpeg;base64,":
+            cleaned_data.append({"image_url": f'ADDED_IMAGE_{added_image_count}', "alt_text": item[1]})
+            added_image_count += 1
+            continue
+
+        cleaned_data.append({"image_url": item[0], "alt_text": item[1]})
+
+    response = make_response(jsonify(cleaned_data))
+    response.headers["Content-Disposition"] = "attachment; filename=alt_text.json"
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+
+'''Endpoint to generate an HTML file for a user to download'''
+@app.route('/download_html')
+def download_html():
+    generated_data = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_csv, redirecting home")
+        return redirect(url_for('index'))
+    
+    html_content = ""
+    added_image_count = 1
+    for item in generated_data:
+        # User added image
+        if item[0][:23] == "data:image/jpeg;base64,":
+            html_content += f'<img src="ADDED_IMAGE_{added_image_count}" alt="{item[1].strip()}">\n'
+            added_image_count += 1
+            continue
+
+        html_content += f'<img src="{item[0]}" alt="{item[1].strip()}">\n'
+
+    return Response(html_content, mimetype='text/html',
+                    headers={"Content-Disposition": "attachment;filename=alt_text.html"})
 
 
 '''End point to check for valid URL'''
