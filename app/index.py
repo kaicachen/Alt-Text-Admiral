@@ -8,7 +8,7 @@ it asks the user to mark whether images are decorative, links, or infographics. 
 modifies the CSV file passed to the main_captioner.py 
 '''
 import requests
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, Response, make_response
 from flask_cors import CORS
 from os import name as os_name, urandom, environ, path
 from authlib.integrations.flask_client import OAuth
@@ -20,6 +20,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from dotenv import load_dotenv
 from random import choices
+from io import StringIO
+from csv import writer as csv_writer
 from . import main
 
 # Load environmental variables
@@ -169,6 +171,59 @@ def displayed_images():
     data_ids       = session.get("data_ids", None)
 
     return render_template("displayed_images.html", data=generated_data, data_ids=data_ids)
+
+
+'''Endpoint to generate a CSV for a user to download'''
+@app.route('/download_csv')
+def download_csv():
+    generated_data = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_csv, redirecting home")
+        return redirect(url_for('index'))
+    
+    output = StringIO()
+    writer = csv_writer(output)
+    writer.writerow(['image', 'alt_text'])
+
+    for item in generated_data:
+        writer.writerow([item[0], item[1].strip()])
+
+    output.seek(0)
+    return Response(output, mimetype='text/csv',
+                    headers={"Content-Disposition": "attachment;filename=alt_text.csv"})
+
+
+'''Endpoint to generate a JSON for a user to download'''
+@app.route('/download_json')
+def download_json():
+    generated_data = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_csv, redirecting home")
+        return redirect(url_for('index'))
+    
+    response = make_response(jsonify([{"image": image, "alt_text": alt_text.strip()} for image, alt_text in generated_data]))
+    response.headers["Content-Disposition"] = "attachment; filename=alt_text.json"
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+
+'''Endpoint to generate an HTML file for a user to download'''
+@app.route('/download_html')
+def download_html():
+    generated_data = session.get("generated_data", None)
+
+    if generated_data is None:
+        print("Invalid access to /download_csv, redirecting home")
+        return redirect(url_for('index'))
+    
+    html_content = ""
+    for item in generated_data:
+        html_content += f'<img src="{item[0]}" alt="{item[1].strip()}">\n'
+
+    return Response(html_content, mimetype='text/html',
+                    headers={"Content-Disposition": "attachment;filename=alt_text.html"})
 
 
 '''End point to check for valid URL'''
