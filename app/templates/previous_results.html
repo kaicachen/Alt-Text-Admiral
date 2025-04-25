@@ -84,11 +84,6 @@
     <h1 id="title"></h1>
     <h1 id="websiteStuff">wesbite</h1>
 
-    <!-- <button><a href="/download_csv" onclick="downloadFile(this.href); return false;" class="btn">Download CSV</a></button>
-    <button><a href="/download_json" onclick="downloadFile(this.href); return false;" class="btn">Download JSON</a></button>
-    <button><a href="/download_html" onclick="downloadFile(this.href); return false;" class="btn">Download HTML</a></button>
-     -->
-
      <div style="margin: 20px;">
         <label for="downloadType">Choose file type:</label>
         <select id="downloadType">
@@ -107,29 +102,9 @@
         </div>
         {% endfor %}
     </div>
-    <!-- <div class="gallery">
-
-        Make DB call here to get specified generation
-        {% for item in data %}
-
-        
-        <div class="image-card">
-            <img src="{{ item.image_link }}" alt="Image">
-            <p>{{ item.generated_output }}</p>
-            <button onclick="regenText('{{ loop.index }}')">Regenerate Alt-Text</button>
-        </div>
-        {% endfor %}
-     </div> -->
 
     <script>
-        // var userHistoryEx = JSON.parse('{{ history_data | tojson | safe }}');
-        // userHistoryEx.forEach(function(website) {
-        //     var generation_id = website[0]
-        //     var name = website[1];
-        //     var date = website[2];
-        //     console.log(generation_id + " " + date);
-        // });
-       // document.getElementById("websiteStuff").textContent = "Generated results from: "+ name + " on: " + date;
+
 
         function downloadFile(url) {
             const a = document.createElement('a');
@@ -139,18 +114,6 @@
             a.click();
             document.body.removeChild(a);
     }
-        // const raw = localStorage.getItem("selectedHistory");
-        // const historyItem = JSON.parse(raw);
-
-        // const h1El = document.getElementById("title");
-        // const resultsDiv = document.getElementById("scrapedResults");
-
-        // h1El.textContent = "Previous results of " + historyItem.name + " from " + historyItem.date + ":";
-
-        // function regenText(imgToRegen) {
-        //     console.log(imgToRegen);
-        //     //make call to backend from here to regenerate specific image
-        // }
 
         function downloadFile(url) {
             const a = document.createElement('a');

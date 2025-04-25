@@ -388,7 +388,7 @@ def previous_results():
     data_ids       = session.get("data_ids", None)
 
     if generated_data is None:
-        print("Invalid access to /displayed_images, redirecting home")
+        print("Invalid access to /previous_results, redirecting home")
         return redirect(url_for('index'))
 
     return render_template("previous_results.html", data=generated_data, data_ids=data_ids)
