@@ -32,10 +32,9 @@ class Trainer:
         self._model_name = model_name[7:] #reomove the "model\" because it is not a vlid file name
         self._full_model_name = model_name #save the full model name for later use  
         self._client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
-        #print(f"Trainer initialized with model name: {self._model_name}")  # Print the model name for debugging
     
-    #complete the dataset by creating the proper output given a prompt and image.
-    def complete_dataset(self, dataset_filename:str): #where dataset is the name of the json file
+    '''complete the dataset by creating the proper output given a prompt and image.'''
+    def complete_dataset(self, dataset_filename:str)->None: #where dataset is the name of the json file
 
         updated_data = []  # Create an empty list to store the updated data
         
@@ -112,7 +111,7 @@ class Trainer:
     
 
     '''Add data to an unprocessed dataset'''
-    def add_to_dataset(self, image_url:str, prompt:str, image_type:str = ""): #used to make the dataset in a program for help.
+    def add_to_dataset(self, image_url:str, prompt:str, image_type:str = "") ->None: #used to make the dataset in a program for help.
         #add to the dataset into a jsonl file
         training_data = [{ #This is the data that will be added to the jsonl file
                 "link" : f"{image_url}",
@@ -144,7 +143,7 @@ class Trainer:
             print(f"Error saving dataset: {e}")
     
     #function to create a tuned model using a dataset
-    def create_gemini_model(self, dataset_filename:str): #where dataset is the name of the json file
+    def create_gemini_model(self, dataset_filename:str)->None: #where dataset is the name of the json file
         #call the google create model thing to do the thing
         data = json_load(open(join("app", "app_code", "outputs", "training_json","processed", dataset_filename), 'r')) # Load the training data from the JSON file
         training_data = TuningDataset(
@@ -167,7 +166,7 @@ class Trainer:
         )
         print(tuning_job.name)#for debugging purposes
     
-    def check_tuning_job_status(self, job_id:str):#check the status of the tuning job
+    def check_tuning_job_status(self, job_id:str)->None:#check the status of the tuning job
         tuning_job = self._client.tunings.get(name=job_id)
         print(tuning_job)
 
@@ -180,8 +179,8 @@ class Trainer:
 if __name__ == "__main__":  # Used for testing purposes
     #create client with dummy name
     dummy = Trainer("models/gemini-1.5-flash")
-    #list all the tuned models
+    # #list all the tuned models
     for model_info in dummy._client.tunings.list():
         print(model_info.name)
-    
+    dummy.complete_dataset("informative1.5-flash.jsonl")
     # dummy.create_gemini_model("processed_informativegemini-1.5-flash.jsonl")

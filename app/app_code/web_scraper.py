@@ -11,11 +11,11 @@ from sys import argv
 
 '''Class to perform webscraping of image and text tuples'''
 class WebScraper:
-    def __init__(self, url):
+    def __init__(self, url:str):
         self.site_url = url
 
     '''Tests connection to URL'''
-    def _test_url(self, url):
+    def _test_url(self, url:str) -> bool:
         try:
             response = get(url, timeout=5)
             response.raise_for_status()
@@ -25,7 +25,7 @@ class WebScraper:
             return False
 
     '''Tests connection to URL and sanitizes if needed'''
-    def _validate_url(self):
+    def _validate_url(self)->str:
         # Ensure reachable URL and early exit if not
         if self._test_url(self.site_url):
             return self.site_url
@@ -58,7 +58,7 @@ class WebScraper:
 
 
     '''Filter out placeholder images or single color images'''
-    def _filter_images(self, image_text_data):
+    def _filter_images(self, image_text_data:list[tuple[str, str, str]]) -> list[tuple[str, str, str]]:
         validated_data = []
         for image_url, text, href, in image_text_data:
             try:
@@ -82,7 +82,7 @@ class WebScraper:
 
 
     '''Scrapes a given URL to create tuples of images and surrounding text'''
-    def scrape_site(self):
+    def scrape_site(self)-> tuple[str, list[tuple[str, str, str]]]:
         # Validates URL
         validated_url = self._validate_url()
 
@@ -99,7 +99,7 @@ class WebScraper:
         sleep(3)
 
         # Initializes empty list to store image, text tuples
-        image_text_data = []
+        image_text_data:list[tuple[str, str, str]] = []
         
         # Find all standard images
         images = driver.find_elements(By.XPATH, "//img[not(ancestor::comment())]")
