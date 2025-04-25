@@ -132,6 +132,7 @@ def test():
 @nocache
 def annotate():
     # Reads scraped data from session values
+    url = session.get("url", None)
     site_data = session.get("site_data", None)
 
     if site_data is None:
@@ -152,7 +153,7 @@ def annotate():
     # Pass 'no_images_found' flag to template
     no_images_found = len(image_links) == 0
 
-    return render_template("annotate.html", image_links=image_links, image_tags=image_tags, no_images_found=no_images_found)
+    return render_template("annotate.html", url=url, image_links=image_links, image_tags=image_tags, no_images_found=no_images_found)
 
 
 '''JSON to process annotations from user'''
