@@ -11,7 +11,7 @@ from io import BytesIO
 from PIL import Image
 
 '''Login or create new user and then login'''
-def login_user(email)->int|None:
+def login_user(email)->int:
     user_info = UserInfo(email=email)
     return user_info.user_id
 
@@ -23,7 +23,7 @@ def web_scraper(url:str)->tuple[str, list[tuple[str, str, str]]]:
 
 
 '''Generate alt-text for all data tuples'''
-def process_site(site_data:list[tuple[str, str, str]], annotations:list, url:str, user_id) -> tuple[list[tuple[str, str]], int|None, list[int|None]]:
+def process_site(site_data:list[tuple[str, str, str]], annotations:list[int], url:str, user_id) -> tuple[list[tuple[str, str]], int|None, list[int|None]]:
     # Process data
     site_processor = SiteProcessor(site_data, annotations)
     generated_data = site_processor.process_site()

@@ -17,7 +17,7 @@ from sys import argv
 
 
 class SiteProcessor:
-    def __init__(self, site_data:list[tuple[str, str, str]], annotations:list):
+    def __init__(self, site_data:list[tuple[str, str, str]], annotations:list[int]):
         # Don't show non-meta parameter warning
         filterwarnings("ignore", message=".*copying from a non-meta parameter.*")
 
