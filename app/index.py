@@ -51,7 +51,7 @@ oauth = OAuth(app)
 
 
 '''Finds the correct Python executable: prioritizes virtual environment, otherwise falls back to system Python.'''
-def get_python_path():
+def get_python_path()->str|None:
     # 1. Check if running inside a virtual environment
     if prefix != base_prefix:  
         return executable  # Return the venv's Python path
@@ -87,7 +87,7 @@ def nocache(view):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # Clear all session data besides user ID
-    user_id = session.get("user_id", None)
+    user_id:int = session.get("user_id", None)
     session.clear()
     session["user_id"] = user_id
 
@@ -116,8 +116,8 @@ def index():
 '''Route for Chrome extension to connect to'''
 @app.route('/extension',methods=['POST','GET'])
 def test():
-    data = request.get_json()
-    url = data["url"]  # it's like this because data is a json that I get the url from
+    data:dict = request.get_json()
+    url:str = data["url"]  # it's like this because data is a json that I get the url from
 
     # This should work now ?
     validated_url, site_data = main.web_scraper(url)
@@ -132,6 +132,7 @@ def test():
 @nocache
 def annotate():
     # Reads scraped data from session values
+    url = session.get("url", None)
     site_data = session.get("site_data", None)
 
     if site_data is None:
@@ -139,9 +140,9 @@ def annotate():
         return redirect(url_for('index'))
     
     # Gets image links from site data
-    image_links = [data[0] for data in site_data]
+    image_links:list[str] = [data[0] for data in site_data]
 
-    image_tags = []
+    image_tags:list[int] = []
 
     # Default to "don't include" tag if invalid URL
     for image in image_links:
@@ -152,28 +153,35 @@ def annotate():
     # Pass 'no_images_found' flag to template
     no_images_found = len(image_links) == 0
 
-    return render_template("annotate.html", image_links=image_links, image_tags=image_tags, no_images_found=no_images_found)
+    return render_template("annotate.html", url=url, image_links=image_links, image_tags=image_tags, no_images_found=no_images_found)
 
 
 '''JSON to process annotations from user'''
 @app.route('/process_images', methods=['GET', 'POST'])
 def process_images():
     # Gets the JSON storing the user's image annotations
-    data = request.get_json()
-    tagged_list = data.get("taggedList", None)
-    added_image_list = data.get("addedImageList", None)
+    data:dict = request.get_json()
+    tagged_list:list[int] = data.get("taggedList", None)
+    added_image_list:list[str] = data.get("addedImageList", None)
 
     if tagged_list is None:
         print("Invalid access to /process_images, redirecting home")
         return redirect(url_for('index'))
 
     # Reads data from session values
-    site_data = session.get("site_data", None)
-    url       = session.get("url", None)
-    user_id   = session.get("user_id", None)
+    site_data:list[tuple[str, str, str]] = session.get("site_data", None)
+    url:str       = session.get("url", None)
+    user_id:int   = session.get("user_id", None)
 
     # Add images extra images to site data
     site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
+
+    # Remove "not included" images from site data
+    for tag_index in range(len(tagged_list)):
+        if tagged_list[tag_index] == 3:
+            site_data.pop(tag_index)
+
+    tagged_list = [tag for tag in tagged_list if tag != 3]
 
     # Generates alt-text for images and stores in session
     generated_data, generation_id, data_ids = main.process_site(site_data, tagged_list, url, user_id)
@@ -191,8 +199,8 @@ def process_images():
 @nocache
 def displayed_images():
     # Reads data from session value
-    generated_data = session.get("generated_data", None)
-    data_ids       = session.get("data_ids", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+    data_ids :list[int] = session.get("data_ids", None)
 
     if generated_data is None:
         print("Invalid access to /displayed_images, redirecting home")
@@ -204,7 +212,7 @@ def displayed_images():
 '''Endpoint to generate a CSV for a user to download'''
 @app.route('/download_csv')
 def download_csv():
-    generated_data = session.get("generated_data", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
 
     if generated_data is None:
         print("Invalid access to /download_csv, redirecting home")
@@ -232,13 +240,13 @@ def download_csv():
 '''Endpoint to generate a JSON for a user to download'''
 @app.route('/download_json')
 def download_json():
-    generated_data = session.get("generated_data", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
 
     if generated_data is None:
-        print("Invalid access to /download_csv, redirecting home")
+        print("Invalid access to /download_json, redirecting home")
         return redirect(url_for('index'))
     
-    cleaned_data = []
+    cleaned_data : list[dict]= []
     added_image_count = 1
     for item in generated_data:
         # User added image
@@ -258,10 +266,10 @@ def download_json():
 '''Endpoint to generate an HTML file for a user to download'''
 @app.route('/download_html')
 def download_html():
-    generated_data = session.get("generated_data", None)
+    generated_data : list[tuple[str, str]]  = session.get("generated_data", None)
 
     if generated_data is None:
-        print("Invalid access to /download_csv, redirecting home")
+        print("Invalid access to /download_html, redirecting home")
         return redirect(url_for('index'))
     
     html_content = ""
@@ -294,17 +302,17 @@ def check_url():
 @app.route('/regenerate_image', methods=['GET', 'POST'])
 def regenerate_image():
     # Gets the JSON storing the index of the data
-    data = request.get_json()
+    data:dict = request.get_json()
     data_index = int(data.get("data_index", 0)) - 1
 
     if data_index == -1:
         print("Invalid access to /regenerate_image, redirecting home")
         return redirect(url_for('index'))
 
-    generated_data = session.get("generated_data", None)
-    site_data      = session.get("site_data", None)
-    data_ids       = session.get("data_ids", None)
-    tagged_list    = session.get("tagged_list", None)
+    generated_data : list[tuple[str, str]] = session.get("generated_data", None)
+    site_data:list[tuple[str, str, str]]= session.get("site_data", None)
+    data_ids :list[int]     = session.get("data_ids", None)
+    tagged_list : list[int]    = session.get("tagged_list", None)
 
     if site_data is None:
         print("Invalid access to /regenerate_image, redirecting home")
@@ -349,7 +357,7 @@ def regenerate_image():
 @app.route('/history')
 @nocache
 def history():
-    user_id = session.get("user_id", None)
+    user_id:int = session.get("user_id", None)
 
     if user_id is None:
         print("Invalid access to /history, redirecting home")
@@ -363,7 +371,7 @@ def history():
 @app.route('/process_previous_results', methods=['GET', 'POST'])
 def process_previous_results():
     # Gets the JSON storing the generation ID
-    data = request.get_json()
+    data:dict = request.get_json()
     generation_id = int(data.get("generation_id", -1))
 
     if generation_id == -1:
@@ -384,8 +392,8 @@ def process_previous_results():
 @nocache
 def previous_results():
     # Reads data from session value
-    generated_data = session.get("generated_data", None)
-    data_ids       = session.get("data_ids", None)
+    generated_data: list[tuple[str, str]] = session.get("generated_data", None)
+    data_ids :list[int]      = session.get("data_ids", None)
 
     if generated_data is None:
         print("Invalid access to /previous_results, redirecting home")
@@ -398,16 +406,6 @@ def previous_results():
 def get_data():
     return jsonify({"message": "Hello from Flask!", "status": "success"})
 
-
-# @app.route("/proxy")
-# def proxy():
-#     try:
-#         response = requests.get(url, timeout=5)
-#         content_type = response.headers.get('Content-Type', 'text/html')
-#         return Response(response.content, content_type=content_type)
-#     except Exception as e:
-#         print(f"Proxy error: {e}")
-#         return Response(f"Error fetching URL: {e}", status=500)
 
 
 ''' Oauth Google '''

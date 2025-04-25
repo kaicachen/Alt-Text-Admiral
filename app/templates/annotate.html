@@ -221,8 +221,7 @@
         var currentIndex = imageList.length;
 
         (async () => {
-            const cleaned = await cleanURL(localStorage.getItem("url"));
-            //document.getElementById("website").src = "/proxy?url="+cleaned;
+            const cleaned = JSON.parse('{{ url | tojson | safe }}');
             document.getElementById("website").src = cleaned;
 
         })();
