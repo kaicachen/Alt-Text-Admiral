@@ -22,7 +22,7 @@ class UserInfo:
         self.user_id:int|None = user_id
 
         # Store user email
-        self.email = email
+        self.email:int|None = email
 
         # Get user ID from database if not passed in
         if self.user_id is None and email is not None:
