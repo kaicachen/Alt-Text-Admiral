@@ -5,3 +5,4 @@ app/app_code/__pycache__/
 key.txt
 .env
 .vscode
+app/app_code/inputs/websites.txt

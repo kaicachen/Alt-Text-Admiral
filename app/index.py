@@ -135,7 +135,7 @@ def test():
 def annotate():
     # Reads scraped data from session values
     url = session.get("url", None)
-    site_data = session.get("site_data", None)
+    site_data:list[tuple[str, str, str]] = session.get("site_data", None)
 
     if site_data is None:
         print("Invalid access to /annotate, redirecting home")
