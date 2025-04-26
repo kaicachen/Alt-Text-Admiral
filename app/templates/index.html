@@ -92,11 +92,6 @@
     </style>
     <script>
         function openLoginPopup() {
-            window.open("/google/", "Login", "width=500,height=600");
-        }
-    </script>
-    <script>
-        function openLoginPopup() {
             const loginWindow = window.open("/google/", "Login", "width=500,height=600");
     
             // Listen for message from popup
@@ -139,5 +134,10 @@
             localStorage.setItem("url", inputURL);
         }
     </script>
+    {% if error %}
+    <script>
+        alert("{{ error }}");
+    </script>
+    {% endif %}
 </body>
 </html>

@@ -41,7 +41,7 @@ class WebScraper:
                 return cleaned_url
             
             else:
-                raise ValueError("Failed to sanitize URL and connect")
+                raise ValueError("Failed to sanitize URL and connect. Please input a valid URL.")
         
         # Case of 'example.com'
         else:
@@ -54,7 +54,7 @@ class WebScraper:
                 return cleaned_url
             
             else:
-                raise ValueError("Failed to sanitize URL and connect")
+                raise ValueError("Failed to sanitize URL and connect. Please input a valid URL.")
 
 
     '''Filter out placeholder images or single color images'''

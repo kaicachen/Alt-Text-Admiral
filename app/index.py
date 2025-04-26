@@ -90,6 +90,7 @@ def index():
     user_id:int = session.get("user_id", None)
     session.clear()
     session["user_id"] = user_id
+    error = None
 
     if request.method == 'POST':
         # Gets URL entered by the user
@@ -109,8 +110,9 @@ def index():
             # Remain on home page if URL is invalid
             except ValueError as e:
                 print(f"Error: {e}")
+                error = str(e)
     
-    return render_template('index.html')
+    return render_template('index.html', error=error)
 
 
 '''Route for Chrome extension to connect to'''
