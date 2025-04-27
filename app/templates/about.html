@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alt-Text Admiral</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+        .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+        .fa-anchor,.fa-coffee {font-size:200px}
+    </style>
+
+</head>
+<body>
+    <div class="w3-top">
+        <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
+        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+        <a href="#" id="home"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('index') }}" class="btn">Home</a></a>
+        <a href="#" id="about"><a class="w3-bar-item w3-button w3-padding-large w3-black" href="{{ url_for('about') }}" class="btn">About</a></a>
+
+        {% if session.get('user_id') %}
+        <a href="#" id="history"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}" class="btn">History</a></a>
+        <a href="#" id="logout"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a></a>
+        {% else %}
+        <a href="#" id="login"><button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button></a>
+    
+        {% endif %}
+        </div>
+    
+        <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
+    
+        <!-- Navbar on small screens -->
+        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 1</a>
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 2</a>
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 3</a>
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 4</a>
+        </div>
+    </div>
+
+    <script>
+        function openLoginPopup() {
+            const loginWindow = window.open("/google/", "Login", "width=500,height=600");
+    
+            // Listen for message from popup
+            window.addEventListener("message", function(event) {
+                if (event.data.type === "oauth_success") {
+                    // Redirect the main window to the protected page
+                    window.location.href = "/";
+                }
+            }, false);
+        }
+    </script>
+
+<style>
+    .team-img {
+        height: 300px;
+        margin: 8px;
+        object-fit: cover;
+    }
+</style>
+
+<h1 style="color:black; padding-top: 70px; margin-bottom: 40px; text-align: center;">Meet the Team</h1>
+<br>
+<div style="text-align:center;">
+    <img id="aiden" src="../static/aiden.jpg" class="team-img">
+    <img id="kai" src="../static/kai.jpg" class="team-img">
+    <img id="landon" src="../static/landon.jpg" class="team-img">
+    <img id="john" src="../static/john.jpg" class="team-img">
+    <img id="andrew" src="../static/andrew.jpg" class="team-img">
+</div>
+
+</body>

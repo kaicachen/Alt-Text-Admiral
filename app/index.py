@@ -398,7 +398,7 @@ def previous_results():
     data_ids :list[int]      = session.get("data_ids", None)
 
     if generated_data is None:
-        print("Invalid access to /displayed_images, redirecting home")
+        print("Invalid access to /previous_results, redirecting home")
         return redirect(url_for('index'))
 
     return render_template("previous_results.html", data=generated_data, data_ids=data_ids)
@@ -473,6 +473,11 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+
+'''Page to display about info'''
+@app.route('/about')
+def about():
+    return render_template("about.html")
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
