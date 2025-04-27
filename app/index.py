@@ -179,7 +179,7 @@ def process_images():
     site_data.extend([(None, "", "", main.reduce_image_size(image)) for image in added_image_list])
 
     # Remove "not included" images from site data
-    for tag_index in range(len(tagged_list)):
+    for tag_index in range(len(tagged_list))[::-1]:
         if tagged_list[tag_index] == 3:
             site_data.pop(tag_index)
 
