@@ -100,8 +100,8 @@
     }
 
     @keyframes moveRight {
-      0% { left: -100px; }
-      100% { left: 100%; }
+      0% { left: -10%; }
+      100% { left: 110%; }
     }
   </style>
 </head>
@@ -189,7 +189,7 @@
       document.getElementById("shipLoader").classList.add("show-loader");
       document.getElementById("loader-text").classList.add("show-text");
     }
-    
+
     function adjustShipPosition() {
         console.log("adjusted ship pos")
         var waterGif = document.querySelector('.water-gif');
