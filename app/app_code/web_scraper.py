@@ -1,24 +1,21 @@
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from csv import writer, QUOTE_ALL
 from selenium import webdriver
-from re import sub, search
 from requests import get
 from time import sleep
+from io import BytesIO
+from PIL import Image
+from re import search
 from sys import argv
-from os import path
 
 '''Class to perform webscraping of image and text tuples'''
 class WebScraper:
-    def __init__(self, url):
+    def __init__(self, url:str):
         self.site_url = url
 
-        # Replaces characters in the URL to make it a valid file name
-        self.file_name = sub(r'[\/:*?"<>|]', '-', url)[:20]
-
     '''Tests connection to URL'''
-    def _test_url(self, url):
+    def _test_url(self, url:str) -> bool:
         try:
             response = get(url, timeout=5)
             response.raise_for_status()
@@ -28,40 +25,64 @@ class WebScraper:
             return False
 
     '''Tests connection to URL and sanitizes if needed'''
-    def _validate_url(self):
+    def _validate_url(self)->str:
         # Ensure reachable URL and early exit if not
         if self._test_url(self.site_url):
-            return url
+            return self.site_url
         
         # Case of 'www.example.com'
         if self.site_url[:4] == "www.":
-            cleaned_url = "https://" + url
+            cleaned_url = "https://" + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
-            cleaned_url = "http://" + url
+            cleaned_url = "http://" + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
             else:
-                raise Exception("Failed to sanitize URL and connect")
+                raise ValueError("Failed to sanitize URL and connect. Please input a valid URL.")
         
         # Case of 'example.com'
         else:
-            cleaned_url = "https://www." + url
+            cleaned_url = "https://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
-            cleaned_url = "http://www." + url
+            cleaned_url = "http://www." + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
             else:
-                raise Exception("Failed to sanitize URL and connect")
+                raise ValueError("Failed to sanitize URL and connect. Please input a valid URL.")
+
+
+    '''Filter out placeholder images or single color images'''
+    def _filter_images(self, image_text_data:list[tuple[str, str, str]]) -> list[tuple[str, str, str]]:
+        validated_data = []
+        for image_url, text, href, in image_text_data:
+            try:
+                response = get(image_url)
+                image = Image.open(BytesIO(response.content))
+
+            except:
+                print(f"ERROR LOADING IMAGE {image_url}, REMOVING")
+                continue
+
+            # Finds all colors in an image
+            colors = image.getcolors(image.size[0] * image.size[1])
+
+            # Removes single pixel images or single color images
+            if (image.width == 1 and image.height == 1) or len(colors) == 1:
+                continue
+
+            validated_data.append((image_url, text, href))
+
+        return validated_data
 
 
     '''Scrapes a given URL to create tuples of images and surrounding text'''
-    def scrape_site(self):
+    def scrape_site(self)-> tuple[str, list[tuple[str, str, str]]]:
         # Validates URL
         validated_url = self._validate_url()
 
@@ -78,7 +99,7 @@ class WebScraper:
         sleep(3)
 
         # Initializes empty list to store image, text tuples
-        image_text_data = []
+        image_text_data:list[tuple[str, str, str]] = []
         
         # Find all standard images
         images = driver.find_elements(By.XPATH, "//img[not(ancestor::comment())]")
@@ -144,7 +165,6 @@ class WebScraper:
             except Exception as e:
                 print(f"Error processing image: {e}")
         
-        # NEED TO ADD HREF CHECKING HERE
         # Find Revolution Slider images (which use divs with background images)
         rev_slider_divs = driver.find_elements(By.XPATH, "//div[contains(@class, 'rev_slider') or contains(@class, 'tp-bgimg')]")
         for div in rev_slider_divs:
@@ -173,27 +193,14 @@ class WebScraper:
         
         driver.quit()
 
-        # Create CSV output of image, text tuples
-        with open(path.join("app", "app_code", "outputs", "CSVs", "Site Data", f"RAW_TUPLES_{self.file_name}.csv"), mode="w", newline="", encoding="utf-8") as file:
-            csv_writer = writer(file, quoting=QUOTE_ALL)
-            
-            # Write a header row
-            csv_writer.writerow(["image_link", "surrounding_text", "href"])
-            
-            # Writes image, text tuple
-            for image, text, href in image_text_data:
-                csv_writer.writerow([
-                    image,
-                    text,
-                    href
-                ])
+        validated_data = self._filter_images(image_text_data)
 
-        # Returns image, text tuple list for easy access
-        return image_text_data
+        # Returns validated URL and image, text tuple list
+        return validated_url, validated_data
 
 
 if __name__ == "__main__":
     # URL is passed to script through argv
     url = argv[1]
     web_scraper = WebScraper(url)
-    site_data = web_scraper.scrape_site()
+    validated_url, site_data = web_scraper.scrape_site()

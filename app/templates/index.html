@@ -1,66 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EECS 582 Capstone Project</title>
-    <style>
-        /* The Modal (background) */
-        .modal {
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
-        padding-top: 40px; /* Location of the box */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0,0,0); /* Fallback color */
-        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alt-Text Admiral</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-        /* Modal Content */
-        .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 50%;
-        }
+  <style>
+    body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+    .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+    .fa-anchor,.fa-coffee {font-size:200px}
 
-        .outerDiv {
-            border: 2px solid black;
-            padding: 10px;
-        }
+    input[type="text"] {
+      padding: 12px 20px;
+      margin-top: 20px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 60%;
+      max-width: 500px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
 
-        .imgNum {
-            float: right;
-        }
+    input[type="text"]:focus {
+      border-color: #d32f2f; /* crimson */
+      outline: none;
+      box-shadow: 0 0 8px rgba(211, 47, 47, 0.3);
+    }
+
+    button[type="submit"] {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #000000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #353535;
+      transform: translateY(-2px);
+    }
+
+    /* Ship Loader */
+    .shipLoader-container {
+      background-color:#a20025;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      width: 100%;
+      height: 40vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shipLoader {
+      display: none;
+      width: auto;
+      height: 20vh;
+      position: absolute;
+      transform: translateY(-50%);
+      animation: moveRight 5s linear infinite;
+      z-index: 0;
+    }
+
+    .water-gif {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 20vh; /* adjust if needed */
+      object-fit: cover; /* keeps it from stretching weirdly */
+      object-position: top;
+      z-index: 1;
+    }
 
 
-        .finishedTagging {
-            width: 100%;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-        }
-        input, button {
-            padding: 10px;
-            margin-top: 10px;
-        }
+    .loader-text {
+      display: none;
+      margin-top: 16px;
+      font-size: 2.5em;
+      color: #ffffff;
+      text-align: center;
+    }
 
-    </style>
+    .show-loader {
+      display: block !important;
+    }
+
+    .show-text {
+      display: block;
+    }
+
+    @keyframes moveRight {
+      0% { left: -10%; }
+      100% { left: 110%; }
+    }
+  </style>
 </head>
-<body>
-    <h1>Image Alt-Text Generation Tool</h1>
-    <p>Enter a URL to begin the web scraping process.</p>
-    
-    <form action="/" method="post">
-        <input type="text" name="url" placeholder="Enter URL here" required>
-        <button type="submit">Start Scraping</button>
-    </form>
 
+<body>
+  <!-- Navbar -->
+  <div class="w3-top">
+    <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
+      <a class="w3-bar-item w3-button w3-padding-large w3-black" href="{{ url_for('index') }}">Home</a>
+      <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}">About</a>
+
+      {% if session.get('user_id') %}
+        <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}">History</a>
+        <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button>
+      {% endif %}
+    </div>
+  </div>
+
+    <!-- Header -->
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Alt-Text Admiral</h1>
+        <p class="w3-xlarge"></p>
+        <form action="/" method="post" onsubmit="showLoader()">
+            <label for="urlInput" class="w3-text-white" style="font-weight: bold;">Enter URL Here:</label><br>
+            <input type="text" id = "urlInput" name="url" placeholder="Enter URL Here" required>
+            <button type="submit">Start Scraping</button>
+            <div class="loader-container">
+                <div id="loader" class="loader"></div>
+                <p id="loader-text" class="loader-text">Scraping in progress...</p>
+                
+            </div>
+        </form>  
+        <p id="loader-text" class="loader-text">Scraping in progress...</p>  
+    </header>
+
+    <div class="shipLoader-container">
+        <img id="shipLoader" src="../static/ship_loader.png" alt="Pirate Ship Loading Bar" class="shipLoader" />
+        <img src="../static/water.gif" alt="Animated Water" class="water-gif" /> 
+      </div>
+
+      <h2 style="text-align: center; margin-top: 60px;">About the Project</h2>
+        <div style="display: flex; align-items: flex-start; justify-content: center; margin-top: 40px; gap: 40px; padding: 0 40px; flex-wrap: wrap; padding-bottom: 100px;">
+
+            <!-- Left side: Text -->
+            <div style="flex: 1; min-width: 300px; max-width: 600px;">
+                <h3>What is Alt-Text Admiral?</h3>
+                <p style="text-align: left;">
+                    Alt-Text Admiral is a machine learning powered tool built for web developers to help make the internet more WCAG and ADA compliant. 
+                </p>
+                <p style="text-align: left;">
+                    At Alt-Text Admiral, we believe the internet is for everyone. This includes those that require the use of a screen reader to navigate webpages. This can be difficult without proper alt-text on images. Our tool harnesses the power of machine learning to automatically scrape websites that are missing alt-text, find images and surrounding contextual information, and generate alt-text based on user classification of images.
+                </p>
+                <h3>How do I use Alt-Text Admiral?</h3>
+                <p style="text-align: left;">
+                    Using Alt-Text Admiral takes three simple steps: Scraping, Classification, and Generation.
+                </p>
+                <p style="text-align: left;">
+                    All the user has to do is enter a URL that they wish to generate alt-text for, classify found images as default, link, decorative, or don't include, add any missing images that may not have been found by our state of the art webscraper, and click the "Finish Tagging" button. The tool will do the rest!
+                </p>
+            </div>
+
+            <!-- Right side: Image -->
+            <div style="flex-shrink: 0;">
+                <img src="../static/captainCaption.jpg" alt="The Alt-Text Admiral wearing a shirt that says 'I <3 Alt Text'" style="width:300px; height:auto; border-radius: 8px;">
+            </div>
+
+        </div>
+    </div>
+  </div>
+
+  <script>
+    function openLoginPopup() {
+      const loginWindow = window.open("/google/", "Login", "width=500,height=600");
+
+      window.addEventListener("message", function(event) {
+        if (event.data.type === "oauth_success") {
+          window.location.href = "/";
+        }
+      }, false);
+    }
+
+    function showLoader() {
+      document.getElementById("shipLoader").classList.add("show-loader");
+      document.getElementById("loader-text").classList.add("show-text");
+    }
+
+    function adjustShipPosition() {
+        console.log("adjusted ship pos")
+        var waterGif = document.querySelector('.water-gif');
+        var shipLoader = document.querySelector('.shipLoader');
+        
+        // Get the height of the water gif
+        var waterGifHeight = waterGif.offsetHeight;
+        
+        // Adjust the position of the shipLoader based on the water gif height
+        shipLoader.style.bottom = (waterGifHeight * 0.25) + 'px'; // Position the ship 10% above the water's bottom edge, adjust as needed
+        }
+
+    // Call the function to position the ship initially
+    adjustShipPosition();
+
+    // Recalculate the position of the ship when the window is resized
+    window.addEventListener('resize', adjustShipPosition);
+  </script>
+
+  {% if error %}
+  <script>
+    alert("{{ error }}");
+  </script>
+  {% endif %}
 </body>
 </html>

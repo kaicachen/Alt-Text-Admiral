@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alt-Text Admiral</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+        .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+        .fa-anchor,.fa-coffee {font-size:200px}
+
+
+        .historyBox {
+            border: 1px black solid;
+            padding: 10px;
+            width: 80%;
+        }
+
+        .histDiv {
+            width: 80%;
+            border: 1px black solid;
+            border-radius: 5px;
+            background-color: lightgray;
+            height: 35px;
+            margin: 10px auto;
+            font-size: large;
+
+            display: flex;
+            align-items: center;        /* Vertically center items */
+            justify-content: space-between; /* Push text left, arrow right */
+            padding: 0 10px;  
+        }
+
+        .arrow {
+            margin-left: auto;
+            font-size: larger;
+        }
+
+        h1 {
+            text-align: center;
+        }
+        .back {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+        header {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="w3-top">
+        <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
+        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+        <a href="#" id="home"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('index') }}" class="btn">Home</a></a>
+        <a href="#" id="about"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}" class="btn">About</a></a>
+        <a href="#" id="history"><a class="w3-bar-item w3-button w3-padding-large w3-black" href="{{ url_for('history') }}" class="btn">History</a></a>
+        <a href="#" id="logout"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a></a>
+        </div>
+    
+        <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
+    </div>
+
+
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Generation History</h1> 
+    </header>
+
+    <div id="historyBox"></div>
+
+    <script>
+        var userHistoryEx = JSON.parse('{{ history_data | tojson | safe }}');
+        console.log(userHistoryEx)
+        var bigDiv = document.getElementById("historyBox");
+
+        userHistoryEx.forEach(function(website) {
+            let generation_id = website[0]
+            let name = website[1];
+            let date = website[2];
+            
+            let histDiv = document.createElement("button");
+            let histText = document.createElement("a");
+            let arrow = document.createElement("a");
+
+            histDiv.className = "histDiv";
+            arrow.textContent = ">";
+            arrow.className = "arrow";
+            histText.textContent = date + ": " + name;
+            
+            histDiv.style.cursor = "pointer";
+            histDiv.onclick = function () {
+                // Send the generation ID to load
+                fetch("/process_previous_results", {
+                        method: "POST",
+                        body: JSON.stringify({ generation_id: generation_id }),
+                        headers: { "Content-Type": "application/json" }
+                    })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to process regeneration');
+                    }
+                    // If successful, the server will handle the redirect
+                    window.location.href = "/previous_results";  // Redirect to the previous results page
+                })
+                .catch(error => {
+                    console.error("Error:", error);  // Handle any errors
+                });
+            }
+
+            histDiv.append(histText);
+            histDiv.append(arrow);
+
+            bigDiv.appendChild(histDiv);
+        });
+    </script>
+</body>
+</html>

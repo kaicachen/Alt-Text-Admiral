@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alt-Text Admiral</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+        .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+        .fa-anchor,.fa-coffee {font-size:200px}
+
+    .team-img {
+        height: 275px;
+        width: 200px;
+        object-fit: cover;
+        margin: 8px;
+    }
+
+    .team-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;  /* Centers everything inside the container */
+        justify-content: center;
+    }
+
+    .team-name {
+        margin-top: 10px;
+        font-weight: bold;
+        text-align: center; /* Ensures text is centered */
+        width: 100%;
+    }
+    </style>
+
+</head>
+<body>
+    <div class="w3-top">
+        <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
+        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+        <a href="#" id="home"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('index') }}" class="btn">Home</a></a>
+        <a href="#" id="about"><a class="w3-bar-item w3-button w3-padding-large w3-black" href="{{ url_for('about') }}" class="btn">About</a></a>
+
+        {% if session.get('user_id') %}
+        <a href="#" id="history"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}" class="btn">History</a></a>
+        <a href="#" id="logout"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a></a>
+        {% else %}
+        <a href="#" id="login"><button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button></a>
+    
+        {% endif %}
+        </div>
+    
+        <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
+    </div>
+
+    <script>
+        function openLoginPopup() {
+            const loginWindow = window.open("/google/", "Login", "width=500,height=600");
+    
+            // Listen for message from popup
+            window.addEventListener("message", function(event) {
+                if (event.data.type === "oauth_success") {
+                    // Redirect the main window to the protected page
+                    window.location.href = "/";
+                }
+            }, false);
+        }
+    </script>
+
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Meet the Team</h1>   
+    </header>
+
+    <div class="w3-center">
+        <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+    
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="aiden" src="../static/aiden.jpg" alt="Developer Aiden Patel" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Aiden Patel</p>
+                            <p>Full Stack Developer</p>
+                        </div>
+                    </div>
+                    <p class="team-name">Aiden Patel</p>
+                </div>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="kai" src="../static/kai.jpg" alt="Developer Kai Achen" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Kai Achen</p>
+                            <p>Backend Engineer</p>
+                        </div>
+                    </div>
+                    <p class="team-name">Kai Achen</p>
+                </div>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="landon" src="../static/landon.jpg" alt="Developer Landon Pyko" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Landon Pyko</p>
+                            <p>Full Stack Developer</p>
+                        </div>
+                    </div>
+                    <p class="team-name">Landon Pyko</p>
+                </div>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="john" src="../static/john.jpg" alt="Developer John Newman" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>John Newman</p>
+                            <p>Machine Learning Specialist</p>
+                        </div>
+                    </div>
+                    <p class="team-name">John Newman</p>
+                </div>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="andrew" src="../static/andrew.jpg" alt="Developer Andrew McFerrin" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Andrew McFerrin</p>
+                            <p>Frontend Specialist</p>
+                        </div>
+                    </div>
+                    <p class="team-name">Andrew McFerrin</p>
+                </div>
+            </div>
+    
+        </div>
+          <h2 style="text-align: center; margin-top: 60px;">Who is Alt-Text Admiral?</h2>
+          <div style="display: flex; align-items: flex-start; justify-content: center; margin-top: 40px; gap: 40px; padding: 0 40px; flex-wrap: wrap; padding-bottom: 100px;">
+  
+              <!-- Left side: Text -->
+              <div style="flex: 1; min-width: 300px; max-width: 600px;">
+                  <p style="text-align: left;">
+                    Alt-Text Admiral is a team of young, passionate developers from The University of Kansas.
+                  </p>
+                </br>
+                  <h3>Why did we make Alt-Text Admiral?</h3>
+                  <p style="text-align: left;">
+                    This project is the Capstone of our time spent studying Computer Science. We have worked hard to learn many things about working with computers and on the internet, but one of the most important things we have learned is the importance of community and accessibility. We built this tool to help make the internet a more accessible place for everyone.
+                  </p>
+              </div>
+  
+          </div>
+    </div>
+</body>

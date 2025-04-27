@@ -4,3 +4,5 @@ __pycache__/
 app/app_code/__pycache__/
 key.txt
 .env
+.vscode
+**.mp4

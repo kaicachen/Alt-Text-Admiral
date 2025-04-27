@@ -3,39 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
+    <title>Alt-Text Admiral</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
     <style>
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+        .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+        .fa-anchor,.fa-coffee {font-size:200px}
+        
+
         .gallery {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
+            margin-left: 30px;
         }
+
         .image-card {
-            width: 200px;
+            width: 220px;
+            height: 300px;
+            border: 2px solid black;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: lightgray;
+            overflow: hidden;
+        }
+
+        .image-text {
+            flex-grow: 1;
+            overflow: auto;
+            max-height: 80px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
             text-align: center;
+            word-wrap: break-word;
+        }
+
+        
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .image-card button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
         }
         img {
             width: 100%;
             height: auto;
             border-radius: 8px;
         }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #5e0e0e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin-top: 10px;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+        .loading {
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
-    <h1>Image Gallery</h1>
-    <a href="{{ url_for('index') }}">
-        <button style="padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
-            Scrape Another Page
-        </button>
-    </a>
+    <div class="w3-top">
+        <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
+            <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+            <a class="w3-bar-item w3-button w3-padding-large" href="{{ url_for('index') }}" class="btn">Home</a>
+            <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}" class="btn">About</a>
+
+            {% if session.get('user_id') %}
+            <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}" class="btn">History</a>
+            <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a>
+            {% else %}
+            <button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button></a>
+            {% endif %}
+        </div>
+    </div>
+
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Generation Results</h1>   
+    </header>
+
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px;">
+        <div>
+            <label for="downloadType">Choose file type:</label>
+            <select id="downloadType">
+                <option value="csv">CSV</option>
+                <option value="json">JSON</option>
+                <option value="html">HTML</option>
+            </select>
+            <button onclick="downloadSelected()">Download</button>
+        </div>
+    </div>
+    
+    
+
     
     <div class="gallery">
         {% for item in data %}
         <div class="image-card">
-            <img src="{{ item.image_link }}" alt="Image">
-            <p>{{ item.generated_output }}</p>
+            <img src="{{ item[0] }}" alt="{{ item[1] }}">
+            <p class="image-text">{{ item[1] }}</p>
+            <button onclick="regenText('{{ loop.index }}')">Regenerate Alt-Text</button>
+            <div id="loader-{{ loop.index }}" class="loader loading" style="display: none;"></div> <!-- Loading spinner -->
         </div>
         {% endfor %}
     </div>
+    
+
+
+    <script>
+
+        function downloadSelected() {
+            const type = document.getElementById("downloadType").value;
+            let url = "";
+
+            switch(type) {
+                case "csv":
+                    url = "/download_csv";
+                    break;
+                case "json":
+                    url = "/download_json";
+                    break;
+                case "html":
+                    url = "/download_html";
+                    break;
+            }
+
+            downloadFile(url);
+    }
+        function downloadFile(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '';  // triggers the download attribute
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+    }
+
+    function regenText(imgToRegen) {
+        const loader = document.getElementById(`loader-${imgToRegen}`);
+        loader.style.display = "inline-block";  // Show the loader
+    
+        // Send the image index to regenerate
+        fetch("/regenerate_image", {
+                method: "POST",
+                body: JSON.stringify({ data_index: imgToRegen }),
+                headers: { "Content-Type": "application/json" }
+            })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to process regeneration');
+            }
+            // Simulate regeneration delay and hide loader
+            setTimeout(() => {
+                loader.style.display = "none";  // Hide the loader after some time
+                window.location.href = "/displayed_images";  // Redirect to the displayed images page
+            }, 2000);  // Adjust time as needed to simulate process
+        })
+        .catch(error => {
+            console.error("Error:", error);  // Handle any errors
+            loader.style.display = "none";  // Hide the loader in case of error
+        });
+    }
+    
+
+        function openLoginPopup() {
+            const loginWindow = window.open("/google/", "Login", "width=500,height=600");
+    
+            // Listen for message from popup
+            window.addEventListener("message", function(event) {
+                if (event.data.type === "oauth_success") {
+                    // Redirect the main window to the protected page
+                    window.location.href = "/";
+                }
+            }, false);
+        }
+
+    </script>
 </body>
 </html>

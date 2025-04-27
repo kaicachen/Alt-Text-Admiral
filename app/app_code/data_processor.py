@@ -1,20 +1,40 @@
+'''
+Author: Aiden Patel
+Created:
+Last modified:
+
+Description:
+This file contains the DataProcessor class, which is responsible for processing images and generating alt-text using the Gemini model.
+Inputs: 
+    image_loc: A url or local file path to the image
+    image_type: Type of the image (0 for informative, 1 for link, 2 for decorative, 3 for not included)
+    text: Text surrounding the image for context
+    href: href if the img has some
+    gemini_client: The Gemini client used to access the Gemini model
+    detr_model: The DETR model used for object detection in images (DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50").to(self._device))from site processor
+    detr_processor: The detr model used to process images for the object detection model. (DetrImageProcessor.from_pretrained("facebook/detr-resnet-50"))from site processor
+    device: Whether to use the GPU or CPU for processing (self._device = "cuda" if cuda.is_available() else "cpu") from site processor
+    URL=True: Whether to treat the image_loc as a URL or a local file path, default is Treat like a url
+    training = False: Whether to collect data for training or not, default is False, do not collect data
+    tuned = True: Whether to use the tuned model or not, default is True, use the tuned model
+Outputs:
+'''
+
+
 from requests import get, exceptions
 from torch import no_grad, tensor
 from bs4 import BeautifulSoup
 from time import sleep
 from io import BytesIO
 from PIL import Image
-
-#testing
+from .training import Trainer
 from google import genai
-from os import getenv
-
-from training import Trainer
+from transformers import DetrImageProcessor, DetrForObjectDetection
 
 
 '''Class to handle all processing of a image, text tuple passed in'''
 class DataProcessor:
-    def __init__(self, image_loc, image_type, text, href, gemini_model, detr_model, detr_processor, device, URL=True, training = False, tuned = True):
+    def __init__(self, image_loc:str|BytesIO, image_type:int, text:str, href:str, gemini_client:genai.Client, detr_model:DetrForObjectDetection, detr_processor:DetrImageProcessor, device:str, URL=True, training = True, tuned = True):
         # Saves image path for future output
         self.loc = image_loc
 
@@ -24,13 +44,13 @@ class DataProcessor:
         self.href = href
 
         #Used to access client to use all models (TODO, move this to site processor)
-        self._dummy_client = genai.Client(api_key=getenv('GEMINI_API_KEY'))
+        self._gemini_client = gemini_client
 
         #determine if the tuned model should be used
         self._tuned = tuned
 
         # Store models and processor
-        self._gemini_model = gemini_model
+        self._gemini_model_name = "gemini-1.5-flash"
         self._detr_model = detr_model
         self._detr_processor = detr_processor
         self._device = device
@@ -38,7 +58,7 @@ class DataProcessor:
 
         #true if data is saved for training, false otherwise
         if training:
-            self._trainer = Trainer(gemini_model.model_name)
+            self._trainer = Trainer("gemini-1.5-flash")
             self._training = True
         else:
             self._trainer = None
@@ -64,7 +84,7 @@ class DataProcessor:
 
 
     '''Generates a generic caption of the image'''
-    def _generate_image_caption(self):
+    def _generate_image_caption(self) -> str:
         # Check if generation has completed
         not_generated = True
         sleep_length  = 1
@@ -72,9 +92,12 @@ class DataProcessor:
         # Keeps attempting until completion or manual time out
         while(not_generated):
             try:
-                caption = self._gemini_model.generate_content([self.image,"Describe this image in a detailed caption. "]).text
+                caption = self._gemini_client.models.generate_content(
+                    model=self._gemini_model_name,
+                    contents=[self.image,"Describe this image in a detailed caption. "]
+                )
                 not_generated = False
-                return caption
+                return caption.text
             
             except Exception as e:
                 # Wait before regenerating and increase sleep time incase of repeat error
@@ -88,7 +111,7 @@ class DataProcessor:
 
 
     '''Generates a list of objects detected in the image'''
-    def _generate_image_objects(self):
+    def _generate_image_objects(self) -> dict:
         # Run processor
         try:
             inputs = self._detr_processor(images=self.image, return_tensors="pt").to(self._device)
@@ -114,14 +137,11 @@ class DataProcessor:
                 obj_name = self._detr_model.config.id2label[label.item()]
                 detected_objects[obj_name] = detected_objects.get(obj_name, 0) + 1
 
-        # Convert detected objects to list format for CSV
-        tags_list = [f"{tag} ({count})" for tag, count in detected_objects.items()]
-
         return detected_objects
     
 
     '''Generates alt-text based on the image caption and tags with the specified type'''
-    def _generate_alt_text(self, image_caption, image_objects):
+    def _generate_alt_text(self, image_caption:str, image_objects:str) -> str:
         # Check if generation has completed
         not_generated = True
         sleep_length = 1
@@ -141,7 +161,7 @@ class DataProcessor:
             objects_input = f"- **Tags:** {image_objects}\n"
 
         prompt = (
-                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and "caption")}, {(text_input and "surrounding text")}, and {(objects_input and "tags")}**.\n\n"
+                    f"You are generating **ADA-compliant** alt text based on the given **{(caption_input and 'caption')}, {(text_input and 'surrounding text')}, and {(objects_input and 'tags')}**.\n\n"
                     f"### **Input Data:**\n"
                     f"{caption_input}"
                     f"{text_input}"
@@ -168,14 +188,15 @@ class DataProcessor:
         while(not_generated):
             try:
                 if self._tuned:
-                    response = self._dummy_client.models.generate_content(
+                    response = self._gemini_client.models.generate_content(
                         model="tunedModels/test-tuned-model-icran2mmdiyb",
                         contents= prompt
                     )
                 else:
-                    response = self._gemini_model.generate_content(
-                        prompt
-                        )
+                    response = self._gemini_client.models.generate_content(
+                        model=self._gemini_model_name,
+                        contents= prompt
+                    )
                 if self._training:
                     self._trainer.add_to_dataset(self.loc, prompt, image_type="informative")
                 not_generated = False
@@ -194,7 +215,7 @@ class DataProcessor:
     
     
     '''Gets the H1 text from a given link if it exists'''
-    def _get_link_title(self):
+    def _get_link_title(self)-> str|None:
         try:
             # Gets a response from the URL and raises an error for failure
             response = get(self.href)
@@ -213,7 +234,7 @@ class DataProcessor:
             return None
 
     '''Generates a description of the destination link attached to the image'''
-    def _generate_link_description(self):
+    def _generate_link_description(self) -> str|None:
         # Early exit if no href scraped
         if not self.href:
             return "NO HREF FOUND"
@@ -252,12 +273,15 @@ class DataProcessor:
         while(not_generated):
             try:
                 if False: #self._tuned: #Block off the branch as no tuned model yet #TODO: make link datset, make tuned model, use tuned model
-                    response = self._dummy_client.models.generate_content(
+                    response = self._gemini_client.models.generate_content(
                         model="tunedModels/test-tuned-model-icran2mmdiyb",#TODO: change tuned model to be the one trained for links
                         contents= prompt
                     )
                 else:
-                    response = self._gemini_model.generate_content(prompt)
+                    response = self._gemini_client.models.generate_content(
+                        model=self._gemini_model_name,
+                        contents= prompt
+                    )
                 if self._training:
                     self._trainer.add_to_dataset(self.loc, prompt, image_type="link")
 
@@ -277,7 +301,7 @@ class DataProcessor:
     
 
     '''Fully process the inputted data and return the alt-text'''
-    def process_data(self):
+    def process_data(self) -> str:
         # Return empty tag if no image is present or if "decorative" type
         if self.image is None or self.image_type == 2:
             return " "
