@@ -212,5 +212,10 @@
             document.getElementById("loader-text").classList.add("show-text");
         }
     </script>
+    {% if error %}
+    <script>
+        alert("{{ error }}");
+    </script>
+    {% endif %}
 </body>
 </html>
