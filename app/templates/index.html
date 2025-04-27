@@ -1,221 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alt-Text Admiral</title>
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alt-Text Admiral</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <style>
-        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
-        .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
-        .fa-anchor,.fa-coffee {font-size:200px}
+  <style>
+    body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+    .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+    .fa-anchor,.fa-coffee {font-size:200px}
 
-        input[type="text"] {
-        padding: 12px 20px;
-        margin-top: 20px;
-        border: 2px solid #ccc;
-        border-radius: 8px;
-        font-size: 16px;
-        width: 60%;
-        max-width: 500px;
-        box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
+    input[type="text"] {
+      padding: 12px 20px;
+      margin-top: 20px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 60%;
+      max-width: 500px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
 
-        input[type="text"]:focus {
-        border-color: #d32f2f; /* crimson */
-        outline: none;
-        box-shadow: 0 0 8px rgba(211, 47, 47, 0.3);
-        }
+    input[type="text"]:focus {
+      border-color: #d32f2f; /* crimson */
+      outline: none;
+      box-shadow: 0 0 8px rgba(211, 47, 47, 0.3);
+    }
 
-        button[type="submit"] {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: #000000;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+    button[type="submit"] {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #000000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
 
-        button[type="submit"]:hover {
-            background-color: #353535;
-            transform: translateY(-2px);
-        }
+    button[type="submit"]:hover {
+      background-color: #353535;
+      transform: translateY(-2px);
+    }
 
+    /* Ship Loader */
+    .shipLoader-container {
+      background-color:#a20025;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      width: 100%;
+      height: 40vh;
+      position: relative;
+      overflow: hidden;
+    }
 
-        /* The Modal (background) */
-        .modal {
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
-        padding-top: 40px; /* Location of the box */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0,0,0); /* Fallback color */
-        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-        }
+    .shipLoader {
+      display: none;
+      width: 15%;
+      height: auto;
+      position: absolute;
+      top: 35%;
+      transform: translateY(-50%);
+      animation: moveRight 5s linear infinite;
+      z-index: 0;
+    }
 
-        /* Modal Content */
-        .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 50%;
-        }
-
-        .outerDiv {
-            border: 2px solid black;
-            padding: 10px;
-        }
-
-        .imgNum {
-            float: right;
-        }
-
-
-        .finishedTagging {
-            width: 100%;
-        }
+    .water-gif {
+      position: relative;
+      bottom: 0;
+      width: 100%;
+      height: auto; /* adjust if needed */
+      object-fit: cover; /* keeps it from stretching weirdly */
+      z-index: 1;
+    }
 
 
-        .loader-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 50vh;
-            position: relative;
-        }
-        
-        .loader {
-            display: none;
-            border: 16px solid #f3f3f3; /* Light grey */
-            border-top: 16px solid #3498db; /* Blue */
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-        }
-        .loader-text {
-            display: none;
-            margin-top: 16px;
-            font-size: 1.2em;
-            color: #f3f3f3;
-            text-align: center;
-        }
-        .show-text {
-        display: block;
-        }
+    .loader-text {
+      display: none;
+      margin-top: 16px;
+      font-size: 2.5em;
+      color: #ffffff;
+      text-align: center;
+    }
 
-        .show-loader {
-            display: block !important;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .show-loader {
+      display: block !important;
+    }
 
+    .show-text {
+      display: block;
+    }
 
-    </style>    
+    @keyframes moveRight {
+      0% { left: -100px; }
+      100% { left: 100%; }
+    }
+  </style>
 </head>
+
 <body>
-    <!-- Navbar -->
-    <div class="w3-top">
-        <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
-        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-        <a href="#" id="home"><a class="w3-bar-item w3-button w3-padding-large w3-black" href="{{ url_for('index') }}" class="btn">Home</a></a>
-        <a href="#" id="about"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}" class="btn">About</a></a>
-        
+  <!-- Navbar -->
+  <div class="w3-top">
+    <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
+      <a class="w3-bar-item w3-button w3-padding-large w3-black" href="{{ url_for('index') }}">Home</a>
+      <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}">About</a>
 
-        {% if session.get('user_id') %}
-        <a href="#" id="history"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}" class="btn">History</a></a>
-        <a href="#" id="logout"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a></a>
-        {% else %}
-        <a href="#" id="login"><button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button></a>
-    
-        {% endif %}
-        </div>
-    
-        <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
-    
-        <!-- Navbar on small screens -->
-        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 1</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 2</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 3</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 4</a>
-        </div>
+      {% if session.get('user_id') %}
+        <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}">History</a>
+        <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button>
+      {% endif %}
     </div>
+  </div>
 
-    <!-- Header -->
-    <header class="w3-container w3-crimson w3-center" style="padding:128px 16px">
-        <h1 class="w3-margin w3-jumbo">Alt-Text Admiral</h1>
-        <p class="w3-xlarge"></p>
-        <form action="/" method="post" onsubmit="showLoader()">
-            <input type="text" name="url" placeholder="Enter URL Here" required>
-            <button type="submit">Start Scraping</button>
-            <div class="loader-container">
-                <div id="loader" class="loader"></div>
-                <p id="loader-text" class="loader-text">Scraping in progress...</p>
+  <!-- Header -->
+  <header class="w3-container w3-crimson w3-center" style="padding:128px 16px">
+    <h1 class="w3-margin w3-jumbo">Alt-Text Admiral</h1>
 
-            </div>
-        </form>    
-    </header>
+    <form action="/" method="post" onsubmit="showLoader()">
+      <input type="text" name="url" placeholder="Enter URL Here" required>
+      <button type="submit">Start Scraping</button>
+    </form>
+    <p id="loader-text" class="loader-text">Scraping in progress...</p>
+  </header>
 
-    <div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-        <div class="w3-content">
-          <div class="w3-third w3-center" style="text-align: left; padding-right: 15px;">
-           <img src="../static/captainCaption.jpg" alt="The Alt-Text Admiral wearing a shir that says 'I <3 Alt Text'" style="max-width: 100%;"> 
+  <div class="shipLoader-container">
+    <img id="shipLoader" src="../static/ship_loader.png" alt="Pirate Ship Loading Bar" class="shipLoader" />
+    <img src="../static/water.gif" alt="Animated Water" class="water-gif" /> 
+  </div>
 
-          </div>
-      
-          <div class="w3-twothird">
-            <h1>Image Alt-Text Generation Tool</h1>
-            <h5 class="w3-padding-32"> Alt-Text Admiral is a tool that will allow for the automatic generation of ADA and WCAG compliant alternative text, or alt-text for images in a website given its URL.</h5>
-      
-            <p class="w3-text-grey">This project is a Flask app connected to Supabase using OAuth to allow for users to enter in their website URL and get the alt text for all of the images used in that site. 
-                This will allow for more website owners to add this important accessibilty feature to their sites. 
-                To use the site, a user would navigate to the hosting site where they either login if they want their generations saved, or continue as guest. 
-                Then they would enter a URL into the central search bar and click the button to start the process. 
-                Next, they would tag the images as informative, decorative, links, or do not include, as these are the categories for alt-text. 
-                Then the process starts, and a user can either leave the site and come back later to view the saved generations, or stay and view them once all have been processed.</p>
-          </div>
-        </div>
+
+  <!-- About Section -->
+  <div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+    <div class="w3-content">
+      <div class="w3-third w3-center" style="text-align: left; padding-right: 15px;">
+        <img src="../static/captainCaption.jpg" alt="The Alt-Text Admiral wearing a shirt that says 'I <3 Alt Text'" style="max-width: 100%;">
       </div>
 
+      <div class="w3-twothird">
+        <h1>Image Alt-Text Generation Tool</h1>
+        <h5 class="w3-padding-32">
+          Alt-Text Admiral is a tool that automatically generates ADA and WCAG-compliant alt-text for images on websites.
+        </h5>
+        <p class="w3-text-grey">
+          Enter a website URL, tag the images, and generate alt-text to improve accessibility. Save your generations by logging in with OAuth, or continue as a guest. Stay tuned while your captions are being processed—or come back later to review!
+        </p>
+      </div>
+    </div>
+  </div>
 
-      <script>
-        function openLoginPopup() {
-            const loginWindow = window.open("/google/", "Login", "width=500,height=600");
-    
-            // Listen for message from popup
-            window.addEventListener("message", function(event) {
-                if (event.data.type === "oauth_success") {
-                    // Redirect the main window to the protected page
-                    window.location.href = "/";
-                }
-            }, false);
+  <script>
+    function openLoginPopup() {
+      const loginWindow = window.open("/google/", "Login", "width=500,height=600");
+
+      window.addEventListener("message", function(event) {
+        if (event.data.type === "oauth_success") {
+          window.location.href = "/";
         }
-        function showLoader() {
-            document.getElementById("loader").classList.add("show-loader");
-            document.getElementById("loader-text").classList.add("show-text");
-        }
-    </script>
-    {% if error %}
-    <script>
-        alert("{{ error }}");
-    </script>
-    {% endif %}
+      }, false);
+    }
+
+    function showLoader() {
+      document.getElementById("shipLoader").classList.add("show-loader");
+      document.getElementById("loader-text").classList.add("show-text");
+    }
+  </script>
+
+  {% if error %}
+  <script>
+    alert("{{ error }}");
+  </script>
+  {% endif %}
 </body>
 </html>
