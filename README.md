@@ -49,8 +49,7 @@ Create a new virtual environment for the server
 Ensure the virtual environment is activated
 - `source venv/bin/activate`
 - For Windows: `cd venv/Scripts`, then type `./activate`
-To exit environment when not running server:
-    - `./deactivate`
+To exit environment when not running server: `./deactivate`
 
 ### TO INSTALL NECCESSARY PACKAGES:
 Within virtual environment and base folder, run
