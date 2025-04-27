@@ -2,6 +2,9 @@
 
 Source code for website to create ADA compliant alt-text using AI models, specifically Gemini 1.5 Flash and Facebook's DETR-ResNet-50.
 
+## Project Demonstration Video
+[![Alt-Text Admiral Demo](https://img.youtube.com/vi/e6N2HrlnfZA/0.jpg)](https://www.youtube.com/watch?v=e6N2HrlnfZA)
+
 ## Description
 
 This project is a Flask app connected to Supabase using OAuth to allow for users to enter in their website URL and get the alt text for all of the images used in that site. This will allow for more website owners to add this important accessibilty feature to their sites. To use the site, a user would navigate to the hosting site where they either login if they want their generations saved, or continue as guest. Then they would enter a URL into the central search bar and click the button to start the process. Next, they would tag the images as informative, decorative, links, or do not include, as these are the categories for alt-text. Then the process starts, and a user can either leave the site and come back later to view the saved generations, or stay and view them once all have been processed.
