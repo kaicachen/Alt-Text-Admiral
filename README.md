@@ -70,3 +70,6 @@ Users may then use the app by navigating to localhost:5000 on their browser of c
 - Machine learning powered alt-text generation based on image contents and surrounding contextual information on the page.
 - Easy regeneration for individual images.
 - Three convenient file formats for downloading the generation results (CSV, JSON, HTML).
+
+## CHROME EXTENSION VERSION:
+While not completely up to date with the rest of the project, we implemented a version of this app as a chrome extension as well. Users must still be running the server on localhost (unless it has been deployed somewhere), but they are able to use the core functionality of this project from within the Chrome extension. Working features include scraping and generation. The URL being scraped is automatically taken from the web page the user is on when running the extension.
