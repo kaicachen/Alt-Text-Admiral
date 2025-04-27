@@ -13,10 +13,6 @@
         body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
         .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
         .fa-anchor,.fa-coffee {font-size:200px}
-
-        body {
-            padding-top: 52px;
-        }
         
 
         .gallery {
@@ -92,17 +88,17 @@
 <body>
     <div class="w3-top">
         <div class="w3-bar w3-crimson w3-card w3-left-align w3-large">
-        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-        <a href="#" id="home"><a class="w3-bar-item w3-button w3-padding-large" href="{{ url_for('index') }}" class="btn">Home</a></a>
-        <a href="#" id="about"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}" class="btn">About</a></a>
+            <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+            <a class="w3-bar-item w3-button w3-padding-large" href="{{ url_for('index') }}" class="btn">Home</a>
+            <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}" class="btn">About</a>
 
-        {% if session.get('user_id') %}
-        <a href="#" id="history"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}" class="btn">History</a></a>
-        <a href="#" id="logout"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a></a>
-        {% else %}
-        <a href="#" id="login"><button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button></a>
-    
-        {% endif %}
+            {% if session.get('user_id') %}
+            <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('history') }}" class="btn">History</a>
+            <a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a>
+            {% else %}
+            <button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button></a>
+            {% endif %}
+        </div>
     </div>
 
     <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
@@ -119,14 +115,6 @@
                 <option value="html">HTML</option>
             </select>
             <button onclick="downloadSelected()">Download</button>
-        </div>
-    
-        <div>
-            <a href="{{ url_for('index') }}">
-                <button style="padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    Scrape Another Page
-                </button>
-            </a>
         </div>
     </div>
     
