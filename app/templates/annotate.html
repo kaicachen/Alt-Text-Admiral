@@ -155,7 +155,7 @@
     </style>
 </head>
 <body>
-    <div id="loader" class="loader" style="display: none;">
+    <div id="loader-div" style="display: none;">
         <div class="w3-bar w3-crimson w3-card w3-right-align w3-large w3-center">
             <h2>Generating alt-text...</h2>
             <p>This process may take several minutes.</p>
@@ -454,42 +454,12 @@
             reader.readAsDataURL(file);
         });
     }
-
-
-
-        window.onclick = function(event) {
-            if (event.target.className == "finishedTagging") { 
-                fetch("/process_images", {
-                    method: "POST",
-                    body: JSON.stringify({ taggedList: taggedList, addedImageList: addedImageList }),  // Send the full object
-                    headers: { "Content-Type": "application/json" }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to process tags');
-                    }
-                    // If successful, the server will handle the redirect
-                    window.location.href = "/displayed_images";  // Redirect to the displayed images page
-                })
-                .catch(error => {
-                    console.error("Error:", error);  // Handle any errors
-                });
-
-                modal.style.display = "none";
-            }
-                 
-
-            if (event.target.dataset.clicked == 1) {
-                selectTag(event.target);
-            }
-        }
-
         populateModal(imageList);
         
         window.onclick = function(event) {
             if (event.target.className == "finishedTagging") {
                 // Show the loader
-                document.getElementById("loader").style.display = "block";
+                document.getElementById("loader-div").style.display = "block";
                 
                 // Send the images to the server
                 fetch("/process_images", {
