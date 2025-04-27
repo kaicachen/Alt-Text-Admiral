@@ -13,25 +13,25 @@
         body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
         .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
         .fa-anchor,.fa-coffee {font-size:200px}
-        
-        body {
-            padding-top: 52px;
-        }
 
+    
         .back {
             position: absolute;
             left: 10px;
             top: 10px;
         }
-
+    
         h1 {
             text-align: center;
         }
+    
         .gallery {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
+            margin-left: 30px; /* Adjust this value to your preference */
         }
+    
         .image-card {
             width: 220px;
             height: 300px;
@@ -45,7 +45,7 @@
             background-color: lightgray;
             overflow: hidden;
         }
-
+    
         .image-text {
             flex-grow: 1;
             overflow: auto;
@@ -56,26 +56,26 @@
             text-align: center;
             word-wrap: break-word;
         }
-
-        
+    
         .image-card img {
             width: 100%;
             height: 150px;
             object-fit: contain;
             border-radius: 4px;
         }
-
+    
         .image-card {
             width: 200px;
             text-align: center;
         }
-
+    
         img {
             width: 100%;
             height: auto;
             border-radius: 8px;
         }
     </style>
+    
 </head>
 
 <body>
@@ -84,23 +84,14 @@
         <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-crimson" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
         <a href="#" id="home"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('index') }}" class="btn">Home</a></a>
         <a href="#" id="about"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" href="{{ url_for('about') }}" class="btn">About</a></a>
-        <a href="#" id="history"><a class="w3-bar-item w3-button w3-padding-large w3-hover-white" href="{{ url_for('history') }}" class="btn">History</a></a>
+        <a href="#" id="history"><a class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-black" href="{{ url_for('history') }}" class="btn">History</a></a>
         <a href="#" id="logout"><a class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" href="{{ url_for('logout') }}" class="btn">Logout</a></a>
-        </div>
-    
-        <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
-    
-        <!-- Navbar on small screens -->
-        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 1</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 2</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 3</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 4</a>
         </div>
     </div>
 
-    <h1 id="title">Alt-Text Admiral</h1>
-    <h1 id="websiteStuff">Website Results</h1>
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Generation Results</h1> 
+    </header>
 
      <div style="margin: 20px;">
         <label for="downloadType">Choose file type:</label>
@@ -115,7 +106,7 @@
     <div class="gallery">
         {% for item in data %}
         <div class="image-card">
-            <img src="{{ item[0] }}" alt="Image">
+            <img src="{{ item[0] }}" alt="{{ item[1] }}">
             <p class="image-text">{{ item[1] }}</p>
         </div>
         {% endfor %}

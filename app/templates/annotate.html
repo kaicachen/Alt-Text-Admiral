@@ -144,19 +144,27 @@
             left: 10px;
         }
 
- 
+        .show-loader {
+            display: block !important;
+        }
+        
+        .show-text {
+            display: block;
+            }
 
     </style>
 </head>
 <body>
-    <div class="loaderDiv">
-        <h1>Generating alt-text...</h1>
-        <p>This process may take several minutes.</p>
-        <div class="loader-container">
-            <div class="loader"></div>
+    <div id="loader-div" style="display: none;">
+        <div class="w3-bar w3-crimson w3-card w3-right-align w3-large w3-center">
+            <h2>Generating alt-text...</h2>
+            <p>This process may take several minutes.</p>
+            <div class="loader-container">
+                <div class="loader"></div>
+            </div>
         </div>
     </div>
-
+    
     
 
     <!-- The Modal -->
@@ -243,7 +251,6 @@
         }
 
         function populateModal(imageList){
-            //imageList = csv.split(",");
             let i = 0;
             imageList.forEach(function(img) {
                 taggedList.push(imageTags[i]);
@@ -447,11 +454,14 @@
             reader.readAsDataURL(file);
         });
     }
-
-
-
+        populateModal(imageList);
+        
         window.onclick = function(event) {
-            if (event.target.className == "finishedTagging") { 
+            if (event.target.className == "finishedTagging") {
+                // Show the loader
+                document.getElementById("loader-div").style.display = "block";
+                
+                // Send the images to the server
                 fetch("/process_images", {
                     method: "POST",
                     body: JSON.stringify({ taggedList: taggedList, addedImageList: addedImageList }),  // Send the full object
@@ -467,17 +477,14 @@
                 .catch(error => {
                     console.error("Error:", error);  // Handle any errors
                 });
-
+        
                 modal.style.display = "none";
             }
-                 
-
+                         
             if (event.target.dataset.clicked == 1) {
                 selectTag(event.target);
             }
         }
-
-        populateModal(imageList);
         
     </script>
 </body>

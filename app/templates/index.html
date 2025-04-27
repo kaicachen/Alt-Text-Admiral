@@ -122,39 +122,55 @@
     </div>
   </div>
 
-  <!-- Header -->
-  <header class="w3-container w3-crimson w3-center" style="padding:128px 16px">
-    <h1 class="w3-margin w3-jumbo">Alt-Text Admiral</h1>
+    <!-- Header -->
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Alt-Text Admiral</h1>
+        <p class="w3-xlarge"></p>
+        <form action="/" method="post" onsubmit="showLoader()">
+            <label for="urlInput" class="w3-text-white" style="font-weight: bold;">Enter URL Here:</label><br>
+            <input type="text" id = "urlInput" name="url" placeholder="Enter URL Here" required>
+            <button type="submit">Start Scraping</button>
+            <div class="loader-container">
+                <div id="loader" class="loader"></div>
+                <p id="loader-text" class="loader-text">Scraping in progress...</p>
+                
+            </div>
+        </form>  
+        <p id="loader-text" class="loader-text">Scraping in progress...</p>  
+    </header>
 
-    <form action="/" method="post" onsubmit="showLoader()">
-      <input type="text" name="url" placeholder="Enter URL Here" required>
-      <button type="submit">Start Scraping</button>
-    </form>
-    <p id="loader-text" class="loader-text">Scraping in progress...</p>
-  </header>
-
-  <div class="shipLoader-container">
-    <img id="shipLoader" src="../static/ship_loader.png" alt="Pirate Ship Loading Bar" class="shipLoader" />
-    <img src="../static/water.gif" alt="Animated Water" class="water-gif" /> 
-  </div>
-
-
-  <!-- About Section -->
-  <div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-    <div class="w3-content">
-      <div class="w3-third w3-center" style="text-align: left; padding-right: 15px;">
-        <img src="../static/captainCaption.jpg" alt="The Alt-Text Admiral wearing a shirt that says 'I <3 Alt Text'" style="max-width: 100%;">
+    <div class="shipLoader-container">
+        <img id="shipLoader" src="../static/ship_loader.png" alt="Pirate Ship Loading Bar" class="shipLoader" />
+        <img src="../static/water.gif" alt="Animated Water" class="water-gif" /> 
       </div>
 
-      <div class="w3-twothird">
-        <h1>Image Alt-Text Generation Tool</h1>
-        <h5 class="w3-padding-32">
-          Alt-Text Admiral is a tool that automatically generates ADA and WCAG-compliant alt-text for images on websites.
-        </h5>
-        <p class="w3-text-grey">
-          Enter a website URL, tag the images, and generate alt-text to improve accessibility. Save your generations by logging in with OAuth, or continue as a guest. Stay tuned while your captions are being processed—or come back later to review!
-        </p>
-      </div>
+      <h2 style="text-align: center; margin-top: 60px;">About the Project</h2>
+        <div style="display: flex; align-items: flex-start; justify-content: center; margin-top: 40px; gap: 40px; padding: 0 40px; flex-wrap: wrap; padding-bottom: 100px;">
+
+            <!-- Left side: Text -->
+            <div style="flex: 1; min-width: 300px; max-width: 600px;">
+                <h3>What is Alt-Text Admiral?</h3>
+                <p style="text-align: left;">
+                    Alt-Text Admiral is a machine learning powered tool built for web developers to help make the internet more WCAG and ADA compliant. 
+                </p>
+                <p style="text-align: left;">
+                    At Alt-Text Admiral, we believe the internet is for everyone. This includes those that require the use of a screen reader to navigate webpages. This can be difficult without proper alt-text on images. Our tool harnesses the power of machine learning to automatically scrape websites that are missing alt-text, find images and surrounding contextual information, and generate alt-text based on user classification of images.
+                </p>
+                <h3>How do I use Alt-Text Admiral?</h3>
+                <p style="text-align: left;">
+                    Using Alt-Text Admiral takes three simple steps: Scraping, Classification, and Generation.
+                </p>
+                <p style="text-align: left;">
+                    All the user has to do is enter a URL that they wish to generate alt-text for, classify found images as default, link, decorative, or don't include, add any missing images that may not have been found by our state of the art webscraper, and click the "Finish Tagging" button. The tool will do the rest!
+                </p>
+            </div>
+
+            <!-- Right side: Image -->
+            <div style="flex-shrink: 0;">
+                <img src="../static/captainCaption.jpg" alt="The Alt-Text Admiral wearing a shirt that says 'I <3 Alt Text'" style="width:300px; height:auto; border-radius: 8px;">
+            </div>
+
+        </div>
     </div>
   </div>
 
