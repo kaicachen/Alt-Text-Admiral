@@ -36,7 +36,7 @@ class WebScraper:
             if self._test_url(cleaned_url):
                 return cleaned_url
             
-            cleaned_url = "http://" + url
+            cleaned_url = "http://" + self.site_url
             if self._test_url(cleaned_url):
                 return cleaned_url
             
