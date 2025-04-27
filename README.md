@@ -2,11 +2,26 @@
 
 Source code for website to create ADA compliant alt-text using AI models, specifically Gemini 1.5 Flash and Facebook's DETR-ResNet-50.
 
-## Description
+## DESCRIPTION:
 
-This project is a Flask app connected to Supabase using OAuth to allow for users to enter in their website URL and get the alt text for all of the images used in that site. This will allow for more website owners to add this important accessibilty feature to their sites. To use the site, a user would navigate to the hosting site where they either login if they want their generations saved, or continue as guest. Then they would enter a URL into the central search bar and click the button to start the process. Next, they would tag the images as informative, decorative, links, or do not include, as these are the categories for alt-text. Then the process starts, and a user can either leave the site and come back later to view the saved generations, or stay and view them once all have been processed.
+This application allows users to enter in their website URL and generate alt text for all of the images used in that site. This will enable website administrators to quickly and easily add this important accessibilty feature to their sites. To use the site, a user may either login if they want their generations saved, or continue as guest. Then they would enter a URL to the form and click the "Start Scraping" button to start the process. Next, they would tag the images as informative, decorative, links, or do not include, as these are common categories for alt-text. Once the user has finished tagging images, the generation process begins, and a user can either leave the site and come back later to view the saved generations, or stay and view them once all have been processed. If users do not find the resulting generation satisfactory, they can easily regenerate for individual offending images.
 
-## Getting Started
+### TECHNOLOGY USED:
+- Flask web framework (Python, HTML, CSS, JavaScript)
+- Supabase (PostGreSQL)
+- Gemini 1.5 Flash (Python)
+- DETR-ResNet-50 (Python)
+- Git, Github (Version Control)
+
+## AUTHORS:
+
+- [Aiden Patel](https://github.com/aidenap21)
+- [Andrew McFerrin](https://github.com/AMcFerrin)
+- [Landon Pyko](https://github.com/LandonPyko)
+- [Kai Achen](https://github.com/kaicachen)
+- [John Newman](https://github.com/JohnDNewman)
+
+## GETTING STARTED:
 The server requires
 - A python virtual environment with required packages installed
 - A chrome installation on the machine
@@ -32,30 +47,24 @@ Ensure the virtual environment is activated
 - `source venv/bin/activate`
 - For Windows: `cd venv/Scripts`, then type `./activate`
 To exit environment when not running server:
-    - `deactivate`
+    - `./deactivate`
 
 ### TO INSTALL NECCESSARY PACKAGES:
-First, be in your virtual environmet, then run
+Within virtual environment and base folder, run
 - `pip install -r requirements.txt`
 
-
-## WEBSITE OPERATION
+## WEBSITE OPERATION:
 Once all the dependencies have been met, the server can be started by running the following command in the source folder with the virtual environment activated.
 - `python -m app.index`
+Currently this app will run on localhost:5000. We explored several options for deployment, but none of them worked out in time due to a combination of price and resource issues.
+Users may then use the app by navigating to localhost:5000 on their browser of choice and using the intuitive UI.
 
-# Backend Usage
-We do not recommend using the website from individual scripts.
-
-
-
-## Authors
-
-- [Aiden Patel](https://github.com/aidenap21)
-- [Andrew McFerrin](https://github.com/AMcFerrin)
-- [Landon Pyko](https://github.com/LandonPyko)
-- [Kai Achen](https://github.com/kaicachen)
-- [John Newman](https://github.com/JohnDNewman)
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
+### FEATURES:
+- Users can create accounts by logging in with their Google accounts using OAuth2.0.
+    - This saves any websites the user has scraped and generated alt-text for in our Supabase database.
+    - Users can then go back and look at the 10 most recent generations.
+- Web scraping to detect images on webpages without the need for users to manually input images.
+    - Users can also manually add images as they wish.
+- Machine learning powered alt-text generation based on image contents and surrounding contextual information on the page.
+- Easy regeneration for individual images.
+- Three convenient file formats for downloading the generation results (CSV, JSON, HTML).
