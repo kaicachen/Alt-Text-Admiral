@@ -43,13 +43,13 @@ The server requires
 ### TO INSTALL VIRTUAL ENVIRONMENT:
 Install python venv if you don't already have it
 - `sudo apt install python3-venv`
-Create a new virtual environment for the server
+- Create a new virtual environment for the server
 - `python3 -m venv venv`
 - Alternatively `python -m venv /path/to/new/virtual/environment`
-Ensure the virtual environment is activated
+- Ensure the virtual environment is activated
 - `source venv/bin/activate`
 - For Windows: `cd venv/Scripts`, then type `./activate`
-To exit environment when not running server: `./deactivate`
+- To exit environment when not running server: `./deactivate`
 
 ### TO INSTALL NECCESSARY PACKAGES:
 Within virtual environment and base folder, run
