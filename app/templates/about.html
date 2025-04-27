@@ -13,6 +13,27 @@
         body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
         .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
         .fa-anchor,.fa-coffee {font-size:200px}
+
+    .team-img {
+        height: 300px;
+        width: 250px;
+        object-fit: cover;
+        margin: 8px;
+    }
+
+    .team-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;  /* Centers everything inside the container */
+        justify-content: center;
+    }
+
+    .team-name {
+        margin-top: 10px;
+        font-weight: bold;
+        text-align: center; /* Ensures text is centered */
+        width: 100%;
+    }
     </style>
 
 </head>
@@ -56,59 +77,60 @@
     <div class="w3-center">
         <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
     
-            <div class="w3-container">
-                <div class="w3-display-container" style="width:200px;">
-                    <img id="aiden" src="../static/aiden.jpg" style="width:100%; height: auto;" alt="Developer Aiden Patel">
-                    <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
-                        <p>Aiden Patel</p>
-                        <p>Full Stack Developer</p>
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="aiden" src="../static/aiden.jpg" alt="Developer Aiden Patel" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Aiden Patel</p>
+                            <p>Full Stack Developer</p>
+                        </div>
                     </div>
+                    <p class="team-name">Aiden Patel</p>
                 </div>
-                <p style="margin-top:10px; font-weight: bold;">Aiden Patel</p>
-            </div>
-    
-            <div class="w3-container">
-                <div class="w3-display-container" style="width:200px;">
-                    <img id="kai" src="../static/kai.jpg" style="width:100%; height: auto;" alt="Developer Kai Achen">
-                    <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
-                        <p>Kai Achen</p>
-                        <p>Backend Engineer</p>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="kai" src="../static/kai.jpg" alt="Developer Kai Achen" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Kai Achen</p>
+                            <p>Backend Engineer</p>
+                        </div>
                     </div>
+                    <p class="team-name">Kai Achen</p>
                 </div>
-                <p style="margin-top:10px; font-weight: bold;">Kai Achen</p>
-            </div>
-    
-            <div class="w3-container">
-                <div class="w3-display-container" style="width:200px;">
-                    <img id="landon" src="../static/landon.jpg" style="width:100%; height: auto;" alt="Developer Landon Pyko">
-                    <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
-                        <p>Landon Pyko</p>
-                        <p>Full Stack Developer</p>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="landon" src="../static/landon.jpg" alt="Developer Landon Pyko" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Landon Pyko</p>
+                            <p>Full Stack Developer</p>
+                        </div>
                     </div>
+                    <p class="team-name">Landon Pyko</p>
                 </div>
-                <p style="margin-top:10px; font-weight: bold;">Landon Pyko</p>
-            </div>
-    
-            <div class="w3-container">
-                <div class="w3-display-container" style="width:200px;">
-                    <img id="john" src="../static/john.jpg" style="width:100%; height: auto;" alt="Developer John Newman">
-                    <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
-                        <p>John Newman</p>
-                        <p>Machine Learning Specialist</p>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="john" src="../static/john.jpg" alt="Developer John Newman" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>John Newman</p>
+                            <p>Machine Learning Specialist</p>
+                        </div>
                     </div>
+                    <p class="team-name">John Newman</p>
                 </div>
-                <p style="margin-top:10px; font-weight: bold;">John Newman</p>
-            </div>
-    
-            <div class="w3-container">
-                <div class="w3-display-container" style="width:200px;">
-                    <img id="andrew" src="../static/andrew.jpg" style="width:100%; height: auto;" alt="Developer Andrew McFerrin">
-                    <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
-                        <p>Andrew McFerrin</p>
-                        <p>Frontend Specialist</p>
+        
+                <div class="w3-container">
+                    <div class="w3-display-container">
+                        <img id="andrew" src="../static/andrew.jpg" alt="Developer Andrew McFerrin" class="team-img">
+                        <div class="w3-display-middle w3-display-hover w3-black w3-opacity-min w3-padding w3-round-large">
+                            <p>Andrew McFerrin</p>
+                            <p>Frontend Specialist</p>
+                        </div>
                     </div>
+                    <p class="team-name">Andrew McFerrin</p>
                 </div>
-                <p style="margin-top:10px; font-weight: bold;">Andrew McFerrin</p>
             </div>
     
         </div>
