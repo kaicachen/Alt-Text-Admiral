@@ -64,21 +64,21 @@
 
     .shipLoader {
       display: none;
-      width: 15%;
-      height: auto;
+      width: auto;
+      height: 20vh;
       position: absolute;
-      top: 35%;
       transform: translateY(-50%);
       animation: moveRight 5s linear infinite;
       z-index: 0;
     }
 
     .water-gif {
-      position: relative;
+      position: absolute;
       bottom: 0;
       width: 100%;
-      height: auto; /* adjust if needed */
+      height: 20vh; /* adjust if needed */
       object-fit: cover; /* keeps it from stretching weirdly */
+      object-position: top;
       z-index: 1;
     }
 
@@ -189,6 +189,24 @@
       document.getElementById("shipLoader").classList.add("show-loader");
       document.getElementById("loader-text").classList.add("show-text");
     }
+    
+    function adjustShipPosition() {
+        console.log("adjusted ship pos")
+        var waterGif = document.querySelector('.water-gif');
+        var shipLoader = document.querySelector('.shipLoader');
+        
+        // Get the height of the water gif
+        var waterGifHeight = waterGif.offsetHeight;
+        
+        // Adjust the position of the shipLoader based on the water gif height
+        shipLoader.style.bottom = (waterGifHeight * 0.25) + 'px'; // Position the ship 10% above the water's bottom edge, adjust as needed
+        }
+
+    // Call the function to position the ship initially
+    adjustShipPosition();
+
+    // Recalculate the position of the ship when the window is resized
+    window.addEventListener('resize', adjustShipPosition);
   </script>
 
   {% if error %}
