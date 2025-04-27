@@ -22,8 +22,6 @@
             border: 1px black solid;
             padding: 10px;
             width: 80%;
-
-            
         }
 
         .histDiv {
@@ -32,7 +30,7 @@
             border-radius: 5px;
             background-color: lightgray;
             height: 35px;
-            margin: auto;
+            margin: 10px auto;
             font-size: large;
 
             display: flex;
@@ -54,6 +52,9 @@
             left: 10px;
             top: 10px;
         }
+        header {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -68,21 +69,14 @@
         </div>
     
         <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
-    
-        <!-- Navbar on small screens -->
-        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 1</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 2</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 3</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 4</a>
-        </div>
     </div>
 
 
-    <div id="historyBox">
-        <h1>Generation History:</h1>
-    </div>
-    <button class="back"><a href="{{ url_for('index') }}">Back</a></button>
+    <header class="w3-container w3-crimson w3-center" style="padding: 20px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Generation History</h1> 
+    </header>
+
+    <div id="historyBox"></div>
 
     <script>
         var userHistoryEx = JSON.parse('{{ history_data | tojson | safe }}');
