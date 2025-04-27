@@ -135,6 +135,25 @@
 
 
     <script>
+
+        function downloadSelected() {
+            const type = document.getElementById("downloadType").value;
+            let url = "";
+
+            switch(type) {
+                case "csv":
+                    url = "/download_csv";
+                    break;
+                case "json":
+                    url = "/download_json";
+                    break;
+                case "html":
+                    url = "/download_html";
+                    break;
+            }
+
+            downloadFile(url);
+    }
         function downloadFile(url) {
             const a = document.createElement('a');
             a.href = url;

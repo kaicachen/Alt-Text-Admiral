@@ -2,7 +2,10 @@
 
 Source code for website to create ADA compliant alt-text using AI models, specifically Gemini 1.5 Flash and Facebook's DETR-ResNet-50.
 
-## DESCRIPTION:
+## Project Demonstration Video
+[![Alt-Text Admiral Demo](https://img.youtube.com/vi/e6N2HrlnfZA/0.jpg)](https://www.youtube.com/watch?v=e6N2HrlnfZA)
+
+## Description
 
 This application allows users to enter in their website URL and generate alt text for all of the images used in that site. This will enable website administrators to quickly and easily add this important accessibilty feature to their sites. To use the site, a user may either login if they want their generations saved, or continue as guest. Then they would enter a URL to the form and click the "Start Scraping" button to start the process. Next, they would tag the images as informative, decorative, links, or do not include, as these are common categories for alt-text. Once the user has finished tagging images, the generation process begins, and a user can either leave the site and come back later to view the saved generations, or stay and view them once all have been processed. If users do not find the resulting generation satisfactory, they can easily regenerate for individual offending images.
 
