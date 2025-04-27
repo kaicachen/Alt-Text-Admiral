@@ -474,7 +474,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-# '''Page to display about info'''
+'''Page to display about info'''
 @app.route('/about')
 def about():
     return render_template("about.html")
