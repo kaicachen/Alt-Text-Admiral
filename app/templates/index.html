@@ -93,14 +93,14 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            height: 50vh;
+            height: 30vh;
             position: relative;
         }
         
         .loader {
             display: none;
             border: 16px solid #f3f3f3; /* Light grey */
-            border-top: 16px solid #3498db; /* Blue */
+            border-top: 16px solid #5e0e0e; /* Dark red */
             border-radius: 50%;
             width: 120px;
             height: 120px;
@@ -125,8 +125,55 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-left: 30px; /* Adjust this value to your preference */
+        }
+    
+        .image-card {
+            width: 220px;
+            height: 300px;
+            border: 2px solid black;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: lightgray;
+            overflow: hidden;
+        }
+    
+        .image-text {
+            flex-grow: 1;
+            overflow: auto;
+            max-height: 100px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-align: center;
+            word-wrap: break-word;
+        }
+    
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+    
+        .image-card {
+            width: 200px;
+            text-align: center;
+        }
+    
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
     </style>    
 </head>
 <body>
@@ -148,22 +195,15 @@
         </div>
     
         <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
-    
-        <!-- Navbar on small screens -->
-        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 1</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 2</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 3</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 4</a>
-        </div>
     </div>
 
     <!-- Header -->
-    <header class="w3-container w3-crimson w3-center" style="padding:128px 16px">
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
         <h1 class="w3-margin w3-jumbo">Alt-Text Admiral</h1>
         <p class="w3-xlarge"></p>
         <form action="/" method="post" onsubmit="showLoader()">
-            <input type="text" name="url" placeholder="Enter URL Here" required>
+            <label for="urlInput" class="w3-text-white" style="font-weight: bold;">Enter URL Here:</label><br>
+            <input type="text" id = "urlInput" name="url" placeholder="Enter URL Here" required>
             <button type="submit">Start Scraping</button>
             <div class="loader-container">
                 <div id="loader" class="loader"></div>
@@ -172,24 +212,34 @@
             </div>
         </form>    
     </header>
+      <h2 style="text-align: center; margin-top: 60px;">About the Project</h2>
+        <div style="display: flex; align-items: flex-start; justify-content: center; margin-top: 40px; gap: 40px; padding: 0 40px; flex-wrap: wrap; padding-bottom: 100px;">
 
-    <div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-        <div class="w3-content">
-          <div class="w3-third w3-center" style="text-align: left; padding-right: 10px;">
-           <img src="../static/captainCaption.jpg" alt="The Alt-Text Admiral wearing a shir that says 'I <3 Alt Text'" style="max-width: 100%;"> 
+            <!-- Left side: Text -->
+            <div style="flex: 1; min-width: 300px; max-width: 600px;">
+                <h3>What is Alt-Text Admiral?</h3>
+                <p style="text-align: left;">
+                    Alt-Text Admiral is a machine learning powered tool built for web developers to help make the internet more WCAG and ADA compliant. 
+                </p>
+                <p style="text-align: left;">
+                    At Alt-Text Admiral, we believe the internet is for everyone. This includes those that require the use of a screen reader to navigate webpages. This can be difficult without proper alt-text on images. Our tool harnesses the power of machine learning to automatically scrape websites that are missing alt-text, find images and surrounding contextual information, and generate alt-text based on user classification of images.
+                </p>
+                <h3>How do I use Alt-Text Admiral?</h3>
+                <p style="text-align: left;">
+                    Using Alt-Text Admiral takes three simple steps: Scraping, Classification, and Generation.
+                </p>
+                <p style="text-align: left;">
+                    All the user has to do is enter a URL that they wish to generate alt-text for, classify found images as default, link, decorative, or don't include, add any missing images that may not have been found by our state of the art webscraper, and click the "Finish Tagging" button. The tool will do the rest!
+                </p>
+            </div>
 
-          </div>
-      
-          <div class="w3-twothird">
-            <h1>Image Alt-Text Generation Tool</h1>
-            <h5 class="w3-padding-32">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</h5>
-      
-            <p class="w3-text-grey">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint
-              occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-              laboris nisi ut aliquip ex ea commodo consequat.</p>
-          </div>
+            <!-- Right side: Image -->
+            <div style="flex-shrink: 0;">
+                <img src="../static/captainCaption.jpg" alt="The Alt-Text Admiral wearing a shirt that says 'I <3 Alt Text'" style="width:300px; height:auto; border-radius: 8px;">
+            </div>
+
         </div>
-      </div>
+
 
 
       <script>

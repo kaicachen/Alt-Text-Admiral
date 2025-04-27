@@ -23,6 +23,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
+            margin-left: 30px;
         }
 
         .image-card {
@@ -58,11 +59,6 @@
             border-radius: 4px;
         }
 
-        .image-card {
-            width: 200px;
-            text-align: center;
-        }
-
         .image-card button {
             padding: 5px 10px;
             font-size: 14px;
@@ -72,6 +68,24 @@
             width: 100%;
             height: auto;
             border-radius: 8px;
+        }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #5e0e0e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin-top: 10px;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+        .loading {
+            display: inline-block;
         }
     </style>
 </head>
@@ -88,42 +102,36 @@
         {% else %}
         <a href="#" id="login"><button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white w3-right" onclick="openLoginPopup()">Login</button></a>
     
-        {% endif %}        </div>
-    
-        <div class="w3-bar w3-crimson w3-card w3-right-align w3-large"></div>
-    
-        <!-- Navbar on small screens -->
-        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 1</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 2</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 3</a>
-        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 4</a>
-        </div>
+        {% endif %}
     </div>
 
-    <h1>Image Gallery for: </h1>
+    <header class="w3-container w3-crimson w3-center" style="padding: 64px 16px 20px 16px;">
+        <h1 class="w3-margin w3-jumbo">Generation Results</h1>   
+    </header>
 
 
-    <button><a href="/download_csv" onclick="downloadFile(this.href); return false;" class="btn">Download CSV</a></button>
-    <button><a href="/download_json" onclick="downloadFile(this.href); return false;" class="btn">Download JSON</a></button>
-    <button><a href="/download_html" onclick="downloadFile(this.href); return false;" class="btn">Download HTML</a></button>
+    <div style="margin: 20px;">
+        <label for="downloadType">Choose file type:</label>
+        <select id="downloadType">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+            <option value="html">HTML</option>
+        </select>
+        <button onclick="downloadSelected()">Download</button>
+    </div>
 
     
     <div class="gallery">
         {% for item in data %}
         <div class="image-card">
-            <img src="{{ item[0] }}" alt="Image">
+            <img src="{{ item[0] }}" alt="{{ item[1] }}">
             <p class="image-text">{{ item[1] }}</p>
             <button onclick="regenText('{{ loop.index }}')">Regenerate Alt-Text</button>
+            <div id="loader-{{ loop.index }}" class="loader loading" style="display: none;"></div> <!-- Loading spinner -->
         </div>
         {% endfor %}
     </div>
     
-    <a href="{{ url_for('index') }}">
-        <button style="padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
-            Scrape Another Page
-        </button>
-    </a>
 
 
     <script>
@@ -136,24 +144,32 @@
             document.body.removeChild(a);
     }
 
-        function regenText(imgToRegen) {
-            // Send the image index to regenerate
-            fetch("/regenerate_image", {
-                    method: "POST",
-                    body: JSON.stringify({ data_index: imgToRegen }),
-                    headers: { "Content-Type": "application/json" }
-                })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to process regeneration');
-                }
-                // If successful, the server will handle the redirect
-                window.location.href = "/displayed_images";  // Redirect to the displayed images page
+    function regenText(imgToRegen) {
+        const loader = document.getElementById(`loader-${imgToRegen}`);
+        loader.style.display = "inline-block";  // Show the loader
+    
+        // Send the image index to regenerate
+        fetch("/regenerate_image", {
+                method: "POST",
+                body: JSON.stringify({ data_index: imgToRegen }),
+                headers: { "Content-Type": "application/json" }
             })
-            .catch(error => {
-                console.error("Error:", error);  // Handle any errors
-            });
-        }
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to process regeneration');
+            }
+            // Simulate regeneration delay and hide loader
+            setTimeout(() => {
+                loader.style.display = "none";  // Hide the loader after some time
+                window.location.href = "/displayed_images";  // Redirect to the displayed images page
+            }, 2000);  // Adjust time as needed to simulate process
+        })
+        .catch(error => {
+            console.error("Error:", error);  // Handle any errors
+            loader.style.display = "none";  // Hide the loader in case of error
+        });
+    }
+    
 
         function openLoginPopup() {
             const loginWindow = window.open("/google/", "Login", "width=500,height=600");
